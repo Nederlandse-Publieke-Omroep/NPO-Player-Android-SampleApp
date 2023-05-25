@@ -1,0 +1,33 @@
+apply plugin: "com.diffplug.spotless"
+//Make sure to also apply spotlessCheck to your CI build
+
+spotless {
+    java {
+        target '**/*.java'
+        targetExclude "caches/**", "wrapper/**"
+        googleJavaFormat().aosp()
+    }
+    kotlin {
+        target '**/*.kt'
+        targetExclude "caches/**", "wrapper/**"
+        ktlint()
+    }
+    kotlinGradle {
+        target '**/*.gradle.kts'
+        targetExclude "caches/**", "wrapper/**"
+        ktlint()
+    }
+    groovyGradle {
+        target "**/*.gradle"
+        targetExclude "caches/**", "wrapper/**"
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format 'misc', {
+        target '**/*.md', '**/.gitignore'
+        targetExclude "caches/**", "wrapper/**"
+        indentWithSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}

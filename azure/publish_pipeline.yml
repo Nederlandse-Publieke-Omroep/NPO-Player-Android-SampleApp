@@ -1,0 +1,124 @@
+# Android
+# Build your Android project with Gradle.
+# Add steps that test, sign, and distribute the APK, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/android
+
+# Feature ACC builds
+trigger:
+  branches:
+    include:
+      - develop
+      - main
+      - feature/*
+
+pool:
+  vmImage: 'macos-latest'
+
+variables:
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+jobs:
+  - job: CodeCheckOnPush
+    steps:
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
+      - script: |
+          echo "npotag_package_cloud_key=$(NPOTAG_PACKAGE_CLOUD_KEY)" >> local.properties
+          echo "your_player_license_key_here=$(NPO_PLAYER_BITMOVIN_LICENCE_KEY)" >> local.properties
+          echo "your_analytics_license_key_here=$(NPO_PLAYER_BITMOVIN_ANALYTICS_KEY)" >> local.properties
+          echo "token_issuer_start=$(TOKEN_ISSUER_START)" >> local.properties
+          echo "token_issuer_plus=$(TOKEN_ISSUER_PLUS)" >> local.properties
+          echo "token_signature_start_dev=$(TOKEN_SIGNATURE_START_DEV)" >> local.properties
+          echo "token_signature_plus_dev=$(TOKEN_SIGNATURE_PLUS_DEV)" >> local.properties
+          echo "token_signature_start_acc=$(TOKEN_SIGNATURE_START_ACC)" >> local.properties
+          echo "token_signature_plus_acc=$(TOKEN_SIGNATURE_PLUS_ACC)" >> local.properties
+          echo "token_signature_start_prod=$(TOKEN_SIGNATURE_START_PROD)" >> local.properties
+          echo "token_signature_plus_prod=$(TOKEN_SIGNATURE_PLUS_PROD)" >> local.properties
+          echo "storeFile=$(STORE_FILE_PATH_NAME)" >> local.properties
+          echo "storePassword=$(STORE_FILE_PASSWORD)" >> local.properties
+          echo "keyAlias=$(STORE_FILE_ALIAS)" >> local.properties
+          echo "keyPassword=$(STORE_FILE_ALIAS_PASSWORD)" >> local.properties
+
+      - task: Gradle@2
+        name: GradleSpotless
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'clean spotlessCheck'
+
+      - task: Gradle@2
+        name: GradleUnitTestDEVDebug
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          publishJUnitResults: true
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'test'
+
+  - job: BuildAndPublishSampleApp
+    dependsOn:
+      - CodeCheckOnPush
+    condition: and(succeeded(), eq(variables.isMain, true))
+    steps:
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+      - task: DownloadSecureFile@1
+        name: secureKeyStore
+        inputs:
+          secureFile: '$(STORE_FILE_NAME)'
+      - script: |
+          echo "npotag_package_cloud_key=$(NPOTAG_PACKAGE_CLOUD_KEY)" >> local.properties
+          echo "your_player_license_key_here=$(NPO_PLAYER_BITMOVIN_LICENCE_KEY)" >> local.properties
+          echo "your_analytics_license_key_here=$(NPO_PLAYER_BITMOVIN_ANALYTICS_KEY)" >> local.properties
+          echo "token_issuer_start=$(TOKEN_ISSUER_START)" >> local.properties
+          echo "token_issuer_plus=$(TOKEN_ISSUER_PLUS)" >> local.properties
+          echo "token_signature_start_dev=$(TOKEN_SIGNATURE_START_DEV)" >> local.properties
+          echo "token_signature_plus_dev=$(TOKEN_SIGNATURE_PLUS_DEV)" >> local.properties
+          echo "token_signature_start_acc=$(TOKEN_SIGNATURE_START_ACC)" >> local.properties
+          echo "token_signature_plus_acc=$(TOKEN_SIGNATURE_PLUS_ACC)" >> local.properties
+          echo "token_signature_start_prod=$(TOKEN_SIGNATURE_START_PROD)" >> local.properties
+          echo "token_signature_plus_prod=$(TOKEN_SIGNATURE_PLUS_PROD)" >> local.properties
+          echo "storeFile=$(secureKeyStore.secureFilePath)" >> local.properties
+          echo "storePassword=$(STORE_FILE_PASSWORD)" >> local.properties
+          echo "keyAlias=$(STORE_FILE_ALIAS)" >> local.properties
+          echo "keyPassword=$(STORE_FILE_ALIAS_PASSWORD)" >> local.properties
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          options: '-PisSnapshot=true'
+          gradleOptions: '-Xmx3072m'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'clean SampleApp:assembleACCRelease'
+      - task: CopyFiles@2
+        inputs:
+          contents: '**/*.apk'
+          targetFolder: '$(build.artifactStagingDirectory)'
+      - task: PublishBuildArtifacts@1
+
+      - task: AppCenterDistribute@3
+        name: ACC_Build
+        inputs:
+          serverEndpoint: 'NPO Player Android SampleApp ACC'
+          appSlug: 'NPO/Player-SKO-DEMO-ACC'
+          appFile: 'SampleApp/build/outputs/apk/ACC/release/SampleApp-ACC-release.apk'
+          symbolsOption: 'Android'
+          symbolsMappingTxtFile: 'SampleApp/build/outputs/mapping/ACCRelease/mapping.txt'
+          releaseNotesOption: 'input'
+          releaseNotesInput: |+
+            Automated CI Release build number $(build.buildNumber) for branch name $(branchName).
+          destinationType: 'groups'
+          isSilent: false

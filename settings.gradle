@@ -1,0 +1,38 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+def getTagPackageCloudKey() {
+    Properties properties = new Properties()
+    properties.load(new File(rootDir.absolutePath + "/local.properties").newDataInputStream())
+    def externalModuleDir = properties.getProperty('npotag_package_cloud_key', null)
+    if (externalModuleDir == null) {
+        throw new GradleException("NPOTag package cloud key not found. Define npotag_package_cloud_key in the local.properties file!")
+    }
+    return externalModuleDir
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        // NPO Player library
+        maven {
+            url 'https://pkgs.dev.azure.com/NPOplayer/NPO-player-public/_packaging/NPOPlayerLibrary-Android/maven/v1'
+            name 'NPOPlayerLibrary-Android'
+        }
+        maven {
+            url 'https://artifacts.bitmovin.com/artifactory/public-releases'
+        }
+        maven {
+            url "https://packagecloud.io/priv/${getTagPackageCloudKey()}/npo-data/npotag-v2-android/maven2"
+        }
+    }
+}
+rootProject.name = "NPO Player Android SampleApp"
+include ':SampleApp'

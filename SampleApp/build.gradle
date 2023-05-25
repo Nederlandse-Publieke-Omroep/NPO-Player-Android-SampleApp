@@ -1,0 +1,171 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'com.google.dagger.hilt.android'
+}
+
+android {
+    buildFeatures {
+        buildConfig = true
+    }
+
+    compileSdk 33
+
+
+    Properties localProperties = new Properties()
+    File propertiesFile = project.rootProject.file('local.properties')
+    if (propertiesFile.exists()) {
+        localProperties.load(propertiesFile.newDataInputStream())
+    }
+
+    namespace 'nl.npo.player.sample_app'
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 33
+        versionCode 1
+        versionName "$libVersionName"
+
+        applicationId "nl.npo.player.sample_app"
+        manifestPlaceholders = [
+                'YOUR-PLAYER-LICENSE-KEY'   : "${localProperties.your_player_license_key_here}",
+                'YOUR-ANALYTICS-LICENSE-KEY': "${localProperties.your_analytics_license_key_here}",
+                'appFlavorName'             : "$appName",
+                'appFlavorNameShort'        : "$appNameShort"
+        ]
+        buildConfigField 'String', 'VERSION_NAME', "\"$libVersionName\""
+        buildConfigField "String", "TOKEN_ISSUER_START", "\"${localProperties.token_issuer_start}\""
+        buildConfigField "String", "TOKEN_ISSUER_PLUS", "\"${localProperties.token_issuer_plus}\""
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("${localProperties.storeFile}")
+            storePassword "${localProperties.storePassword}"
+            keyAlias "${localProperties.keyAlias}"
+            keyPassword "${localProperties.keyPassword}"
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+            testCoverageEnabled true
+        }
+        release {
+            debuggable false
+            minifyEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions 'network'
+
+    productFlavors {
+        DEV {
+            dimension 'network'
+            applicationIdSuffix '.test'
+            versionNameSuffix '.test'
+
+            manifestPlaceholders = ['appFlavorName': "$appName - TEST"]
+            manifestPlaceholders = ['appFlavorNameShort': "$appNameShort - TEST"]
+            buildConfigField "String", "TOKEN_SIGNATURE_START", "\"${localProperties.token_signature_start_dev}\""
+            buildConfigField "String", "TOKEN_SIGNATURE_PLUS", "\"${localProperties.token_signature_plus_dev}\""
+        }
+        ACC {
+            dimension 'network'
+            applicationIdSuffix '.acc'
+            versionNameSuffix '.acc'
+
+            manifestPlaceholders = ['appFlavorName': "$appName - ACC"]
+            manifestPlaceholders = ['appFlavorNameShort': "$appNameShort - ACC"]
+            buildConfigField "String", "TOKEN_SIGNATURE_START", "\"${localProperties.token_signature_start_acc}\""
+            buildConfigField "String", "TOKEN_SIGNATURE_PLUS", "\"${localProperties.token_signature_plus_acc}\""
+        }
+        PROD {
+            dimension 'network'
+
+            manifestPlaceholders = ['appFlavorName': "$appName - PROD"]
+            manifestPlaceholders = ['appFlavorNameShort': "$appNameShort - PROD"]
+            buildConfigField "String", "TOKEN_SIGNATURE_START", "\"${localProperties.token_signature_start_prod}\""
+            buildConfigField "String", "TOKEN_SIGNATURE_PLUS", "\"${localProperties.token_signature_plus_prod}\""
+        }
+    }
+
+    buildFeatures {
+        viewBinding = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    lintOptions {
+        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
+        disable "Instantiatable"
+    }
+}
+
+kapt {
+    correctErrorTypes true
+}
+
+dependencies {
+
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+
+    // When building a SampleApp use a specific released version of the library
+    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName-SNAPSHOT"
+
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+
+    implementation "androidx.navigation:navigation-ui-ktx:2.5.3"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    kapt "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
+    implementation "com.google.dagger:hilt-android:$androidHilt"
+    kapt "com.google.dagger:hilt-compiler:$androidHilt"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
+
+    implementation 'com.google.code.gson:gson:2.9.1'
+    //only needed if Chromecast is used
+    implementation "com.google.android.gms:play-services-cast-framework:21.3.0"
+    implementation 'androidx.mediarouter:mediarouter:1.4.0'  //only needed if Chromecast is used
+
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+
+    // Token generation
+    def jsonWebTokenVersion = "0.11.5"
+    api "io.jsonwebtoken:jjwt-api:$jsonWebTokenVersion"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:$jsonWebTokenVersion"
+    runtimeOnly("io.jsonwebtoken:jjwt-orgjson:$jsonWebTokenVersion")
+
+    // Debug network
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
+    debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
+}
+
+kapt {
+    correctErrorTypes true
+}

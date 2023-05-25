@@ -1,20 +1,26 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# NPO Player library Sample Application for Android
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## SampleApp:
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+To get the sample app to run and play videos make sure to add you Bitmovin player license key,
+NPOTag cloud package key and NPO Player Token signing configuration (Store file for signing release
+builds is optional to fill in) to your [local.properties](/local.properties) file. Add the following
+properties with the correct values:
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
-
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+```text
+npotag_package_cloud_key=
+your_player_license_key_here=
+your_analytics_license_key_here=
+token_issuer_start=
+token_issuer_plus=
+token_signature_start_dev=
+token_signature_plus_dev=
+token_signature_start_acc=
+token_signature_plus_acc=
+token_signature_start_prod=
+token_signature_plus_prod=
+storeFile=
+storePassword=
+keyAlias=
+keyPassword=
+```
