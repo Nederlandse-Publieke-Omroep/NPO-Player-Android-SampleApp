@@ -21,7 +21,7 @@ token_signature_start_acc=
 token_signature_plus_acc=
 token_signature_start_prod=
 token_signature_plus_prod=
-# The following settings need to be set, but can remain empty if you don't want to create release builds. 
+# The following settings need to be set, but can remain empty if you don't want to create release builds.
 storeFile=
 storePassword=
 keyAlias=
@@ -34,4 +34,4 @@ The NPOTag package cloud key can be requested from the DIAZ team. For more info
 see https://npotag.npo-data.nl/docs/index.html
 
 The Bitmovin license and analytics keys and the issuer token and signature can be requested
-from [player@npo.nl](mailto:player@npo.nl).  
+from [player@npo.nl](mailto:player@npo.nl).
