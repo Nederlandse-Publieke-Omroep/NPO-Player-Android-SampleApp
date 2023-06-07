@@ -32,12 +32,12 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg"
             ),
             SourceWrapper(
-                title = "Nederland Zingt: VPWON_1336246 - Plus user",
+                title = "Nederland Zingt: VPWON_1336246 - Start user",
                 uniqueId = "VPWON_1336246",
                 getStreamLink = true,
                 autoPlay = false,
                 offlineDownloadAllowed = true,
-                asPlusUser = true,
+                asPlusUser = false,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg"
             ),
             SourceWrapper(
@@ -83,6 +83,18 @@ object StreamLinkDataRepository : LinkRepository {
             SourceWrapper(
                 title = "NOS Journaal: POW_05467390",
                 uniqueId = "POW_05467390",
+                getStreamLink = true,
+                autoPlay = false
+            ),
+            SourceWrapper(
+                title = "Visual Radio 3FM: LI_3FM_300881",
+                uniqueId = "LI_3FM_300881",
+                getStreamLink = true,
+                autoPlay = false
+            ),
+            SourceWrapper(
+                title = "Radio 3FM: LI_3FM_8167356",
+                uniqueId = "LI_3FM_8167356",
                 getStreamLink = true,
                 autoPlay = false
             )

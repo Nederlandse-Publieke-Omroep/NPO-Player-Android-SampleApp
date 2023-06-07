@@ -1,11 +1,16 @@
 package nl.npo.player.sample_app.presentation
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.inputmethod.EditorInfo
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -38,6 +43,11 @@ class MainActivity : BaseActivity() {
         binding.setupViews()
         setObservers()
         logPageAnalytics("MainActivity")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        requestMissingPermissions()
     }
 
     private fun setObservers() {
@@ -93,5 +103,18 @@ class MainActivity : BaseActivity() {
                 item
             )
         )
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult<String, Boolean>(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean? -> }
+
+    private fun requestMissingPermissions() {
+        if (Build.VERSION.SDK_INT < 33) return
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 }

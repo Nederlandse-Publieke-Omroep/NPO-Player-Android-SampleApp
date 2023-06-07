@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
@@ -25,6 +26,8 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerBitmovin
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.notifications.NPONotificationManager
+import nl.npo.player.sample_app.R
 import nl.npo.player.sample_app.SampleApplication
 import nl.npo.player.sample_app.databinding.ActivityPlayerBinding
 import nl.npo.player.sample_app.extension.observeNonNull
@@ -45,6 +48,31 @@ class PlayerActivity : BaseActivity() {
     private lateinit var sourceWrapper: SourceWrapper
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val linkViewModel by viewModels<LinksViewModel>()
+    private var npoNotificationManager: NPONotificationManager? = null
+
+    private val mediaSessionCallback = object : MediaSession.Callback() {
+        override fun onPlay() {
+            super.onPlay()
+            player.play()
+        }
+
+        override fun onPause() {
+            super.onPause()
+            player.pause()
+        }
+
+        override fun onStop() {
+            super.onStop()
+            player.pause()
+        }
+    }
+
+    private val mediaSession by lazy {
+        MediaSession(this, MEDIA_SESSION_TAG).apply {
+            setCallback(mediaSessionCallback)
+            isActive = true
+        }
+    }
 
     private val onFinishedPlaybackListener: PlayerListener = object : PlayerListener {
         override fun onPlaybackFinished(currentPosition: Double) {
@@ -96,11 +124,18 @@ class PlayerActivity : BaseActivity() {
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
-            ).also {
-                it.attachToLifecycle(lifecycle)
-                it.remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
-                it.eventEmitter.addListener(onFinishedPlaybackListener)
-                it.eventEmitter.addListener(onAudioTrackListener)
+            ).apply {
+                attachToLifecycle(lifecycle)
+                remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
+                eventEmitter.addListener(onFinishedPlaybackListener)
+                eventEmitter.addListener(onAudioTrackListener)
+                npoNotificationManager = setupPlayerNotificationManager(
+                    NOTIFICATION_CHANNEL_ID,
+                    R.string.cast_receiver_id,
+                    R.drawable.ic_launcher_foreground,
+                    NOTIFICATION_ID,
+                    mediaSession.sessionToken
+                )
             }
         } else {
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
@@ -117,6 +152,8 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player.eventEmitter.removeListener(onFinishedPlaybackListener)
+        npoNotificationManager?.setPlayer(null)
+        mediaSession.release()
         super.onDestroy()
     }
 
@@ -206,14 +243,17 @@ class PlayerActivity : BaseActivity() {
             is StreamRetrievalState.Success -> with(retrievalState) {
                 loadStreamURL(npoSourceConfig)
             }
+
             is StreamRetrievalState.Error -> with(retrievalState) {
                 handleError(throwable) {
                     playerViewModel.retrieveSource(sourceWrapper)
                 }
             }
+
             StreamRetrievalState.Loading -> {
                 handleLoading()
             }
+
             StreamRetrievalState.NotStarted -> {
                 /* NO-OP */
             }
@@ -265,6 +305,9 @@ class PlayerActivity : BaseActivity() {
     }
 
     companion object {
+        private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
+        private const val NOTIFICATION_ID = 1
+        private const val MEDIA_SESSION_TAG = "npo-player-mediaSession"
         fun Intent.getSourceWrapper(): SourceWrapper? {
             val offlineSource: NPOOfflineSourceConfig?
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
