@@ -41,7 +41,6 @@ android {
         buildConfigField "String", "TOKEN_ISSUER_PLUS", "\"${localProperties.token_issuer_plus}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
     }
 
     signingConfigs {
@@ -133,7 +132,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.9.0'
 
     // When building a SampleApp use a specific released version of the library
-    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName-SNAPSHOT"
+    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
 
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 
