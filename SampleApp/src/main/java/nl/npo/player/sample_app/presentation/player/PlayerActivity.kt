@@ -15,18 +15,19 @@ import androidx.core.view.isVisible
 import com.bitmovin.player.ui.getSystemUiVisibilityFlags
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
+import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.media.NPOAudioTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.model.NPOPlayerBitmovin
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
+import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
 import nl.npo.player.sample_app.SampleApplication
 import nl.npo.player.sample_app.databinding.ActivityPlayerBinding
@@ -34,6 +35,8 @@ import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
 import nl.npo.player.sample_app.model.StreamRetrievalState
 import nl.npo.player.sample_app.presentation.BaseActivity
+import nl.npo.player.sample_app.presentation.player.enums.PlaybackSpeeds
+import nl.npo.player.sample_app.presentation.player.enums.PlayerSettings
 import nl.npo.player.sample_app.presentation.player.viewmodel.PlayerViewModel
 import nl.npo.player.sample_app.presentation.viewmodel.LinksViewModel
 import nl.npo.tag.sdk.tracker.PageTracker
@@ -80,15 +83,6 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private val onAudioTrackListener: PlayerListener = object : PlayerListener {
-        override fun onAudioTracksChanged(
-            oldAudioTracks: List<NPOAudioTrack>,
-            newAudioTracks: List<NPOAudioTrack>
-        ) {
-            if (!fullScreenHandler.isFullscreen) setAudioStreamVisibility(newAudioTracks)
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -117,7 +111,7 @@ class PlayerActivity : BaseActivity() {
         if (!::player.isInitialized) {
             logPageAnalytics(title)
             val autoPlay = sourceWrapper.autoPlay
-            player = NPOPlayerBitmovin(
+            player = NPOPlayerLibrary.getPlayer(
                 context = binding.root.context,
                 npoPlayerConfig = NPOPlayerConfig(
                     autoPlayEnabled = autoPlay
@@ -128,7 +122,6 @@ class PlayerActivity : BaseActivity() {
                 attachToLifecycle(lifecycle)
                 remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                 eventEmitter.addListener(onFinishedPlaybackListener)
-                eventEmitter.addListener(onAudioTrackListener)
                 npoNotificationManager = setupPlayerNotificationManager(
                     NOTIFICATION_CHANNEL_ID,
                     R.string.cast_receiver_id,
@@ -172,22 +165,109 @@ class PlayerActivity : BaseActivity() {
                 }
             }
         }
-        btnAudioStreams.setOnClickListener {
-            player.getAudioTracks()?.let { audioTracks ->
-                AlertDialog.Builder(this@PlayerActivity).setSingleChoiceItems(
-                    audioTracks.map { it.language ?: it.label ?: it.id }.toTypedArray(),
-                    audioTracks.indexOf(player.getSelectedAudioTrack())
+        btnChangeSettings.setOnClickListener {
+            getSettings().let { settings ->
+                AlertDialog.Builder(this@PlayerActivity).setItems(
+                    settings.map { it.name }.toTypedArray()
                 ) { dialog, which ->
-                    player.selectAudioTrack(audioTracks[which])
+                    when (settings[which]) {
+                        PlayerSettings.SUBTITLES -> showSubtitleDialog()
+                        PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
+                        PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
+                        PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
+                        PlayerSettings.SPEED -> showSpeedSelectionDialog()
+                    }
                     dialog.dismiss()
                 }.create().show()
             }
         }
     }
 
-    private fun changePageTracker(
-        title: String
-    ) {
+    private fun getSettings(): List<PlayerSettings> {
+        return listOfNotNull(
+            subtitleSettings(),
+            audioQualitiesSettings(),
+            audioTrackSettings(),
+            videoQualitiesSettings(),
+            PlayerSettings.SPEED
+        )
+    }
+
+    private fun subtitleSettings(): PlayerSettings? =
+        if ((player.getSubtitleTracks()?.size ?: 0) > 0) PlayerSettings.SUBTITLES else null
+
+    private fun audioQualitiesSettings(): PlayerSettings? =
+        if ((player.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
+
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+
+    private fun videoQualitiesSettings(): PlayerSettings? =
+        if ((player.getVideoQualities()?.size ?: 0) > 0) PlayerSettings.VIDEO_QUALITIES else null
+
+    private fun showSubtitleDialog() {
+        player.getSubtitleTracks()?.let { npoSubtitleTracks ->
+            AlertDialog.Builder(this).setSingleChoiceItems(
+                npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
+                npoSubtitleTracks.indexOf(player.getSelectedSubtitleTrack())
+            ) { dialog, which ->
+                player.selectSubtitleTrack(npoSubtitleTracks[which])
+                dialog.dismiss()
+            }.create().show()
+        }
+    }
+
+    private fun showAudioTracksDialog() {
+        player.getAudioTracks()?.let { audioTracks ->
+            AlertDialog.Builder(this).setSingleChoiceItems(
+                audioTracks.map { it.label ?: it.id }.toTypedArray(),
+                audioTracks.indexOf(player.getSelectedAudioTrack())
+            ) { dialog, which ->
+                player.selectAudioTrack(audioTracks[which])
+                dialog.dismiss()
+            }.create().show()
+        }
+    }
+
+    private fun showAudioQualityDialog() {
+        player.getAudioQualities()?.let { npoAudioQualities ->
+            AlertDialog.Builder(this).setSingleChoiceItems(
+                npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
+                npoAudioQualities.indexOf(player.getSelectedAudioQuality())
+            ) { dialog, which ->
+                player.selectAudioQuality(npoAudioQualities[which])
+                dialog.dismiss()
+            }.create().show()
+        }
+    }
+
+    private fun showVideoQualityDialog() {
+        player.getVideoQualities()?.let { videoQualities ->
+            AlertDialog.Builder(this).setSingleChoiceItems(
+                videoQualities.map { it.label ?: it.id }.toTypedArray(),
+                videoQualities.indexOf(player.getSelectedVideoQuality())
+            ) { dialog, which ->
+                player.selectVideoQuality(videoQualities[which])
+                dialog.dismiss()
+            }.create().show()
+        }
+    }
+
+    private fun showSpeedSelectionDialog() {
+        PlaybackSpeeds.values().let { speeds ->
+            AlertDialog.Builder(this).setSingleChoiceItems(
+                speeds.map { "${it.name} (${it.value}x)" }.toTypedArray(),
+                speeds.indexOf(
+                    speeds.firstOrNull { it.value == player.playbackSpeed } ?: PlaybackSpeeds.NORMAL
+                )
+            ) { dialog, which ->
+                player.playbackSpeed = speeds[which].value
+                dialog.dismiss()
+            }.create().show()
+        }
+    }
+
+    private fun changePageTracker(title: String) {
         val pageTracker =
             (application as SampleApplication).npoTag?.pageTrackerBuilder()?.withPageName(title)
                 ?.build()
@@ -228,10 +308,6 @@ class PlayerActivity : BaseActivity() {
             loadingIndicator.isVisible = true
             retryBtn.isVisible = false
         }
-    }
-
-    private fun setAudioStreamVisibility(tracks: List<NPOAudioTrack>?) {
-        binding.btnAudioStreams.isVisible = (tracks != null && tracks.size > 1)
     }
 
     private fun setObservers() {
@@ -279,7 +355,7 @@ class PlayerActivity : BaseActivity() {
             fullscreen = false
             runOnUiThread {
                 binding.btnSwitchStreams.isVisible = true
-                setAudioStreamVisibility(player.getAudioTracks())
+                binding.btnChangeSettings.isVisible = true
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 doSystemUiVisibility(false)
             }
@@ -289,7 +365,7 @@ class PlayerActivity : BaseActivity() {
             fullscreen = true
             runOnUiThread {
                 binding.btnSwitchStreams.isVisible = false
-                binding.btnAudioStreams.isVisible = false
+                binding.btnChangeSettings.isVisible = false
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 doSystemUiVisibility(true)
             }
