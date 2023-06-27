@@ -3,16 +3,14 @@ package nl.npo.player.sample_app.presentation.offline.view
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.progressindicator.CircularProgressIndicator
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sample_app.databinding.ListItemOfflineBinding
+import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
 
 class OfflineListItemViewHolder private constructor(
@@ -20,7 +18,7 @@ class OfflineListItemViewHolder private constructor(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     private var sourceWrapper: SourceWrapper? = null
-    private var viewHolderScope: CoroutineScope? = null
+    private var downloadStateLiveData: LiveData<NPODownloadState>? = null
 
     fun bind(
         sourceWrapper: SourceWrapper,
@@ -29,13 +27,14 @@ class OfflineListItemViewHolder private constructor(
     ) {
         this.sourceWrapper = sourceWrapper
         binding.tvTitle.text = sourceWrapper.title
+        handleProgress()
+        downloadStateLiveData?.removeObservers(binding.root.context as LifecycleOwner)
         sourceWrapper.npoOfflineContent?.apply {
-            getViewHolderScope().launch {
-                downloadState.onEach { handleProgress() }.collect()
-            }
-            handleProgress()
-        } ?: run {
-            handleProgress()
+            downloadStateLiveData = downloadState.asLiveData()
+            downloadStateLiveData?.observeNonNull(
+                binding.root.context as LifecycleOwner,
+                ::handleProgress
+            )
         }
         binding.root.setOnClickListener { this.sourceWrapper?.let { onItemClickListener.invoke(it) } }
         binding.root.setOnLongClickListener {
@@ -47,15 +46,7 @@ class OfflineListItemViewHolder private constructor(
         }
     }
 
-    private fun getViewHolderScope(): CoroutineScope {
-        viewHolderScope?.cancel("New binding, old binding removed.")
-        return CoroutineScope(Dispatchers.Main).also {
-            viewHolderScope = it
-        }
-    }
-
-    private fun handleProgress() {
-        val npoDownloadState = sourceWrapper?.npoOfflineContent?.downloadState?.value
+    private fun handleProgress(npoDownloadState: NPODownloadState? = null) {
         binding.apply {
             when (npoDownloadState) {
                 is NPODownloadState.Failed -> {
@@ -65,6 +56,7 @@ class OfflineListItemViewHolder private constructor(
                         isVisible = true
                     }
                 }
+
                 NPODownloadState.Finished -> {
                     cpiOffline.isVisible = false
                     ivStatus.apply {
@@ -72,10 +64,12 @@ class OfflineListItemViewHolder private constructor(
                         isVisible = true
                     }
                 }
+
                 is NPODownloadState.InProgress -> {
                     cpiOffline.setProgress(npoDownloadState.progress)
                     ivStatus.isVisible = false
                 }
+
                 NPODownloadState.Initializing -> cpiOffline.progress = 0
                 is NPODownloadState.Paused -> {
                     cpiOffline.isVisible = false
@@ -84,6 +78,7 @@ class OfflineListItemViewHolder private constructor(
                         isVisible = true
                     }
                 }
+
                 is NPODownloadState.Deleting -> {
                     cpiOffline.apply {
                         isIndeterminate = true
@@ -91,6 +86,7 @@ class OfflineListItemViewHolder private constructor(
                     }
                     ivStatus.isVisible = false
                 }
+
                 null -> {
                     cpiOffline.isVisible = false
                     ivStatus.apply {

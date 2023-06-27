@@ -97,6 +97,12 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_3FM_8167356",
                 getStreamLink = true,
                 autoPlay = false
+            ),
+            SourceWrapper(
+                title = "FUNX ICECAST: LI_FUNX_837073",
+                uniqueId = "LI_FUNX_837073",
+                getStreamLink = true,
+                autoPlay = false
             )
         )
     }
