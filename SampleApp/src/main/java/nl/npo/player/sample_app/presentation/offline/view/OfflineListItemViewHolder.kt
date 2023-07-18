@@ -1,5 +1,6 @@
 package nl.npo.player.sample_app.presentation.offline.view
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -8,6 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import nl.npo.player.library.domain.exception.NPOOfflineContentException
+import nl.npo.player.library.domain.exception.NPOOfflineErrorCode
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sample_app.databinding.ListItemOfflineBinding
 import nl.npo.player.sample_app.extension.observeNonNull
@@ -54,6 +57,12 @@ class OfflineListItemViewHolder private constructor(
                     ivStatus.apply {
                         setImageResource(android.R.drawable.stat_notify_error)
                         isVisible = true
+                    }
+                    if ((npoDownloadState.reason as? NPOOfflineContentException.DownloadError)?.errorCode == NPOOfflineErrorCode.DownloadFailed) {
+                        AlertDialog.Builder(binding.root.context)
+                            .setTitle(npoDownloadState.reason.message)
+                            .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
+                            .show()
                     }
                 }
 

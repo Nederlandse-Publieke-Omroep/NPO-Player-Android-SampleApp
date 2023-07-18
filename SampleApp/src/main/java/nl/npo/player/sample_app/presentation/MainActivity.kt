@@ -105,9 +105,9 @@ class MainActivity : BaseActivity() {
         )
     }
 
-    private val requestPermissionLauncher = registerForActivityResult<String, Boolean>(
+    private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean? -> }
+    ) { _: Boolean? -> }
 
     private fun requestMissingPermissions() {
         if (Build.VERSION.SDK_INT < 33) return
