@@ -9,7 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
-import android.widget.Toast
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -36,6 +36,7 @@ import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
 import nl.npo.player.sample_app.model.StreamRetrievalState
 import nl.npo.player.sample_app.presentation.BaseActivity
+import nl.npo.player.sample_app.presentation.player.enums.CellularNetworks
 import nl.npo.player.sample_app.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sample_app.presentation.player.enums.PlayerSettings
 import nl.npo.player.sample_app.presentation.player.viewmodel.PlayerViewModel
@@ -84,7 +85,11 @@ class PlayerActivity : BaseActivity() {
         }
 
         override fun onWifiNetworkStatusChanged(hasWifi: Boolean) {
-            Toast.makeText(this@PlayerActivity, "hasWifi: $hasWifi", Toast.LENGTH_LONG).show()
+            runOnUiThread {
+                binding.flError.visibility = if (hasWifi) {
+                    View.GONE
+                } else View.VISIBLE
+            }
         }
     }
 
@@ -120,7 +125,6 @@ class PlayerActivity : BaseActivity() {
                 context = binding.root.context,
                 npoPlayerConfig = NPOPlayerConfig(
                     autoPlayEnabled = autoPlay,
-                    shouldPlayOnCellularNetworks = false,
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
@@ -196,7 +200,8 @@ class PlayerActivity : BaseActivity() {
             audioQualitiesSettings(),
             audioTrackSettings(),
             videoQualitiesSettings(),
-            PlayerSettings.SPEED
+            PlayerSettings.SPEED,
+            PlayerSettings.CELLULAR_NETWORKS,
         )
     }
 
@@ -275,9 +280,17 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showCellularNetworksDialog() {
-        AlertDialog.Builder(this)
-            .setPositiveButton("4G/WiFi") { _, _ -> player.shouldPlayOnCellularNetworks = true }
-            .setNegativeButton("WiFi", ) { _, _ -> player.shouldPlayOnCellularNetworks = false }
+        CellularNetworks.values().let { values ->
+            AlertDialog.Builder(this).setSingleChoiceItems(
+                values.map { "${it.name} (${it.value}x)" }.toTypedArray(),
+                values.indexOf(
+                    values.firstOrNull { it.value == player.shouldPlayOnCellularNetworks } ?: CellularNetworks.WIFI_4G
+                )
+            ) { dialog, which ->
+                player.shouldPlayOnCellularNetworks = values[which].value
+                dialog.dismiss()
+            }.create().show()
+        }
     }
 
     private fun changePageTracker(title: String) {
