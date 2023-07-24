@@ -5,5 +5,6 @@ enum class PlayerSettings {
     AUDIO_QUALITIES,
     AUDIO_TRACKS,
     VIDEO_QUALITIES,
-    SPEED
+    SPEED,
+    CELLULAR_NETWORKS,
 }

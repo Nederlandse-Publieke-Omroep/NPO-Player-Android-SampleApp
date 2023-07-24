@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -77,9 +78,13 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private val onFinishedPlaybackListener: PlayerListener = object : PlayerListener {
+    private val playerListener: PlayerListener = object : PlayerListener {
         override fun onPlaybackFinished(currentPosition: Double) {
             binding.btnSwitchStreams.callOnClick()
+        }
+
+        override fun onWifiNetworkStatusChanged(hasWifi: Boolean) {
+            Toast.makeText(this@PlayerActivity, "hasWifi: $hasWifi", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -114,14 +119,15 @@ class PlayerActivity : BaseActivity() {
             player = NPOPlayerLibrary.getPlayer(
                 context = binding.root.context,
                 npoPlayerConfig = NPOPlayerConfig(
-                    autoPlayEnabled = autoPlay
+                    autoPlayEnabled = autoPlay,
+                    shouldPlayOnCellularNetworks = false,
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
             ).apply {
                 attachToLifecycle(lifecycle)
                 remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
-                eventEmitter.addListener(onFinishedPlaybackListener)
+                eventEmitter.addListener(playerListener)
                 npoNotificationManager = setupPlayerNotificationManager(
                     NOTIFICATION_CHANNEL_ID,
                     R.string.cast_receiver_id,
@@ -144,7 +150,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        player.eventEmitter.removeListener(onFinishedPlaybackListener)
+        player.eventEmitter.removeListener(playerListener)
         npoNotificationManager?.setPlayer(null)
         mediaSession.release()
         super.onDestroy()
@@ -176,6 +182,7 @@ class PlayerActivity : BaseActivity() {
                         PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
                         PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
                         PlayerSettings.SPEED -> showSpeedSelectionDialog()
+                        PlayerSettings.CELLULAR_NETWORKS -> showCellularNetworksDialog()
                     }
                     dialog.dismiss()
                 }.create().show()
@@ -265,6 +272,12 @@ class PlayerActivity : BaseActivity() {
                 dialog.dismiss()
             }.create().show()
         }
+    }
+
+    private fun showCellularNetworksDialog() {
+        AlertDialog.Builder(this)
+            .setPositiveButton("4G/WiFi") { _, _ -> player.shouldPlayOnCellularNetworks = true }
+            .setNegativeButton("WiFi", ) { _, _ -> player.shouldPlayOnCellularNetworks = false }
     }
 
     private fun changePageTracker(title: String) {
