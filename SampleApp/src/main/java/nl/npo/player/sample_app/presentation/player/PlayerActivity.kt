@@ -9,9 +9,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
-import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.bitmovin.player.ui.getSystemUiVisibilityFlags
 import dagger.hilt.android.AndroidEntryPoint
@@ -84,11 +84,15 @@ class PlayerActivity : BaseActivity() {
             binding.btnSwitchStreams.callOnClick()
         }
 
-        override fun onWifiNetworkStatusChanged(hasWifi: Boolean) {
+        override fun onStoppedPlayingOnCellularNetwork() {
             runOnUiThread {
-                binding.flError.visibility = if (hasWifi) {
-                    View.GONE
-                } else View.VISIBLE
+                binding.flError.isVisible = true
+            }
+        }
+
+        override fun onCanStartPlayingOnWiFi() {
+            runOnUiThread {
+                binding.flError.isGone = true
             }
         }
     }
@@ -284,10 +288,10 @@ class PlayerActivity : BaseActivity() {
             AlertDialog.Builder(this).setSingleChoiceItems(
                 values.map { "${it.name} (${it.value}x)" }.toTypedArray(),
                 values.indexOf(
-                    values.firstOrNull { it.value == player.shouldPlayOnCellularNetworks } ?: CellularNetworks.WIFI_4G
+                    values.firstOrNull { it.value == player.getShouldPlayOnCellularNetworks() } ?: CellularNetworks.WIFI_4G
                 )
             ) { dialog, which ->
-                player.shouldPlayOnCellularNetworks = values[which].value
+                player.setShouldPlayOnCellularNetworks(values[which].value)
                 dialog.dismiss()
             }.create().show()
         }
