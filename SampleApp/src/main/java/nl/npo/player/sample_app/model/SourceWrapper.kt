@@ -11,6 +11,7 @@ data class SourceWrapper(
     val streamUrl: String? = null,
     val startOffset: Double = 0.0,
     val autoPlay: Boolean = false,
+    val uiEnabled: Boolean = true,
     val offlineDownloadAllowed: Boolean = false,
     val imageUrl: String? = null,
     val npoSourceConfig: NPOSourceConfig? = if (!getStreamLink) MyNPOSourceConfig(
