@@ -111,11 +111,12 @@ class PlayerActivity : BaseActivity() {
         val title = sourceWrapper.title
         if (!::player.isInitialized) {
             logPageAnalytics(title)
-            val autoPlay = sourceWrapper.autoPlay
+            sourceWrapper.autoPlay
             player = NPOPlayerLibrary.getPlayer(
                 context = binding.root.context,
                 npoPlayerConfig = NPOPlayerConfig(
-                    autoPlayEnabled = autoPlay
+                    autoPlayEnabled = sourceWrapper.autoPlay,
+                    isUiEnabled = sourceWrapper.uiEnabled
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))

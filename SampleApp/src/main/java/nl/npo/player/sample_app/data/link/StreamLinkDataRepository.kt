@@ -17,11 +17,12 @@ object StreamLinkDataRepository : LinkRepository {
                 asPlusUser = false
             ),
             SourceWrapper(
-                title = "Live NPO1: LI_NL1_4188102 (Start live) - Start User",
+                title = "Live NPO1: LI_NL1_4188102 (Start live) - Start User - NO UI",
                 uniqueId = "LI_NL1_4188102",
                 getStreamLink = true,
                 autoPlay = true,
-                asPlusUser = false
+                asPlusUser = false,
+                uiEnabled = false
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877 - (Start 10 minuten in the episode)",
@@ -41,18 +42,12 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg"
             ),
             SourceWrapper(
-                title = "Our house: POW_05275096 - AutoPlay: Yes",
-                uniqueId = "POW_05275096",
-                getStreamLink = true,
-                autoPlay = true,
-                imageUrl = "https://images.npo.nl/tile/320x180/2_ITV0388_OurHouse_KeyArt_RGB__B__Textless_SubAW_cdn_tile-1668425373.jpg"
-            ),
-            SourceWrapper(
-                title = "Karen Piri: POW_05275080",
+                title = "Karen Piri: POW_05275080 - NO UI",
                 uniqueId = "POW_05275080",
                 getStreamLink = true,
-                autoPlay = false,
-                imageUrl = "https://images.npo.nl/header/2560x1440/Karen-Pirie-Key_Art_cdn_header-1673600845.jpg"
+                autoPlay = true,
+                imageUrl = "https://images.npo.nl/header/2560x1440/Karen-Pirie-Key_Art_cdn_header-1673600845.jpg",
+                uiEnabled = false
             ),
             SourceWrapper(
                 title = "Radio 1: LI_RA1_8167349",
@@ -68,11 +63,12 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://broadcast-images.nporadio.nl/w_1200/s3-nporadio2/956a1ae4-dca0-4fa8-9e17-15c0c965290f.jpg"
             ),
             SourceWrapper(
-                title = "Sterren NL: LI_RA2_837085",
+                title = "Sterren NL: LI_RA2_837085 - NO UI",
                 uniqueId = "LI_RA2_837085",
                 getStreamLink = true,
-                autoPlay = false,
-                imageUrl = "https://www.nporadio5.nl/sterrennl/images/blue-diamonds.webp"
+                autoPlay = true,
+                imageUrl = "https://www.nporadio5.nl/sterrennl/images/blue-diamonds.webp",
+                uiEnabled = false
             ),
             SourceWrapper(
                 title = "Soul&Jazz: LI_RA6_837069",
