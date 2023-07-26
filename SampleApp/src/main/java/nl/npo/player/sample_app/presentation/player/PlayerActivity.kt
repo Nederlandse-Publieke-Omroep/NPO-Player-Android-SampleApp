@@ -22,6 +22,7 @@ import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
@@ -193,8 +194,10 @@ class PlayerActivity : BaseActivity() {
         )
     }
 
-    private fun subtitleSettings(): PlayerSettings? =
-        if ((player.getSubtitleTracks()?.size ?: 0) > 0) PlayerSettings.SUBTITLES else null
+    private fun subtitleSettings(): PlayerSettings? {
+        val tracks = player.getSubtitleTracks() ?: return null
+        return if (tracks.isNotEmpty() && !(tracks.size == 1 && tracks.contains(NPOSubtitleTrack.OFF))) PlayerSettings.SUBTITLES else null
+    }
 
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
@@ -336,6 +339,7 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun doSystemUiVisibility(fullScreen: Boolean) {
         runOnUiThread {
             val uiParams = getSystemUiVisibilityFlags(fullScreen, true)
@@ -384,6 +388,7 @@ class PlayerActivity : BaseActivity() {
         private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
         private const val NOTIFICATION_ID = 1
         private const val MEDIA_SESSION_TAG = "npo-player-mediaSession"
+        @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
             val offlineSource: NPOOfflineSourceConfig?
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -394,7 +399,7 @@ class PlayerActivity : BaseActivity() {
                 getSerializableExtra(PLAYER_SOURCE, SourceWrapper::class.java)
             } else {
                 offlineSource = this@getSourceWrapper.getParcelableExtra(PLAYER_OFFLINE_SOURCE)
-                @Suppress("DEPRECATION") getSerializableExtra(PLAYER_SOURCE) as? SourceWrapper
+                getSerializableExtra(PLAYER_SOURCE) as? SourceWrapper
             }?.let { sourceWrapper ->
                 offlineSource?.let { sourceWrapper.copy(npoSourceConfig = offlineSource) }
                     ?: sourceWrapper

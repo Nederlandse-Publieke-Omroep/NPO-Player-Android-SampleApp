@@ -122,7 +122,8 @@ kapt {
 }
 
 dependencies {
-
+    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
+    implementation "nl.npo.player.library:npotag:$libVersionName"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
@@ -131,8 +132,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
 
-    // When building a SampleApp use a specific released version of the library
-    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
 
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 
