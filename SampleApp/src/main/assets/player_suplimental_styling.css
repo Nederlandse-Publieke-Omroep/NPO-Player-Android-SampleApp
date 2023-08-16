@@ -1,0 +1,30 @@
+/*
+// These are the variables you can change to customize the player
+// Check https://cdn.npoplayer.nl/player/latest/android/npoplayer.css
+// for full css to override
+*/
+.bmpui-npo-player {
+    --npo-player-white: #ffffff;
+    --npo-player-primarycolor: #3700B3;
+    --npo-player-primarycolor-light: #6200EE;
+    --npo-player-secondarycolor: #018786;
+    --npo-player-textcolor: #ffffff;
+    --npo-player-bufferingcolor: rgba(100, 0, 176, 0.1);
+}
+.bmpui-npo-player .bmpui-ui-rewindbutton {
+    display: none;
+}
+/*
+// A set of possible buttons to override:
+   .bmpui-npo-player .bmpui-ui-rewindbutton
+   .bmpui-npo-player .bmpui-ui-forwardbutton
+   .bmpui-npo-player .bmpui-ui-subtitlesettingstogglebutton
+   .bmpui-npo-player .bmpui-ui-settingstogglebutton
+   .bmpui-npo-player .bmpui-ui-fullscreentogglebutton
+   .bmpui-npo-player .bmpui-ui-playbacktogglebutton
+   .bmpui-npo-player .bmpui-ui-volumetogglebutton
+   .bmpui-npo-player .bmpui-ui-casttogglebutton
+   .bmpui-npo-player .bmpui-ui-airplaytogglebutton
+   .bmpui-npo-player .bmpui-ui-piptogglebutton
+   .bmpui-npo-player .bmpui-ui-audiotracksettingstogglebutton
+*/

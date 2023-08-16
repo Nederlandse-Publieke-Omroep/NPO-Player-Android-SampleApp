@@ -60,15 +60,4 @@
         android:layout_centerHorizontal="true"
         android:layout_marginHorizontal="@dimen/general_padding_half" />
 
-    <Button
-        android:id="@+id/btnChangeSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="@dimen/general_padding"
-        android:layout_toEndOf="@id/placeholder"
-        android:text="@string/select_audio_stream"
-        android:visibility="visible" />
-
 </RelativeLayout>

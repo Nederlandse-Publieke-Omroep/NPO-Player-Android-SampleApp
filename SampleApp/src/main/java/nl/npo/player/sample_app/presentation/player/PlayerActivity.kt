@@ -26,7 +26,8 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.bitmovin.bridge.OnWebButtonClickListener
+import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
@@ -114,9 +115,10 @@ class PlayerActivity : BaseActivity() {
             sourceWrapper.autoPlay
             player = NPOPlayerLibrary.getPlayer(
                 context = binding.root.context,
-                npoPlayerConfig = NPOPlayerConfig(
+                npoPlayerConfig = NPOPlayerBitmovinConfig(
                     autoPlayEnabled = sourceWrapper.autoPlay,
-                    isUiEnabled = sourceWrapper.uiEnabled
+                    isUiEnabled = sourceWrapper.uiEnabled,
+                    supplementalPlayerUiCss = "file:///android_asset/player_suplimental_styling.css"
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
@@ -156,6 +158,18 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
+            setSettingsButtonOnClickListener(object : OnWebButtonClickListener {
+                override fun onClick(): Boolean {
+                    runOnUiThread {
+                        Log.d(
+                            "NPOPlayerLibrary",
+                            "Settings button onCLick in SampleApp was invoked!"
+                        )
+                        showSettings()
+                    }
+                    return true
+                }
+            })
         }
         btnSwitchStreams.setOnClickListener {
             if (!player.isAdPlaying) {
@@ -167,21 +181,23 @@ class PlayerActivity : BaseActivity() {
                 }
             }
         }
-        btnChangeSettings.setOnClickListener {
-            getSettings().let { settings ->
-                AlertDialog.Builder(this@PlayerActivity).setItems(
-                    settings.map { it.name }.toTypedArray()
-                ) { dialog, which ->
-                    when (settings[which]) {
-                        PlayerSettings.SUBTITLES -> showSubtitleDialog()
-                        PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
-                        PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
-                        PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
-                        PlayerSettings.SPEED -> showSpeedSelectionDialog()
-                    }
-                    dialog.dismiss()
-                }.create().show()
-            }
+    }
+
+    private fun showSettings() {
+
+        getSettings().let { settings ->
+            AlertDialog.Builder(this@PlayerActivity).setItems(
+                settings.map { it.name }.toTypedArray()
+            ) { dialog, which ->
+                when (settings[which]) {
+                    PlayerSettings.SUBTITLES -> showSubtitleDialog()
+                    PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
+                    PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
+                    PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
+                    PlayerSettings.SPEED -> showSpeedSelectionDialog()
+                }
+                dialog.dismiss()
+            }.create().show()
         }
     }
 
@@ -360,7 +376,6 @@ class PlayerActivity : BaseActivity() {
             fullscreen = false
             runOnUiThread {
                 binding.btnSwitchStreams.isVisible = true
-                binding.btnChangeSettings.isVisible = true
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 doSystemUiVisibility(false)
             }
@@ -370,7 +385,6 @@ class PlayerActivity : BaseActivity() {
             fullscreen = true
             runOnUiThread {
                 binding.btnSwitchStreams.isVisible = false
-                binding.btnChangeSettings.isVisible = false
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 doSystemUiVisibility(true)
             }
@@ -389,6 +403,7 @@ class PlayerActivity : BaseActivity() {
         private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
         private const val NOTIFICATION_ID = 1
         private const val MEDIA_SESSION_TAG = "npo-player-mediaSession"
+
         @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
             val offlineSource: NPOOfflineSourceConfig?

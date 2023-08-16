@@ -55,7 +55,8 @@ class SampleApplication : Application() {
                     context = this,
                     environment = environment,
                     optionalInterceptors = list,
-                    npoTag = it
+                    npoTag = it,
+                    keepUIUpToDate = true
                 )
             }
         } else {
@@ -64,7 +65,8 @@ class SampleApplication : Application() {
                 context = this,
                 environment = environment,
                 optionalInterceptors = list,
-                analyticsConfiguration = analyticsConfiguration
+                analyticsConfiguration = analyticsConfiguration,
+                keepUIUpToDate = true
             )
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
