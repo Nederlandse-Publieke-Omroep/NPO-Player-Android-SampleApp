@@ -11,9 +11,33 @@
     --npo-player-textcolor: #ffffff;
     --npo-player-bufferingcolor: rgba(100, 0, 176, 0.1);
 }
-.bmpui-npo-player .bmpui-ui-rewindbutton {
+.bmpui-npo-player .bmpui-ui-volumetogglebutton {
     display: none;
 }
+
+.bmpui-player-state-idle .bmpui-controls-hidden {
+    all: unset !important;
+}
+.bmpui-player-state-idle .bmpui-ui-controlbar.bmpui-hidden {
+    visibility: unset !important;
+    opacity: unset !important;
+}
+.bmpui-player-state-idle .bmpui-ui-titlebar.bmpui-hidden {
+    visibility: unset !important;
+    opacity: unset !important;
+}
+.bmpui-player-state-prepared .bmpui-controls-hidden {
+    all: unset !important;
+}
+.bmpui-player-state-prepared .bmpui-ui-controlbar.bmpui-hidden {
+    visibility: unset !important;
+    opacity: unset !important;
+}
+.bmpui-player-state-prepared .bmpui-ui-titlebar.bmpui-hidden {
+    visibility: unset !important;
+    opacity: unset !important;
+}
+
 /*
 // A set of possible buttons to override:
    .bmpui-npo-player .bmpui-ui-rewindbutton

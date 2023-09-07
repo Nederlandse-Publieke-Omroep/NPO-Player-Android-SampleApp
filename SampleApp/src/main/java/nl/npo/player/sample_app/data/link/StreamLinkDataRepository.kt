@@ -113,6 +113,13 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_FUNX_837073",
                 getStreamLink = true,
                 autoPlay = false
+            ),
+            SourceWrapper(
+                title = "POW_05216736 - Age restriction",
+                uniqueId = "POW_05216736",
+                getStreamLink = true,
+                autoPlay = true,
+                asPlusUser = false
             )
         )
     }

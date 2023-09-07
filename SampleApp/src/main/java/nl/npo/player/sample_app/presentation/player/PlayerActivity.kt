@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -21,6 +22,7 @@ import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
+import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
@@ -118,7 +120,7 @@ class PlayerActivity : BaseActivity() {
                 npoPlayerConfig = NPOPlayerBitmovinConfig(
                     autoPlayEnabled = sourceWrapper.autoPlay,
                     isUiEnabled = sourceWrapper.uiEnabled,
-                    supplementalPlayerUiCss = "file:///android_asset/player_suplimental_styling.css"
+                    supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css"
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
@@ -133,6 +135,7 @@ class PlayerActivity : BaseActivity() {
                     NOTIFICATION_ID,
                     mediaSession.sessionToken
                 )
+                binding.npoVideoPlayer.attachPlayer(this)
             }
         } else {
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
@@ -161,10 +164,6 @@ class PlayerActivity : BaseActivity() {
             setSettingsButtonOnClickListener(object : OnWebButtonClickListener {
                 override fun onClick(): Boolean {
                     runOnUiThread {
-                        Log.d(
-                            "NPOPlayerLibrary",
-                            "Settings button onCLick in SampleApp was invoked!"
-                        )
                         showSettings()
                     }
                     return true
@@ -305,7 +304,6 @@ class PlayerActivity : BaseActivity() {
         binding.apply {
             loadingIndicator.isVisible = false
             retryBtn.isVisible = false
-            npoVideoPlayer.attachPlayer(player)
         }
     }
 
@@ -314,11 +312,24 @@ class PlayerActivity : BaseActivity() {
             PlayerActivity::javaClass.name, "Loading stream in player failed with result:$throwable"
         )
         throwable?.printStackTrace()
-        binding.apply {
-            loadingIndicator.isVisible = false
-            retryBtn.isVisible = true
-            retryBtn.setOnClickListener {
-                retry.invoke()
+        when (throwable) {
+            is NPOPlayerException.StreamLinkException -> {
+                binding.apply {
+                    loadingIndicator.isVisible = false
+                    retryBtn.isVisible =
+                        throwable is NPOPlayerException.StreamLinkException.WillComeAvailableSoonException
+                    Toast.makeText(baseContext, throwable.message, Toast.LENGTH_LONG).show()
+                }
+            }
+
+            else -> {
+                binding.apply {
+                    loadingIndicator.isVisible = false
+                    retryBtn.isVisible = true
+                    retryBtn.setOnClickListener {
+                        retry.invoke()
+                    }
+                }
             }
         }
     }
