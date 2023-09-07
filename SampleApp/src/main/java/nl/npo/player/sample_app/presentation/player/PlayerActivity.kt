@@ -22,6 +22,7 @@ import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
+import nl.npo.player.library.domain.common.model.PlayerSource
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
@@ -87,6 +88,41 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private val onPlayPauseListener: PlayerListener = object : PlayerListener {
+        override fun onPlaybackFinished(currentPosition: Double) {
+            binding.btnPlayPause.isVisible = false
+        }
+
+        override fun onPaused(currentPosition: Double) {
+            binding.btnPlayPause.apply {
+                isVisible = true
+                setImageResource(android.R.drawable.ic_media_play)
+            }
+        }
+
+        override fun onPlaying(currentPosition: Double) {
+            binding.btnPlayPause.apply {
+                isVisible = true
+                setImageResource(android.R.drawable.ic_media_pause)
+            }
+        }
+
+        override fun onSourceLoaded(currentPosition: Double, playerSource: PlayerSource) {
+            binding.btnPlayPause.apply {
+                isVisible = true
+                setImageResource(android.R.drawable.ic_media_play)
+            }
+        }
+
+        override fun onSourceError(currentPosition: Double) {
+            binding.btnPlayPause.isVisible = false
+        }
+
+        override fun onSourceLoad(currentPosition: Double) {
+            binding.btnPlayPause.isVisible = false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -128,6 +164,7 @@ class PlayerActivity : BaseActivity() {
                 attachToLifecycle(lifecycle)
                 remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                 eventEmitter.addListener(onFinishedPlaybackListener)
+                eventEmitter.addListener(onPlayPauseListener)
                 npoNotificationManager = setupPlayerNotificationManager(
                     NOTIFICATION_CHANNEL_ID,
                     R.string.cast_receiver_id,
@@ -152,6 +189,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player.eventEmitter.removeListener(onFinishedPlaybackListener)
+        player.eventEmitter.removeListener(onPlayPauseListener)
         npoNotificationManager?.setPlayer(null)
         mediaSession.release()
         super.onDestroy()
@@ -178,6 +216,13 @@ class PlayerActivity : BaseActivity() {
                 newSource?.let {
                     loadSource(it)
                 }
+            }
+        }
+        btnPlayPause.setOnClickListener {
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.play()
             }
         }
     }
