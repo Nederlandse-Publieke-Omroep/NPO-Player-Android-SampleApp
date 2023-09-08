@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -21,12 +22,15 @@ import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
+import nl.npo.player.library.domain.common.model.PlayerSource
+import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.bitmovin.bridge.OnWebButtonClickListener
+import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
@@ -84,6 +88,41 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private val onPlayPauseListener: PlayerListener = object : PlayerListener {
+        override fun onPlaybackFinished(currentPosition: Double) {
+            binding.btnPlayPause.isVisible = false
+        }
+
+        override fun onPaused(currentPosition: Double) {
+            binding.btnPlayPause.apply {
+                isVisible = true
+                setImageResource(android.R.drawable.ic_media_play)
+            }
+        }
+
+        override fun onPlaying(currentPosition: Double) {
+            binding.btnPlayPause.apply {
+                isVisible = true
+                setImageResource(android.R.drawable.ic_media_pause)
+            }
+        }
+
+        override fun onSourceLoaded(currentPosition: Double, playerSource: PlayerSource) {
+            binding.btnPlayPause.apply {
+                isVisible = true
+                setImageResource(android.R.drawable.ic_media_play)
+            }
+        }
+
+        override fun onSourceError(currentPosition: Double) {
+            binding.btnPlayPause.isVisible = false
+        }
+
+        override fun onSourceLoad(currentPosition: Double) {
+            binding.btnPlayPause.isVisible = false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -114,9 +153,10 @@ class PlayerActivity : BaseActivity() {
             sourceWrapper.autoPlay
             player = NPOPlayerLibrary.getPlayer(
                 context = binding.root.context,
-                npoPlayerConfig = NPOPlayerConfig(
+                npoPlayerConfig = NPOPlayerBitmovinConfig(
                     autoPlayEnabled = sourceWrapper.autoPlay,
-                    isUiEnabled = sourceWrapper.uiEnabled
+                    isUiEnabled = sourceWrapper.uiEnabled,
+                    supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css"
                 ),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
@@ -124,6 +164,7 @@ class PlayerActivity : BaseActivity() {
                 attachToLifecycle(lifecycle)
                 remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                 eventEmitter.addListener(onFinishedPlaybackListener)
+                eventEmitter.addListener(onPlayPauseListener)
                 npoNotificationManager = setupPlayerNotificationManager(
                     NOTIFICATION_CHANNEL_ID,
                     R.string.cast_receiver_id,
@@ -131,6 +172,7 @@ class PlayerActivity : BaseActivity() {
                     NOTIFICATION_ID,
                     mediaSession.sessionToken
                 )
+                binding.npoVideoPlayer.attachPlayer(this)
             }
         } else {
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
@@ -147,6 +189,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player.eventEmitter.removeListener(onFinishedPlaybackListener)
+        player.eventEmitter.removeListener(onPlayPauseListener)
         npoNotificationManager?.setPlayer(null)
         mediaSession.release()
         super.onDestroy()
@@ -156,6 +199,14 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
+            setSettingsButtonOnClickListener(object : OnWebButtonClickListener {
+                override fun onClick(): Boolean {
+                    runOnUiThread {
+                        showSettings()
+                    }
+                    return true
+                }
+            })
         }
         btnSwitchStreams.setOnClickListener {
             if (!player.isAdPlaying) {
@@ -167,21 +218,30 @@ class PlayerActivity : BaseActivity() {
                 }
             }
         }
-        btnChangeSettings.setOnClickListener {
-            getSettings().let { settings ->
-                AlertDialog.Builder(this@PlayerActivity).setItems(
-                    settings.map { it.name }.toTypedArray()
-                ) { dialog, which ->
-                    when (settings[which]) {
-                        PlayerSettings.SUBTITLES -> showSubtitleDialog()
-                        PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
-                        PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
-                        PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
-                        PlayerSettings.SPEED -> showSpeedSelectionDialog()
-                    }
-                    dialog.dismiss()
-                }.create().show()
+        btnPlayPause.setOnClickListener {
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.play()
             }
+        }
+    }
+
+    private fun showSettings() {
+
+        getSettings().let { settings ->
+            AlertDialog.Builder(this@PlayerActivity).setItems(
+                settings.map { it.name }.toTypedArray()
+            ) { dialog, which ->
+                when (settings[which]) {
+                    PlayerSettings.SUBTITLES -> showSubtitleDialog()
+                    PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
+                    PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
+                    PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
+                    PlayerSettings.SPEED -> showSpeedSelectionDialog()
+                }
+                dialog.dismiss()
+            }.create().show()
         }
     }
 
@@ -289,7 +349,6 @@ class PlayerActivity : BaseActivity() {
         binding.apply {
             loadingIndicator.isVisible = false
             retryBtn.isVisible = false
-            npoVideoPlayer.attachPlayer(player)
         }
     }
 
@@ -298,11 +357,24 @@ class PlayerActivity : BaseActivity() {
             PlayerActivity::javaClass.name, "Loading stream in player failed with result:$throwable"
         )
         throwable?.printStackTrace()
-        binding.apply {
-            loadingIndicator.isVisible = false
-            retryBtn.isVisible = true
-            retryBtn.setOnClickListener {
-                retry.invoke()
+        when (throwable) {
+            is NPOPlayerException.StreamLinkException -> {
+                binding.apply {
+                    loadingIndicator.isVisible = false
+                    retryBtn.isVisible =
+                        throwable is NPOPlayerException.StreamLinkException.WillComeAvailableSoonException
+                    Toast.makeText(baseContext, throwable.message, Toast.LENGTH_LONG).show()
+                }
+            }
+
+            else -> {
+                binding.apply {
+                    loadingIndicator.isVisible = false
+                    retryBtn.isVisible = true
+                    retryBtn.setOnClickListener {
+                        retry.invoke()
+                    }
+                }
             }
         }
     }
@@ -360,7 +432,6 @@ class PlayerActivity : BaseActivity() {
             fullscreen = false
             runOnUiThread {
                 binding.btnSwitchStreams.isVisible = true
-                binding.btnChangeSettings.isVisible = true
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 doSystemUiVisibility(false)
             }
@@ -370,7 +441,6 @@ class PlayerActivity : BaseActivity() {
             fullscreen = true
             runOnUiThread {
                 binding.btnSwitchStreams.isVisible = false
-                binding.btnChangeSettings.isVisible = false
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 doSystemUiVisibility(true)
             }
@@ -389,6 +459,7 @@ class PlayerActivity : BaseActivity() {
         private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
         private const val NOTIFICATION_ID = 1
         private const val MEDIA_SESSION_TAG = "npo-player-mediaSession"
+
         @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
             val offlineSource: NPOOfflineSourceConfig?

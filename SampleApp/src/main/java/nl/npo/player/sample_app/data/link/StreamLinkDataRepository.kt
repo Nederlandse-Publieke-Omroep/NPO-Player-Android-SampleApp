@@ -50,6 +50,20 @@ object StreamLinkDataRepository : LinkRepository {
                 uiEnabled = false
             ),
             SourceWrapper(
+                title = "Fragment: Op1 - POMS_BV_20012834",
+                uniqueId = "POMS_BV_20012834",
+                getStreamLink = true,
+                autoPlay = true,
+                imageUrl = "https://images.npo.nl/header/2560x1440/op1_cdn_header-1677598703.jpg"
+            ),
+            SourceWrapper(
+                title = "Fragment: Op1 POMS_BV_20012835",
+                uniqueId = "POMS_BV_20012835",
+                getStreamLink = true,
+                autoPlay = true,
+                imageUrl = "https://images.npo.nl/header/2560x1440/op1_cdn_header-1677598703.jpg",
+            ),
+            SourceWrapper(
                 title = "Radio 1: LI_RA1_8167349",
                 uniqueId = "LI_RA1_8167349",
                 getStreamLink = true,
@@ -99,6 +113,13 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_FUNX_837073",
                 getStreamLink = true,
                 autoPlay = false
+            ),
+            SourceWrapper(
+                title = "POW_05216736 - Age restriction",
+                uniqueId = "POW_05216736",
+                getStreamLink = true,
+                autoPlay = true,
+                asPlusUser = false
             )
         )
     }
