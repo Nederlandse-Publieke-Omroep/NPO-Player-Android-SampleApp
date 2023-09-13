@@ -123,7 +123,9 @@ kapt {
 
 dependencies {
     implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
-    implementation "nl.npo.player.library:npotag:$libVersionName"
+    ACCImplementation "nl.npo.player.library:sterAds:$libVersionName"
+    PRODImplementation "nl.npo.player.library:sterAds:$libVersionName"
+
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"

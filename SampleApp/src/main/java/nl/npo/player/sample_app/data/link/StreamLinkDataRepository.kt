@@ -70,6 +70,12 @@ object StreamLinkDataRepository : LinkRepository {
                 autoPlay = false
             ),
             SourceWrapper(
+                title = "Radio 1 zonder DVR: LI_RADIO1_300877",
+                uniqueId = "LI_RADIO1_300877",
+                getStreamLink = true,
+                autoPlay = false
+            ),
+            SourceWrapper(
                 title = "Radio 2: LI_RA2_8167353",
                 uniqueId = "LI_RA2_8167353",
                 getStreamLink = true,
