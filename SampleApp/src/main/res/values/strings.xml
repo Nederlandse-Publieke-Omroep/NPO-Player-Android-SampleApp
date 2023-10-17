@@ -11,7 +11,9 @@
     <string name="btn_offline_content">Go to Offline list</string>
     <string name="manual_prid_hint">Manual PRID</string>
     <!--    For testing S&A Audio Receiver-->
-<!--    <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
-    <!--    For testing NPO Player Receiver-->
+    <!--    <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
+    <!--    NPO Player Receiver-->
     <string name="cast_receiver_id" translatable="false">CC38EB17</string>
+    <!--    For acceptance testing NPO Player Receiver-->
+    <!--    <string name="cast_receiver_id" translatable="false">B2FD41AA</string>-->
 </resources>
