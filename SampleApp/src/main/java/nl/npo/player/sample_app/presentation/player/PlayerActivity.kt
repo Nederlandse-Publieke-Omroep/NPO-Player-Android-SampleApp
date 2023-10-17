@@ -123,7 +123,7 @@ class PlayerActivity : BaseActivity() {
             binding.btnPlayPause.isVisible = false
         }
 
-        override fun onCanStartPlayingOnWiFi() {
+        override fun onCanStartPlayingBecauseSwitchedToWiFi() {
             player?.play()
         }
     }
