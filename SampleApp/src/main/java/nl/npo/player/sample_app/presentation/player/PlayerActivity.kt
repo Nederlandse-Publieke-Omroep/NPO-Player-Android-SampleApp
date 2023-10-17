@@ -35,6 +35,7 @@ import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
 import nl.npo.player.sample_app.SampleApplication
+import nl.npo.player.sample_app.data.ads.AdManagerProvider
 import nl.npo.player.sample_app.databinding.ActivityPlayerBinding
 import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
@@ -95,21 +96,21 @@ class PlayerActivity : BaseActivity() {
 
         override fun onPaused(currentPosition: Double) {
             binding.btnPlayPause.apply {
-                isVisible = true
+                isVisible = !fullScreenHandler.isFullscreen
                 setImageResource(android.R.drawable.ic_media_play)
             }
         }
 
         override fun onPlaying(currentPosition: Double) {
             binding.btnPlayPause.apply {
-                isVisible = true
+                isVisible = !fullScreenHandler.isFullscreen
                 setImageResource(android.R.drawable.ic_media_pause)
             }
         }
 
         override fun onSourceLoaded(currentPosition: Double, playerSource: PlayerSource) {
             binding.btnPlayPause.apply {
-                isVisible = true
+                isVisible = !fullScreenHandler.isFullscreen
                 setImageResource(android.R.drawable.ic_media_play)
             }
         }
@@ -158,6 +159,7 @@ class PlayerActivity : BaseActivity() {
                     isUiEnabled = sourceWrapper.uiEnabled,
                     supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css"
                 ),
+                adManager = AdManagerProvider.getAdManager(),
                 pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
             ).apply {
@@ -431,7 +433,10 @@ class PlayerActivity : BaseActivity() {
         override fun onFullscreenExitRequested() {
             fullscreen = false
             runOnUiThread {
-                binding.btnSwitchStreams.isVisible = true
+                binding.apply {
+                    btnSwitchStreams.isVisible = true
+                    btnPlayPause.isVisible = true
+                }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 doSystemUiVisibility(false)
             }
@@ -440,7 +445,10 @@ class PlayerActivity : BaseActivity() {
         override fun onFullscreenRequested() {
             fullscreen = true
             runOnUiThread {
-                binding.btnSwitchStreams.isVisible = false
+                binding.apply {
+                    btnSwitchStreams.isVisible = false
+                    btnPlayPause.isVisible = false
+                }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 doSystemUiVisibility(true)
             }
