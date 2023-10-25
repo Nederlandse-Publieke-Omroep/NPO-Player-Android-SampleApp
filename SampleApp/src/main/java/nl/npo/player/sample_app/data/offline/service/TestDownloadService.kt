@@ -14,7 +14,7 @@ class TestDownloadService : NPODownloadService() {
         return Notification.Builder.recoverBuilder(
             applicationContext,
             super.getForegroundNotification(downloadStates)
-        ).setSmallIcon(com.bitmovin.player.R.drawable.ic_audiotrack_dark).setColor(Color.RED)
+        ).setSmallIcon(androidx.mediarouter.R.drawable.ic_audiotrack_dark).setColor(Color.RED)
             .setLargeIcon(
                 Icon.createWithResource(applicationContext, R.mipmap.ic_launcher)
             )
