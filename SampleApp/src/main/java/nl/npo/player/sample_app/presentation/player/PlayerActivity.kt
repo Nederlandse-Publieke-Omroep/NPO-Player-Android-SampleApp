@@ -122,6 +122,10 @@ class PlayerActivity : BaseActivity() {
         override fun onSourceLoad(currentPosition: Double) {
             binding.btnPlayPause.isVisible = false
         }
+
+        override fun onCanStartPlayingBecauseSwitchedToWiFi() {
+            player?.play()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,7 +162,9 @@ class PlayerActivity : BaseActivity() {
                     npoPlayerConfig = NPOPlayerBitmovinConfig(
                         autoPlayEnabled = sourceWrapper.autoPlay,
                         isUiEnabled = sourceWrapper.uiEnabled,
-                        supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css"
+                        supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css",
+                        shouldPlayOnCellularNetworks = false,
+                        shouldPauseWhenBecomingNoisy = true
                     ),
                     adManager = AdManagerProvider.getAdManager(),
                     pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
