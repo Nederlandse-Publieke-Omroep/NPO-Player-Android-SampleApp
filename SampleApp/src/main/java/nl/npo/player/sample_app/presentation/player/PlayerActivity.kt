@@ -163,7 +163,7 @@ class PlayerActivity : BaseActivity() {
                         autoPlayEnabled = sourceWrapper.autoPlay,
                         isUiEnabled = sourceWrapper.uiEnabled,
                         supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css",
-                        shouldPlayOnCellularNetworks = false,
+                        shouldPauseOnSwitchToCellularNetwork = true,
                         shouldPauseWhenBecomingNoisy = true
                     ),
                     adManager = AdManagerProvider.getAdManager(),
