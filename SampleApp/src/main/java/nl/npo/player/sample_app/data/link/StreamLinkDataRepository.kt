@@ -33,6 +33,14 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg"
             ),
             SourceWrapper(
+                title = "Flikken Maastricht: AT_300002877 - as START user",
+                uniqueId = "AT_300002877",
+                getStreamLink = true,
+                autoPlay = false,
+                asPlusUser = false,
+                imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg"
+            ),
+            SourceWrapper(
                 title = "Nederland Zingt: VPWON_1336246 - Start user",
                 uniqueId = "VPWON_1336246",
                 getStreamLink = true,
@@ -121,11 +129,18 @@ object StreamLinkDataRepository : LinkRepository {
                 autoPlay = false
             ),
             SourceWrapper(
-                title = "POW_05216736 - Age restriction",
+                title = "POW_05216736 - Age restriction - As START user",
                 uniqueId = "POW_05216736",
                 getStreamLink = true,
                 autoPlay = true,
                 asPlusUser = false
+            ),
+            SourceWrapper(
+                title = "POW_05216736 - Age restriction - As PLUS user",
+                uniqueId = "POW_05216736",
+                getStreamLink = true,
+                autoPlay = true,
+                asPlusUser = true
             )
         )
     }
