@@ -3,9 +3,9 @@ package nl.npo.player.sample_app
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
-import com.bitmovin.player.casting.BitmovinCastManager
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import dagger.hilt.android.HiltAndroidApp
+import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.AnalyticsConfiguration
 import nl.npo.player.library.domain.analytics.model.AnalyticsEnvironment
@@ -13,6 +13,7 @@ import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.domain.common.enums.Environment
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.sample_app.data.offline.service.TestDownloadService
+import nl.npo.player.sample_app.presentation.cast.CastOptionsProvider
 import nl.npo.tag.sdk.NpoTag
 import nl.npo.tag.sdk.atinternet.ATInternetPlugin
 import nl.npo.tag.sdk.govolteplugin.GovoltePlugin
@@ -40,8 +41,6 @@ class SampleApplication : Application() {
             withDebug = true,
             environment = analyticsEnvironment
         )
-
-        BitmovinCastManager.initialize()
     }
 
     fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
@@ -70,6 +69,8 @@ class SampleApplication : Application() {
             )
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
+
+        NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
         isPlayerInitiatedYetInternal = true
     }
 

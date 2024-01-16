@@ -1,11 +1,9 @@
 package nl.npo.player.sample_app.presentation.cast
 
 import android.content.Context
-import android.os.Build
+import androidx.annotation.StringRes
 import com.bitmovin.player.casting.BitmovinCastOptionsProvider
 import com.google.android.gms.cast.framework.CastOptions
-import com.google.android.gms.cast.framework.media.CastMediaOptions
-import nl.npo.player.sample_app.R
 
 /**
  * This is currently a wrapper around the BitMovin cast provider. In the future we will either move
@@ -15,14 +13,32 @@ import nl.npo.player.sample_app.R
  */
 class CastOptionsProvider : BitmovinCastOptionsProvider() {
     override fun getCastOptions(context: Context): CastOptions {
+        super.getCastOptions(context)
         return CastOptions.Builder()
-            .apply {
-                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
-                    setCastMediaOptions(
-                        CastMediaOptions.Builder().setMediaSessionEnabled(false).build()
-                    )
-                }
+            .with(super.getCastOptions(context))
+//            .setReceiverApplicationId(context.getString(getReceiverID())) --> No longer needed as it's set by NPOCasting.initializeCasting() in the SampleApplication
+            .build()
+    }
+
+    private fun CastOptions.Builder.with(castOptions: CastOptions): CastOptions.Builder {
+        return this
+            .setSupportedNamespaces(castOptions.supportedNamespaces)
+            .run {
+                castOptions.castMediaOptions?.let {
+                    setCastMediaOptions(it)
+                } ?: this
             }
-            .setReceiverApplicationId(context.getString(R.string.cast_receiver_id)).build()
+            .setLaunchOptions(castOptions.launchOptions)
+            .setReceiverApplicationId(castOptions.receiverApplicationId)
+            .setEnableReconnectionService(castOptions.enableReconnectionService)
+            .setResumeSavedSession(castOptions.resumeSavedSession)
+            .setStopReceiverApplicationWhenEndingSession(castOptions.stopReceiverApplicationWhenEndingSession)
+    }
+
+    companion object {
+        @StringRes
+        fun getReceiverID(): Int {
+            return nl.npo.player.library.library.R.string.npo_player_chromecast_receiver_id_production
+        }
     }
 }
