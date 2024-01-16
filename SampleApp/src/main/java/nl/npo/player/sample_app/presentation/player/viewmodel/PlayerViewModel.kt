@@ -42,7 +42,9 @@ class PlayerViewModel @Inject constructor(
                             StreamRetrievalState.Success(
                                 source.copy(
                                     overrideStartOffset = item.startOffset,
-                                    overrideImageUrl = source.imageUrl ?: item.imageUrl
+                                    overrideImageUrl = source.imageUrl ?: item.imageUrl,
+                                    overrideMetadata = source.metadata?.toMutableMap()
+                                        ?.apply { set("appletest", "true") }
                                 ),
                                 item
                             )
@@ -62,23 +64,9 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
 //            withContext(Dispatchers.IO) {
 //                delay(61 * 1000)
-                withContext(Dispatchers.Main) {
-                    npoPlayer.loadStream(
-                        npoSourceConfig.copy(
-                            overrideMetadata = npoSourceConfig.metadata?.toMutableMap()?.apply {
-                                put(
-                                    "appletest", "true"
-                                )
-                            })
-                    )
-//                npoPlayer.loadStreamWithDRMRefresh(
-//                    npoSourceConfig.copy(
-//                            overrideMetadata = npoSourceConfig.metadata?.toMutableMap()?.apply {
-//                                put(
-//                                    "appletest", "true"
-//                                )
-//                            })
-//                )
+            withContext(Dispatchers.Main) {
+                npoPlayer.loadStream(npoSourceConfig)
+//                npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig)
 //                }
             }
         }
