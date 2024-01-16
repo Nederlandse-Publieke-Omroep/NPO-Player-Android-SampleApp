@@ -29,7 +29,6 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.bitmovin.bridge.OnWebButtonClickListener
 import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
