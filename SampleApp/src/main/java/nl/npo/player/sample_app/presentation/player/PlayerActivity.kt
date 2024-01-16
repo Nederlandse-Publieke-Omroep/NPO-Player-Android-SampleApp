@@ -29,7 +29,6 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.bitmovin.bridge.OnWebButtonClickListener
 import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
@@ -222,14 +221,12 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
-            setSettingsButtonOnClickListener(object : OnWebButtonClickListener {
-                override fun onClick(): Boolean {
-                    runOnUiThread {
-                        showSettings()
-                    }
-                    return true
+            setSettingsButtonOnClickListener {
+                runOnUiThread {
+                    showSettings()
                 }
-            })
+                true
+            }
         }
         btnSwitchStreams.setOnClickListener {
             if (player?.isAdPlaying != true) {
@@ -371,7 +368,12 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
-        player?.loadStream(npoSourceConfig = npoSourceConfig.copy(overrideTitle = "SampleApp: ${npoSourceConfig.title}"))
+        player?.let {
+            playerViewModel.loadStream(
+                npoPlayer = it,
+                npoSourceConfig = npoSourceConfig.copy(overrideTitle = "SampleApp: ${npoSourceConfig.title}")
+            )
+        }
         binding.apply {
             loadingIndicator.isVisible = false
             retryBtn.isVisible = false
