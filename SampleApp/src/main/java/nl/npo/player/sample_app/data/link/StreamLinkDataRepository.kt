@@ -50,6 +50,14 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg"
             ),
             SourceWrapper(
+                title = "Karen Piri: POW_05275080",
+                uniqueId = "POW_05275080",
+                getStreamLink = true,
+                autoPlay = true,
+                imageUrl = "https://images.npo.nl/header/2560x1440/Karen-Pirie-Key_Art_cdn_header-1673600845.jpg",
+                uiEnabled = true
+            ),
+            SourceWrapper(
                 title = "Karen Piri: POW_05275080 - NO UI",
                 uniqueId = "POW_05275080",
                 getStreamLink = true,
@@ -141,6 +149,14 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 autoPlay = true,
                 asPlusUser = true
+            ),
+            SourceWrapper(
+                title = "De Laatste Walvisvaarders: PREPR_RA1_17306750",
+                uniqueId = "PREPR_RA1_17306750",
+                getStreamLink = true,
+                offlineDownloadAllowed = true,
+                imageUrl = "https://images.poms.omroep.nl/image/s1072/c1072x603/s1072x603>/2012559.jpg",
+                autoPlay = false
             )
         )
     }

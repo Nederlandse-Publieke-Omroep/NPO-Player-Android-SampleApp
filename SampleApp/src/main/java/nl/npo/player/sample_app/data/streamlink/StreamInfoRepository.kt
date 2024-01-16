@@ -1,5 +1,6 @@
 package nl.npo.player.sample_app.data.streamlink
 
+import android.util.Log
 import nl.npo.player.sample_app.BuildConfig
 import nl.npo.player.sample_app.data.jwt.JWTUtils
 import nl.npo.player.sample_app.domain.TimeProvider
@@ -34,7 +35,7 @@ class StreamInfoRepository @Inject constructor(
                 jwtUtils.getJWTsWithClaims(
                     claims,
                     if (asPlusUser) BuildConfig.TOKEN_SIGNATURE_PLUS else BuildConfig.TOKEN_SIGNATURE_START
-                )
+                ).also { Log.d("SampleAppTest", "JWT: $it") }
             )
         )
     }

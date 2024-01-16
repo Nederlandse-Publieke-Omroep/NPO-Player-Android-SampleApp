@@ -222,14 +222,12 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
-            setSettingsButtonOnClickListener(object : OnWebButtonClickListener {
-                override fun onClick(): Boolean {
-                    runOnUiThread {
-                        showSettings()
-                    }
-                    return true
+            setSettingsButtonOnClickListener {
+                runOnUiThread {
+                    showSettings()
                 }
-            })
+                true
+            }
         }
         btnSwitchStreams.setOnClickListener {
             if (player?.isAdPlaying != true) {
@@ -371,7 +369,12 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
-        player?.loadStream(npoSourceConfig = npoSourceConfig.copy(overrideTitle = "SampleApp: ${npoSourceConfig.title}"))
+        player?.let {
+            playerViewModel.loadStream(
+                npoPlayer = it,
+                npoSourceConfig = npoSourceConfig.copy(overrideTitle = "SampleApp: ${npoSourceConfig.title}")
+            )
+        }
         binding.apply {
             loadingIndicator.isVisible = false
             retryBtn.isVisible = false
