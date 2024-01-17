@@ -40,6 +40,7 @@ import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
 import nl.npo.player.sample_app.model.StreamRetrievalState
 import nl.npo.player.sample_app.presentation.BaseActivity
+import nl.npo.player.sample_app.presentation.cast.CastOptionsProvider
 import nl.npo.player.sample_app.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sample_app.presentation.player.enums.PlayerSettings
 import nl.npo.player.sample_app.presentation.player.viewmodel.PlayerViewModel
@@ -175,7 +176,7 @@ class PlayerActivity : BaseActivity() {
                     eventEmitter.addListener(onPlayPauseListener)
                     npoNotificationManager = setupPlayerNotificationManager(
                         NOTIFICATION_CHANNEL_ID,
-                        R.string.cast_receiver_id,
+                        CastOptionsProvider.getReceiverID(),
                         R.drawable.ic_launcher_foreground,
                         NOTIFICATION_ID,
                         mediaSession.sessionToken
@@ -226,6 +227,15 @@ class PlayerActivity : BaseActivity() {
                     showSettings()
                 }
                 true
+            }
+            setPlayPauseButtonOnClickListener { isPlayPressed ->
+                runOnUiThread {
+                    Toast.makeText(
+                        context,
+                        "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
         btnSwitchStreams.setOnClickListener {
