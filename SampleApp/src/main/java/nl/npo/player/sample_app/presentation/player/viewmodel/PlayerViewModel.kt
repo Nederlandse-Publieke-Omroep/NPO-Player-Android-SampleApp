@@ -42,9 +42,17 @@ class PlayerViewModel @Inject constructor(
                             StreamRetrievalState.Success(
                                 source.copy(
                                     overrideStartOffset = item.startOffset,
-                                    overrideImageUrl = source.imageUrl ?: item.imageUrl,
+                                    overrideImageUrl = item.getImageUrl(source),
+                                    overrideAutoPlay = item.autoPlay,
                                     overrideMetadata = source.metadata?.toMutableMap()
-                                        ?.apply { set("appletest", "true") }
+                                        ?.apply {
+                                            set(
+                                                "appletest",
+                                                "true"
+                                            )
+                                        }, // We add this so the Cast Receiver shows the debug log when casting.
+                                    overrideTitle = if (item.overrideStreamLinkTitleAndDescription) "SampleApp override title: ${item.title}" else source.title,
+                                    overrideDescription = if (item.overrideStreamLinkTitleAndDescription) "SampleApp override description: ${item.testingDescription}" else source.description
                                 ),
                                 item
                             )
@@ -58,6 +66,12 @@ class PlayerViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? {
+        return if (preferThisImageUrlOverStreamLink) {
+            imageUrl ?: npoSourceConfig.imageUrl
+        } else npoSourceConfig.imageUrl ?: imageUrl
     }
 
     fun loadStream(npoPlayer: NPOPlayer, npoSourceConfig: NPOSourceConfig) {

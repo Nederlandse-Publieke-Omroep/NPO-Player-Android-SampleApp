@@ -18,7 +18,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.attachToLifecycle
-import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
@@ -40,7 +39,6 @@ import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
 import nl.npo.player.sample_app.model.StreamRetrievalState
 import nl.npo.player.sample_app.presentation.BaseActivity
-import nl.npo.player.sample_app.presentation.cast.CastOptionsProvider
 import nl.npo.player.sample_app.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sample_app.presentation.player.enums.PlayerSettings
 import nl.npo.player.sample_app.presentation.player.viewmodel.PlayerViewModel
@@ -160,11 +158,12 @@ class PlayerActivity : BaseActivity() {
                 player = NPOPlayerLibrary.getPlayer(
                     context = binding.root.context,
                     npoPlayerConfig = NPOPlayerBitmovinConfig(
-                        autoPlayEnabled = sourceWrapper.autoPlay,
+                        autoPlayEnabled = false,
                         isUiEnabled = sourceWrapper.uiEnabled,
-                        supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css",
+                        supplementalPlayerUiCss = null, // "file:///android_asset/player_supplemental_styling.css",
                         shouldPauseOnSwitchToCellularNetwork = true,
-                        shouldPauseWhenBecomingNoisy = true
+                        shouldPauseWhenBecomingNoisy = true,
+                        applyLivestreamCastWorkAround = true
                     ),
                     adManager = AdManagerProvider.getAdManager(),
                     pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
@@ -176,7 +175,7 @@ class PlayerActivity : BaseActivity() {
                     eventEmitter.addListener(onPlayPauseListener)
                     npoNotificationManager = setupPlayerNotificationManager(
                         NOTIFICATION_CHANNEL_ID,
-                        CastOptionsProvider.getReceiverID(),
+                        R.string.app_name,
                         R.drawable.ic_launcher_foreground,
                         NOTIFICATION_ID,
                         mediaSession.sessionToken
@@ -381,7 +380,7 @@ class PlayerActivity : BaseActivity() {
         player?.let {
             playerViewModel.loadStream(
                 npoPlayer = it,
-                npoSourceConfig = npoSourceConfig.copy(overrideTitle = "SampleApp: ${npoSourceConfig.title}")
+                npoSourceConfig = npoSourceConfig
             )
         }
         binding.apply {
