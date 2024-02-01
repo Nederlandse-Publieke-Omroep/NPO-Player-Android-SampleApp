@@ -169,8 +169,23 @@ object StreamLinkDataRepository : LinkRepository {
                 testingDescription = "Playback Audio",
                 uniqueId = "LI_RA1_8167349",
                 getStreamLink = true,
+                autoPlay = true
+            ),
+            SourceWrapper(
+                title = "Radio 1: LI_RA1_8167349",
+                testingDescription = "Playback Audio - Auto play - startPos",
+                uniqueId = "LI_RA1_8167349",
+                getStreamLink = true,
                 startOffset = -(10 * 60.0),
                 autoPlay = true
+            ),
+            SourceWrapper(
+                title = "Radio 1: LI_RA1_8167349",
+                testingDescription = "Playback Audio - NO Auto play - startPos",
+                uniqueId = "LI_RA1_8167349",
+                getStreamLink = true,
+                startOffset = -(10 * 60.0),
+                autoPlay = false
             ),
             SourceWrapper(
                 title = "Radio 2: LI_RA2_8167353",
