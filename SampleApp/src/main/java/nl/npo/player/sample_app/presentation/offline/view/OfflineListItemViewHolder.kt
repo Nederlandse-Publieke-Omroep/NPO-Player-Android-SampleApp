@@ -29,7 +29,7 @@ class OfflineListItemViewHolder private constructor(
         onItemLongClickListener: (SourceWrapper) -> Boolean
     ) {
         this.sourceWrapper = sourceWrapper
-        binding.tvTitle.text = sourceWrapper.title
+        binding.itemTitle.text = sourceWrapper.title
         handleProgress()
         downloadStateLiveData?.removeObservers(binding.root.context as LifecycleOwner)
         sourceWrapper.npoOfflineContent?.apply {
