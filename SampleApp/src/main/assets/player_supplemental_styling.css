@@ -11,6 +11,50 @@
     --npo-player-textcolor: #ffffff;
     --npo-player-bufferingcolor: rgba(100, 0, 176, 0.1);
 }
+video::cue(.yellow) {color:cyan}
+
+video::cue(.white) {color:#3700B3}
+
+c\.white {
+  color: #3700B3;
+}
+
+.c\.yellow {
+  color: #3700B3;
+}
+
+.c\\.yellow {
+  color: yellow;
+}
+
+c.cyan {
+  color: #3700B3;
+}
+
+c.yellow {
+  color: yellow;
+}
+
+.bmpui-ui-subtitle-overlay {
+    c.yellow {
+      color: yellow;
+    }
+    .green {
+        color: green;
+    }
+
+    .cyan {
+        color: cyan;
+    }
+
+    .white {
+        color: white;
+    }
+
+    .yellow {
+        color: yellow;
+    }
+}
 
 /*
 .bmpui-npo-player .bmpui-ui-volumetogglebutton {

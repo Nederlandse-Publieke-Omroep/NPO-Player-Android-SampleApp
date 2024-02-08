@@ -160,7 +160,7 @@ class PlayerActivity : BaseActivity() {
                     npoPlayerConfig = NPOPlayerBitmovinConfig(
                         autoPlayEnabled = false,
                         isUiEnabled = sourceWrapper.uiEnabled,
-                        supplementalPlayerUiCss = null, // "file:///android_asset/player_supplemental_styling.css",
+                        supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css",
                         shouldPauseOnSwitchToCellularNetwork = true,
                         shouldPauseWhenBecomingNoisy = true,
                         applyLivestreamCastWorkAround = true
