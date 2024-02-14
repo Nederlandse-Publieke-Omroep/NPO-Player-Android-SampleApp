@@ -11,6 +11,8 @@
 
     <TextView
         android:id="@+id/text"
+        android:textAppearance="?textAppearanceBody1"
+        android:textStyle="bold"
         android:layout_width="0dp"
         android:layout_marginEnd="@dimen/general_padding_half"
         android:layout_height="wrap_content"
@@ -18,6 +20,7 @@
 
     <TextView
         android:id="@+id/value"
+        android:textAppearance="?textAppearanceBody1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>

@@ -5,16 +5,18 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import nl.npo.player.sample_app.presentation.settings.model.SettingsItem
+import nl.npo.player.sample_app.presentation.settings.model.SettingsKey
+import nl.npo.player.sample_app.presentation.settings.model.SettingsOption
 
 class SettingsAdapter(
-    private val onSwitchAction: (String, Boolean) -> Unit,
-    private val onPickerAction: (String, Enum<*>) -> Unit
+    private val onSettingChanged: (SettingsKey, SettingsOption) -> Unit,
 ) : ListAdapter<SettingsItem, ViewHolder>(diffCallback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (viewType) {
-            ViewType.Switch.ordinal -> SettingBooleanViewHolder.create(parent, onSwitchAction)
+            ViewType.Switch.ordinal -> SettingBooleanViewHolder.create(parent, onSettingChanged)
+            ViewType.Picker.ordinal -> SettingPickerViewHolder.create(parent, onSettingChanged)
             else -> error("No viewholder implemented for viewType $viewType")
-//            ViewType.Picker.ordinal ->
         }
     }
 
@@ -22,6 +24,7 @@ class SettingsAdapter(
         val item = getItem(position)
         when(holder) {
             is SettingBooleanViewHolder -> holder.bind(item as SettingsItem.Switch)
+            is SettingPickerViewHolder -> holder.bind(item as SettingsItem.Picker)
         }
     }
 

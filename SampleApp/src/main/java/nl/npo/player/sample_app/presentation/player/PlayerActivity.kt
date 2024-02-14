@@ -29,7 +29,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
+import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
@@ -141,7 +141,9 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        loadSource(sourceWrapper)
+        playerViewModel.getPlayerConfig { playerConfig ->
+            loadSource(sourceWrapper, playerConfig)
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -151,7 +153,7 @@ class PlayerActivity : BaseActivity() {
         super.onConfigurationChanged(newConfig)
     }
 
-    private fun loadSource(sourceWrapper: SourceWrapper) {
+    private fun loadSource(sourceWrapper: SourceWrapper, config: NPOPlayerConfig) {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title)
@@ -159,13 +161,7 @@ class PlayerActivity : BaseActivity() {
             try {
                 player = NPOPlayerLibrary.getPlayer(
                     context = binding.root.context,
-                    npoPlayerConfig = NPOPlayerBitmovinConfig(
-                        autoPlayEnabled = sourceWrapper.autoPlay,
-                        isUiEnabled = sourceWrapper.uiEnabled,
-                        supplementalPlayerUiCss = "file:///android_asset/player_supplemental_styling.css",
-                        shouldPauseOnSwitchToCellularNetwork = true,
-                        shouldPauseWhenBecomingNoisy = true
-                    ),
+                    npoPlayerConfig = config,
                     adManager = AdManagerProvider.getAdManager(),
                     pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                         ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
@@ -222,12 +218,15 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
-            setSettingsButtonOnClickListener {
-                runOnUiThread {
-                    showSettings()
+            playerViewModel.hasCustomSettings {
+                setSettingsButtonOnClickListener {
+                    runOnUiThread {
+                        showSettings()
+                    }
+                    true
                 }
-                true
             }
+
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
                     Toast.makeText(
@@ -240,11 +239,12 @@ class PlayerActivity : BaseActivity() {
         }
         btnSwitchStreams.setOnClickListener {
             if (player?.isAdPlaying != true) {
-                val newSource = linkViewModel.urlLinkList.value?.union(
+                linkViewModel.urlLinkList.value?.union(
                     linkViewModel.streamLinkList.value ?: emptyList()
-                )?.random()
-                newSource?.let {
-                    loadSource(it)
+                )?.random()?.let { newSource ->
+                    playerViewModel.getPlayerConfig { config ->
+                        loadSource(newSource, config)
+                    }
                 }
             }
         }
@@ -260,7 +260,6 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showSettings() {
-
         getSettings().let { settings ->
             AlertDialog.Builder(this@PlayerActivity).setItems(
                 settings.map { it.name }.toTypedArray()

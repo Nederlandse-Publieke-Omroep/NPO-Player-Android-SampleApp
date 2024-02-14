@@ -10,12 +10,7 @@ import kotlinx.coroutines.flow.map
 import nl.npo.player.sample_app.data.model.SettingsTypePref
 import nl.npo.player.sample_app.data.model.StylingPref
 import nl.npo.player.sample_app.data.model.UserTypePref
-import nl.npo.player.sample_app.data.model.toDomain
-import nl.npo.player.sample_app.data.model.toPref
 import nl.npo.player.sample_app.data.settings.module.SettingsDataStore
-import nl.npo.player.sample_app.domain.model.SettingsType
-import nl.npo.player.sample_app.domain.model.Styling
-import nl.npo.player.sample_app.domain.model.UserType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,43 +21,43 @@ class SettingsPreferences @Inject constructor(
     object Keys {
         val Styling = stringPreferencesKey("styling")
         val UserType = stringPreferencesKey("userType")
-        val SettingsType = stringPreferencesKey("settingsType")
+        val SettingsType = booleanPreferencesKey("settingsType")
         val ShowUi = booleanPreferencesKey("showUi")
         val AutoPlayEnabled = booleanPreferencesKey("autoPlayEnabled")
         val PauseWhenBecomingNoisy = booleanPreferencesKey("pauseWhenBecomingNoisy")
         val PauseOnSwitchToCellularNetwork = booleanPreferencesKey("pauseOnSwitchToCellularNetwork")
     }
 
-    val styling: Flow<Styling>
+    val styling: Flow<StylingPref>
         get() = dataStore.data.map { prefs ->
-            StylingPref.getByKey(prefs[Keys.Styling].orEmpty()).toDomain()
+            StylingPref.getByKey(prefs[Keys.Styling].orEmpty())
         }
 
-    suspend fun setStyling(value: Styling) {
+    suspend fun setStyling(value: StylingPref) {
         dataStore.edit { prefs ->
-            prefs[Keys.Styling] = value.toPref().key
+            prefs[Keys.Styling] = value.key
         }
     }
 
-    val userType: Flow<UserType>
+    val userType: Flow<UserTypePref>
         get() = dataStore.data.map { prefs ->
-            UserTypePref.getByKey(prefs[Keys.UserType].orEmpty()).toDomain()
+            UserTypePref.getByKey(prefs[Keys.UserType].orEmpty())
         }
 
-    suspend fun setUserType(value: UserType) {
+    suspend fun setUserType(value: UserTypePref) {
         dataStore.edit { prefs ->
-            prefs[Keys.UserType] = value.toPref().key
+            prefs[Keys.UserType] = value.key
         }
     }
 
-    val settingsType: Flow<SettingsType>
+    val showCustomPlayerSettings: Flow<Boolean>
         get() = dataStore.data.map { prefs ->
-            SettingsTypePref.getByKey(prefs[Keys.SettingsType].orEmpty()).toDomain()
+            prefs[Keys.SettingsType] ?: true
         }
 
-    suspend fun setSettingsType(value: SettingsType) {
+    suspend fun setShowCustomSettings(show: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.SettingsType] = value.toPref().key
+            prefs[Keys.SettingsType] = show
         }
     }
 

@@ -12,8 +12,8 @@ interface SettingsRepository {
     val userType: Flow<UserType>
     suspend fun setUserType(type: UserType)
 
-    val settingsType: Flow<SettingsType>
-    suspend fun setSettingsType(type: SettingsType)
+    val showCustomSettings: Flow<Boolean>
+    suspend fun setShowCustomSettings(show: Boolean)
 
     val showUi: Flow<Boolean>
     suspend fun setShowUi(show: Boolean)

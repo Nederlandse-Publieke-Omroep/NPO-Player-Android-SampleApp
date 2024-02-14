@@ -7,10 +7,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.view.inputmethod.EditorInfo
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.withStarted
 import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -21,6 +23,7 @@ import nl.npo.player.sample_app.model.SourceWrapper
 import nl.npo.player.sample_app.presentation.list.MainListAdapter
 import nl.npo.player.sample_app.presentation.offline.OfflineActivity
 import nl.npo.player.sample_app.presentation.player.PlayerActivity
+import nl.npo.player.sample_app.presentation.settings.SettingsBottomSheetDialog
 import nl.npo.player.sample_app.presentation.viewmodel.LinksViewModel
 
 @AndroidEntryPoint
@@ -64,6 +67,15 @@ class MainActivity : BaseActivity() {
         return true
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == R.id.menu_settings) {
+            showSettings()
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun ActivityMainBinding.setupViews() {
         rvLoadUrlDirectly.adapter = urlLinkAdapter
         rvStreamLink.adapter = streamLinkAdapter
@@ -103,6 +115,10 @@ class MainActivity : BaseActivity() {
                 item
             )
         )
+    }
+
+    private fun showSettings() {
+        SettingsBottomSheetDialog.newInstance().show(supportFragmentManager, null)
     }
 
     private val requestPermissionLauncher = registerForActivityResult(

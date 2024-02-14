@@ -19,7 +19,6 @@ data class SourceWrapper(
         uniqueId = uniqueId,
         streamUrl = streamUrl!!,
         startOffset = startOffset,
-        autoPlay = autoPlay,
         imageUrl = imageUrl
     ) else null,
     val npoOfflineContent: NPOOfflineContent? = null,
