@@ -6,6 +6,7 @@ import java.io.Serializable
 
 data class SourceWrapper(
     val title: String,
+    val testingDescription: String = "",
     val uniqueId: String,
     val getStreamLink: Boolean,
     val streamUrl: String? = null,
@@ -13,7 +14,9 @@ data class SourceWrapper(
     val autoPlay: Boolean = false,
     val uiEnabled: Boolean = true,
     val offlineDownloadAllowed: Boolean = false,
-    val imageUrl: String? = null,
+    val imageUrl: String? = "https://cdn.npoplayer.nl/posters/default-npo-poster.png",
+    val preferThisImageUrlOverStreamLink: Boolean = false,
+    val overrideStreamLinkTitleAndDescription: Boolean = false,
     val npoSourceConfig: NPOSourceConfig? = if (!getStreamLink) MyNPOSourceConfig(
         title = title,
         uniqueId = uniqueId,

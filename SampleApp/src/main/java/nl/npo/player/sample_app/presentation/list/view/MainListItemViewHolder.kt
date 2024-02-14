@@ -18,7 +18,8 @@ class MainListItemViewHolder private constructor(
         onItemClickListener: (SourceWrapper) -> Unit
     ) {
         this.sourceWrapper = sourceWrapper
-        binding.tvTitle.text = sourceWrapper.title
+        binding.itemTitle.text = sourceWrapper.title
+        binding.description.text = sourceWrapper.testingDescription
         Glide.with(binding.ivPoster.context)
             .load(sourceWrapper.imageUrl)
             .into(binding.ivPoster)
