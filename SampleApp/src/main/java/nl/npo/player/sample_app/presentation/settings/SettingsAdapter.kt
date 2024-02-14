@@ -22,7 +22,7 @@ class SettingsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        when(holder) {
+        when (holder) {
             is SettingBooleanViewHolder -> holder.bind(item as SettingsItem.Switch)
             is SettingPickerViewHolder -> holder.bind(item as SettingsItem.Picker)
         }

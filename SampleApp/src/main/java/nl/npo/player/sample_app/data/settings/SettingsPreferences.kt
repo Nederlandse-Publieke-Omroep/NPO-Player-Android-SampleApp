@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import nl.npo.player.sample_app.data.model.SettingsTypePref
 import nl.npo.player.sample_app.data.model.StylingPref
 import nl.npo.player.sample_app.data.model.UserTypePref
 import nl.npo.player.sample_app.data.settings.module.SettingsDataStore

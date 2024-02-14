@@ -1,7 +1,6 @@
 package nl.npo.player.sample_app.domain
 
 import kotlinx.coroutines.flow.Flow
-import nl.npo.player.sample_app.domain.model.SettingsType
 import nl.npo.player.sample_app.domain.model.Styling
 import nl.npo.player.sample_app.domain.model.UserType
 

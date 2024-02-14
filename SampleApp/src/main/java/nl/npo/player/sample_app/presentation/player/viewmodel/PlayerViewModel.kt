@@ -106,7 +106,7 @@ class PlayerViewModel @Inject constructor(
 
     fun hasCustomSettings(callback: () -> Unit) {
         viewModelScope.launch {
-            if(settingsRepository.showCustomSettings.first()) {
+            if (settingsRepository.showCustomSettings.first()) {
                 callback()
             }
         }

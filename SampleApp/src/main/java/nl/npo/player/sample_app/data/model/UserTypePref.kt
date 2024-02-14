@@ -3,7 +3,7 @@ package nl.npo.player.sample_app.data.model
 import nl.npo.player.sample_app.domain.model.UserType
 import nl.npo.player.sample_app.presentation.settings.model.SettingsPickerOption
 
-enum class UserTypePref(override val key: String): SettingsPickerOption {
+enum class UserTypePref(override val key: String) : SettingsPickerOption {
     Start("start"),
     Plus("plus");
 
@@ -18,7 +18,6 @@ enum class UserTypePref(override val key: String): SettingsPickerOption {
         }
     }
 }
-
 
 fun UserType.toPref(): UserTypePref = when (this) {
     UserType.Start -> UserTypePref.Start

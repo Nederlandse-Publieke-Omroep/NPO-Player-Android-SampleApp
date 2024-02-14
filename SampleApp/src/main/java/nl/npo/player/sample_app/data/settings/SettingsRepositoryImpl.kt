@@ -2,12 +2,10 @@ package nl.npo.player.sample_app.data.settings
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import nl.npo.player.sample_app.data.model.SettingsTypePref
 import nl.npo.player.sample_app.data.model.StylingPref
 import nl.npo.player.sample_app.data.model.UserTypePref
 import nl.npo.player.sample_app.data.model.toPref
 import nl.npo.player.sample_app.domain.SettingsRepository
-import nl.npo.player.sample_app.domain.model.SettingsType
 import nl.npo.player.sample_app.domain.model.Styling
 import nl.npo.player.sample_app.domain.model.UserType
 import javax.inject.Inject
