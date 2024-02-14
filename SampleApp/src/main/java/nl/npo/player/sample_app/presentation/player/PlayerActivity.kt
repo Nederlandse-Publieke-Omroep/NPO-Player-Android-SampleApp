@@ -155,7 +155,7 @@ class PlayerActivity : BaseActivity() {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title)
-            sourceWrapper.autoPlay
+
             try {
                 player = NPOPlayerLibrary.getPlayer(
                     context = binding.root.context,

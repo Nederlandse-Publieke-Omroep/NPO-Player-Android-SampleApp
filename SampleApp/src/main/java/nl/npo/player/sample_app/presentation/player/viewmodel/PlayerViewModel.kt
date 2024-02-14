@@ -8,7 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.domain.common.enums.AVType
@@ -84,13 +83,7 @@ class PlayerViewModel @Inject constructor(
 
     fun loadStream(npoPlayer: NPOPlayer, npoSourceConfig: NPOSourceConfig) {
         viewModelScope.launch {
-//            withContext(Dispatchers.IO) {
-//                delay(61 * 1000)
-            withContext(Dispatchers.Main) {
-                npoPlayer.loadStream(npoSourceConfig)
-//                npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig)
-//                }
-            }
+            npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig)
         }
     }
 
