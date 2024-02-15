@@ -12,6 +12,7 @@ import nl.npo.player.library.domain.analytics.model.AnalyticsEnvironment
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.domain.common.enums.Environment
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
+import nl.npo.player.sample_app.data.ads.AdManagerProvider
 import nl.npo.player.sample_app.data.offline.service.TestDownloadService
 import nl.npo.player.sample_app.presentation.cast.CastOptionsProvider
 import nl.npo.tag.sdk.NpoTag
@@ -47,27 +48,22 @@ class SampleApplication : Application() {
 
     fun initiatePlayerLibrary(withNPOTag: Boolean) {
         val list = listOf(ChuckerInterceptor.Builder(this).build())
-        if (withNPOTag) {
-            // Either create your own NpoTag implementation which can be used for app analytics:
-            npoTag = initializeNPOTag().also {
-                NPOPlayerLibrary.initialize(
-                    context = this,
-                    environment = environment,
-                    optionalInterceptors = list,
-                    npoTag = it,
-                    keepUIUpToDate = true
-                )
-            }
-        } else {
-            // Or Initialize the library with an AnalyticsConfiguration. But never both.
-            NPOPlayerLibrary.initialize(
+
+        NPOPlayerLibrary.initialize(
+            NPOPlayerLibrary.Builder(
                 context = this,
-                environment = environment,
-                optionalInterceptors = list,
-                analyticsConfiguration = analyticsConfiguration,
-                keepUIUpToDate = true
-            )
-        }
+                adManager = AdManagerProvider.getAdManager(this)
+            ).environment(environment).interceptors(list).keepUIUpToDate(true)
+                .run {
+                    // Either create your own NpoTag implementation or supply an analytics configuration which can be used for app analytics:
+                    if (withNPOTag) {
+                        npoTag(initializeNPOTag())
+                    } else {
+                        analyticsConfiguration(analyticsConfiguration)
+                    }
+                }.build()
+        )
+
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
 
         NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
@@ -75,6 +71,7 @@ class SampleApplication : Application() {
     }
 
     private fun initializeNPOTag(): NpoTag {
+        npoTag?.let { return it }
         return NpoTag.builder()
             .withContext(this)
             .withBrand(
@@ -96,7 +93,9 @@ class SampleApplication : Application() {
             }
             .withEnvironment(AnalyticsEnvironmentMapper.map(analyticsEnvironment))
             .withDebug(analyticsConfiguration.withDebug)
-            .build()
+            .build().also {
+                npoTag = it
+            }
     }
 
     private fun getPlatform(): AnalyticsPlatform {

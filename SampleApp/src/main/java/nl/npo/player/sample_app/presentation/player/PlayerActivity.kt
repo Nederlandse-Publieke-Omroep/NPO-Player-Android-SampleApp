@@ -33,7 +33,6 @@ import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
 import nl.npo.player.sample_app.SampleApplication
-import nl.npo.player.sample_app.data.ads.AdManagerProvider
 import nl.npo.player.sample_app.databinding.ActivityPlayerBinding
 import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
@@ -153,7 +152,6 @@ class PlayerActivity : BaseActivity() {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title)
-            sourceWrapper.autoPlay
             try {
                 player = NPOPlayerLibrary.getPlayer(
                     context = binding.root.context,
@@ -165,7 +163,6 @@ class PlayerActivity : BaseActivity() {
                         shouldPauseWhenBecomingNoisy = true,
                         applyLivestreamCastWorkAround = true
                     ),
-                    adManager = AdManagerProvider.getAdManager(),
                     pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                         ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
                 ).apply {
