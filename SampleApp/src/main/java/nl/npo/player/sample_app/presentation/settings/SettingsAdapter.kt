@@ -1,6 +1,5 @@
 package nl.npo.player.sample_app.presentation.settings
 
-import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -42,7 +41,6 @@ class SettingsAdapter(
                 return oldItem.key == newItem.key
             }
 
-            @SuppressLint("DiffUtilEquals")
             override fun areContentsTheSame(oldItem: SettingsItem, newItem: SettingsItem): Boolean {
                 return oldItem == newItem
             }
