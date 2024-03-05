@@ -7,11 +7,11 @@ import com.chuckerteam.chucker.api.ChuckerInterceptor
 import dagger.hilt.android.HiltAndroidApp
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.domain.analytics.model.AnalyticsConfiguration
 import nl.npo.player.library.domain.analytics.model.AnalyticsEnvironment
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.domain.common.enums.Environment
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
+import nl.npo.player.library.npotag.model.AnalyticsConfiguration
 import nl.npo.player.sample_app.data.ads.AdManagerProvider
 import nl.npo.player.sample_app.data.offline.service.TestDownloadService
 import nl.npo.player.sample_app.presentation.cast.CastOptionsProvider
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltAndroidApp
 class SampleApplication : Application() {
     var npoTag: NpoTag? = null
-    lateinit var analyticsConfiguration: AnalyticsConfiguration
+    lateinit var analyticsConfiguration: AnalyticsConfiguration.Standalone
     private var isPlayerInitiatedYetInternal = false
 
     @Inject
@@ -34,7 +34,7 @@ class SampleApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        analyticsConfiguration = AnalyticsConfiguration(
+        analyticsConfiguration = AnalyticsConfiguration.Standalone(
             brand = "nl.npo.player.sample_app",
             brandId = 634226,
             platform = getPlatform(),
@@ -48,20 +48,19 @@ class SampleApplication : Application() {
 
     fun initiatePlayerLibrary(withNPOTag: Boolean) {
         val list = listOf(ChuckerInterceptor.Builder(this).build())
-
         NPOPlayerLibrary.initialize(
-            NPOPlayerLibrary.Builder(
-                context = this,
-                adManager = AdManagerProvider.getAdManager(this)
-            ).environment(environment).interceptors(list).keepUIUpToDate(true)
-                .run {
-                    // Either create your own NpoTag implementation or supply an analytics configuration which can be used for app analytics:
-                    if (withNPOTag) {
-                        npoTag(initializeNPOTag())
-                    } else {
-                        analyticsConfiguration(analyticsConfiguration)
-                    }
-                }.build()
+            context = this,
+            analyticsConfig = if (withNPOTag) {
+                AnalyticsConfiguration.Provided(initializeNPOTag())
+            } else {
+                analyticsConfiguration
+            },
+            adManager = AdManagerProvider.getAdManager(this),
+            configureOptions = {
+                this.environment = this@SampleApplication.environment
+                keepUIUpToDate = true
+                addInterceptors(list)
+            }
         )
 
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
