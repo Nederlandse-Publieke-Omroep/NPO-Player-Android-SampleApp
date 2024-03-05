@@ -23,11 +23,7 @@ class CastOptionsProvider : BitmovinCastOptionsProvider() {
     private fun CastOptions.Builder.with(castOptions: CastOptions): CastOptions.Builder {
         return this
             .setSupportedNamespaces(castOptions.supportedNamespaces)
-            .run {
-                castOptions.castMediaOptions?.let {
-                    setCastMediaOptions(it)
-                } ?: this
-            }
+            .setCastMediaOptions(castOptions.castMediaOptions)
             .setLaunchOptions(castOptions.launchOptions)
             .setReceiverApplicationId(castOptions.receiverApplicationId)
             .setEnableReconnectionService(castOptions.enableReconnectionService)

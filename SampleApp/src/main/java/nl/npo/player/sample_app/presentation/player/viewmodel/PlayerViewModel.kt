@@ -18,6 +18,7 @@ import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.sample_app.domain.SettingsRepository
 import nl.npo.player.sample_app.domain.TokenProvider
 import nl.npo.player.sample_app.domain.model.StreamInfoResult
@@ -43,6 +44,7 @@ class PlayerViewModel @Inject constructor(
             when (val result = tokenProvider.createToken(item.uniqueId, isPlusUser)) {
                 is StreamInfoResult.Success -> {
                     try {
+                        val autoPlay = settingsRepository.autoPlayEnabled.first()
                         val source =
                             NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(result.data.token))
                         mutableState.postValue(
@@ -50,7 +52,7 @@ class PlayerViewModel @Inject constructor(
                                 source.copy(
                                     overrideStartOffset = item.startOffset,
                                     overrideImageUrl = item.getImageUrl(source),
-                                    overrideAutoPlay = item.autoPlay,
+                                    overrideAutoPlay = autoPlay,
                                     overrideMetadata = source.metadata?.toMutableMap()
                                         ?.apply {
                                             set(
@@ -83,7 +85,8 @@ class PlayerViewModel @Inject constructor(
 
     fun loadStream(npoPlayer: NPOPlayer, npoSourceConfig: NPOSourceConfig) {
         viewModelScope.launch {
-            npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig)
+            val autoPlay = settingsRepository.autoPlayEnabled.first()
+            npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig.copy(overrideAutoPlay = autoPlay))
         }
     }
 
@@ -98,12 +101,16 @@ class PlayerViewModel @Inject constructor(
     fun getPlayerConfig(callback: (NPOPlayerConfig) -> Unit) {
         viewModelScope.launch {
             NPOPlayerBitmovinConfig(
-                autoPlayEnabled = settingsRepository.autoPlayEnabled.first(),
-                isUiEnabled = settingsRepository.showUi.first(),
-                supplementalPlayerUiCss = if (settingsRepository.styling.first() == Styling.Custom) {
-                    "file:///android_asset/player_supplemental_styling.css"
+                uiConfig = if (settingsRepository.showUi.first()) {
+                    NPOUiConfig.WebUi(
+                        supplementalCssLocation = if (settingsRepository.styling.first() == Styling.Custom) {
+                            "file:///android_asset/player_supplemental_styling.css"
+                        } else {
+                            null
+                        }
+                    )
                 } else {
-                    null
+                    NPOUiConfig.Disabled
                 },
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
