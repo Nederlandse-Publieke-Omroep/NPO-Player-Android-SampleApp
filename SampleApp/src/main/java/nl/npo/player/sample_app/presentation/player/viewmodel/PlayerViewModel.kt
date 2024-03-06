@@ -101,17 +101,7 @@ class PlayerViewModel @Inject constructor(
     fun getPlayerConfig(callback: (NPOPlayerConfig) -> Unit) {
         viewModelScope.launch {
             NPOPlayerBitmovinConfig(
-                uiConfig = if (settingsRepository.showUi.first()) {
-                    NPOUiConfig.WebUi(
-                        supplementalCssLocation = if (settingsRepository.styling.first() == Styling.Custom) {
-                            "file:///android_asset/player_supplemental_styling.css"
-                        } else {
-                            null
-                        }
-                    )
-                } else {
-                    NPOUiConfig.Disabled
-                },
+                uiConfig = NPOUiConfig.Disabled,
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
             ).let(callback)
@@ -123,6 +113,22 @@ class PlayerViewModel @Inject constructor(
             if (settingsRepository.showCustomSettings.first()) {
                 callback()
             }
+        }
+    }
+
+    fun getUiConfig(callback: (NPOUiConfig) -> Unit) {
+        viewModelScope.launch {
+            if (settingsRepository.showUi.first()) {
+                NPOUiConfig.WebUi(
+                    supplementalCssLocation = if (settingsRepository.styling.first() == Styling.Custom) {
+                        "file:///android_asset/player_supplemental_styling.css"
+                    } else {
+                        null
+                    }
+                )
+            } else {
+                NPOUiConfig.Disabled
+            }.let(callback)
         }
     }
 

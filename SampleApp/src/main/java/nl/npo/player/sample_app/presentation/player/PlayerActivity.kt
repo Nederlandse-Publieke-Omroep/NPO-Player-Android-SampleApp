@@ -29,6 +29,7 @@ import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
@@ -172,8 +173,15 @@ class PlayerActivity : BaseActivity() {
                         NOTIFICATION_ID,
                         mediaSession.sessionToken
                     )
-                    binding.npoVideoPlayer.attachPlayer(this, config.uiConfig)
                     attachToLifecycle(lifecycle)
+
+                    playerViewModel.getUiConfig {
+                        binding.npoVideoPlayer.attachPlayer(this, it)
+                        binding.npoVideoPlayerTwo.attachPlayer(
+                            this,
+                            NPOUiConfig.WebUi(null)
+                        )
+                    }
                 }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog.Builder(this)
@@ -212,6 +220,29 @@ class PlayerActivity : BaseActivity() {
 
     private fun ActivityPlayerBinding.setupViews() {
         npoVideoPlayer.apply {
+            attachToLifecycle(lifecycle)
+            setFullScreenHandler(fullScreenHandler)
+            playerViewModel.hasCustomSettings {
+                setSettingsButtonOnClickListener {
+                    runOnUiThread {
+                        showSettings()
+                    }
+                    true
+                }
+            }
+
+            setPlayPauseButtonOnClickListener { isPlayPressed ->
+                runOnUiThread {
+                    Toast.makeText(
+                        context,
+                        "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+        npoVideoPlayerTwo.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
             playerViewModel.hasCustomSettings {

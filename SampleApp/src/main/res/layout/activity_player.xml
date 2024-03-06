@@ -10,28 +10,38 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/btnSwitchStreams"
-        android:layout_alignParentTop="true">
+        android:layout_above="@id/btnSwitchStreams">
 
         <nl.npo.player.library.presentation.view.NPOVideoPlayerView
             android:id="@+id/npo_video_player"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/npo_video_player_two"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="spread" />
+
+        <nl.npo.player.library.presentation.view.NPOVideoPlayerView
+            android:id="@+id/npo_video_player_two"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="16:9"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/npo_video_player" />
 
         <ProgressBar
             android:id="@+id/loading_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:indeterminate="true"
-            app:layout_constraintBottom_toBottomOf="@id/npo_video_player"
-            app:layout_constraintEnd_toEndOf="@id/npo_video_player"
-            app:layout_constraintStart_toStartOf="@id/npo_video_player"
-            app:layout_constraintTop_toTopOf="@id/npo_video_player" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
