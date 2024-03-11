@@ -9,11 +9,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import com.bitmovin.player.ui.getSystemUiVisibilityFlags
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
@@ -453,8 +453,22 @@ class PlayerActivity : BaseActivity() {
     @Suppress("DEPRECATION")
     private fun doSystemUiVisibility(fullScreen: Boolean) {
         runOnUiThread {
-            val uiParams = getSystemUiVisibilityFlags(fullScreen, true)
+            val uiParams = getSystemUiVisibilityFlags(fullScreen)
             window.decorView.systemUiVisibility = uiParams
+        }
+    }
+
+    private fun getSystemUiVisibilityFlags(
+        fullScreen: Boolean
+    ): Int {
+        return if (!fullScreen) {
+            View.SYSTEM_UI_FLAG_VISIBLE
+        } else {
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         }
     }
 
