@@ -18,89 +18,101 @@ class SettingsPreferences @Inject constructor(
     @SettingsDataStore private val dataStore: DataStore<Preferences>
 ) {
     object Keys {
-        val Styling = stringPreferencesKey("styling")
-        val UserType = stringPreferencesKey("userType")
-        val SettingsType = booleanPreferencesKey("settingsType")
-        val ShowUi = booleanPreferencesKey("showUi")
-        val AutoPlayEnabled = booleanPreferencesKey("autoPlayEnabled")
-        val PauseWhenBecomingNoisy = booleanPreferencesKey("pauseWhenBecomingNoisy")
-        val PauseOnSwitchToCellularNetwork = booleanPreferencesKey("pauseOnSwitchToCellularNetwork")
+        val styling = stringPreferencesKey("styling")
+        val userType = stringPreferencesKey("userType")
+        val settingsType = booleanPreferencesKey("settingsType")
+        val showUi = booleanPreferencesKey("showUi")
+        val autoPlayEnabled = booleanPreferencesKey("autoPlayEnabled")
+        val showMultiplePlayers = booleanPreferencesKey("showMultiplePlayers")
+        val pauseWhenBecomingNoisy = booleanPreferencesKey("pauseWhenBecomingNoisy")
+        val pauseOnSwitchToCellularNetwork = booleanPreferencesKey("pauseOnSwitchToCellularNetwork")
     }
 
     val styling: Flow<StylingPref>
         get() = dataStore.data.map { prefs ->
-            StylingPref.getByKey(prefs[Keys.Styling].orEmpty())
+            StylingPref.getByKey(prefs[Keys.styling].orEmpty())
         }
 
     suspend fun setStyling(value: StylingPref) {
         dataStore.edit { prefs ->
-            prefs[Keys.Styling] = value.key
+            prefs[Keys.styling] = value.key
         }
     }
 
     val userType: Flow<UserTypePref>
         get() = dataStore.data.map { prefs ->
-            UserTypePref.getByKey(prefs[Keys.UserType].orEmpty())
+            UserTypePref.getByKey(prefs[Keys.userType].orEmpty())
         }
 
     suspend fun setUserType(value: UserTypePref) {
         dataStore.edit { prefs ->
-            prefs[Keys.UserType] = value.key
+            prefs[Keys.userType] = value.key
         }
     }
 
     val showCustomPlayerSettings: Flow<Boolean>
         get() = dataStore.data.map { prefs ->
-            prefs[Keys.SettingsType] ?: true
+            prefs[Keys.settingsType] ?: true
         }
 
     suspend fun setShowCustomSettings(show: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.SettingsType] = show
+            prefs[Keys.settingsType] = show
         }
     }
 
     val showUi: Flow<Boolean>
         get() = dataStore.data.map { prefs ->
-            prefs[Keys.ShowUi] ?: true
+            prefs[Keys.showUi] ?: true
         }
 
     suspend fun setShowUi(show: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.ShowUi] = show
+            prefs[Keys.showUi] = show
         }
     }
 
     val autoPlayEnabled: Flow<Boolean>
         get() = dataStore.data.map { prefs ->
-            prefs[Keys.AutoPlayEnabled] ?: false
+            prefs[Keys.autoPlayEnabled] ?: false
         }
 
     suspend fun setAutoPlayEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.AutoPlayEnabled] = enabled
+            prefs[Keys.autoPlayEnabled] = enabled
+        }
+    }
+
+    val showMultiplePlayers: Flow<Boolean>
+        get() = dataStore.data.map { prefs ->
+            prefs[Keys.showMultiplePlayers] ?: false
+        }
+
+    suspend fun setShowMultiplePlayers(show: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.showMultiplePlayers] = show
         }
     }
 
     val pauseWhenBecomingNoisy: Flow<Boolean>
         get() = dataStore.data.map { prefs ->
-            prefs[Keys.PauseWhenBecomingNoisy] ?: false
+            prefs[Keys.pauseWhenBecomingNoisy] ?: false
         }
 
     suspend fun setPauseWhenBecomingNoisy(pause: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.PauseWhenBecomingNoisy] = pause
+            prefs[Keys.pauseWhenBecomingNoisy] = pause
         }
     }
 
     val pauseOnSwitchToCellularNetwork: Flow<Boolean>
         get() = dataStore.data.map { prefs ->
-            prefs[Keys.PauseOnSwitchToCellularNetwork] ?: false
+            prefs[Keys.pauseOnSwitchToCellularNetwork] ?: false
         }
 
     suspend fun setPauseOnSwitchToCellularNetwork(pause: Boolean) {
         dataStore.edit { prefs ->
-            prefs[Keys.PauseOnSwitchToCellularNetwork] = pause
+            prefs[Keys.pauseOnSwitchToCellularNetwork] = pause
         }
     }
 }

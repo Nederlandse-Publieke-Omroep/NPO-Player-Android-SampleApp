@@ -98,27 +98,15 @@ class PlayerViewModel @Inject constructor(
         )
     }
 
-    fun getPlayerConfig(callback: (NPOPlayerConfig) -> Unit) {
+    fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean) -> Unit) {
         viewModelScope.launch {
-            NPOPlayerBitmovinConfig(
+            val playerConfig = NPOPlayerBitmovinConfig(
                 uiConfig = NPOUiConfig.Disabled,
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
-            ).let(callback)
-        }
-    }
+            )
 
-    fun hasCustomSettings(callback: () -> Unit) {
-        viewModelScope.launch {
-            if (settingsRepository.showCustomSettings.first()) {
-                callback()
-            }
-        }
-    }
-
-    fun getUiConfig(callback: (NPOUiConfig) -> Unit) {
-        viewModelScope.launch {
-            if (settingsRepository.showUi.first()) {
+            val uiConfig = if (settingsRepository.showUi.first()) {
                 NPOUiConfig.WebUi(
                     supplementalCssLocation = if (settingsRepository.styling.first() == Styling.Custom) {
                         "file:///android_asset/player_supplemental_styling.css"
@@ -128,7 +116,17 @@ class PlayerViewModel @Inject constructor(
                 )
             } else {
                 NPOUiConfig.Disabled
-            }.let(callback)
+            }
+
+            callback(playerConfig, uiConfig, settingsRepository.showMultiplePlayers.first())
+        }
+    }
+
+    fun hasCustomSettings(callback: () -> Unit) {
+        viewModelScope.launch {
+            if (settingsRepository.showCustomSettings.first()) {
+                callback()
+            }
         }
     }
 

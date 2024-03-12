@@ -139,8 +139,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getPlayerConfig { playerConfig ->
-            loadSource(sourceWrapper, playerConfig)
+        playerViewModel.getConfiguration { playerConfig, uiConfig, showMultiplePlayers ->
+            loadSource(sourceWrapper, playerConfig, uiConfig, showMultiplePlayers)
         }
     }
 
@@ -151,7 +151,12 @@ class PlayerActivity : BaseActivity() {
         super.onConfigurationChanged(newConfig)
     }
 
-    private fun loadSource(sourceWrapper: SourceWrapper, config: NPOPlayerConfig) {
+    private fun loadSource(
+        sourceWrapper: SourceWrapper,
+        playerConfig: NPOPlayerConfig,
+        uiConfig: NPOUiConfig,
+        showMultiplePlayers: Boolean
+    ) {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title)
@@ -159,7 +164,7 @@ class PlayerActivity : BaseActivity() {
             try {
                 player = NPOPlayerLibrary.getPlayer(
                     context = binding.root.context,
-                    npoPlayerConfig = config,
+                    npoPlayerConfig = playerConfig,
                     pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                         ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
                 ).apply {
@@ -175,13 +180,11 @@ class PlayerActivity : BaseActivity() {
                     )
                     attachToLifecycle(lifecycle)
 
-                    playerViewModel.getUiConfig {
-                        binding.npoVideoPlayer.attachPlayer(this, it)
-                        binding.npoVideoPlayerTwo.attachPlayer(
-                            this,
-                            NPOUiConfig.WebUi(null)
-                        )
+                    binding.npoVideoPlayer.attachPlayer(this, null)
+                    if (showMultiplePlayers) {
+                        binding.npoVideoPlayerTwo.attachPlayer(this, uiConfig)
                     }
+                    binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                 }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog.Builder(this)
@@ -269,8 +272,8 @@ class PlayerActivity : BaseActivity() {
                 linkViewModel.urlLinkList.value?.union(
                     linkViewModel.streamLinkList.value ?: emptyList()
                 )?.random()?.let { newSource ->
-                    playerViewModel.getPlayerConfig { config ->
-                        loadSource(newSource, config)
+                    playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
+                        loadSource(newSource, config, uiConfig, showMultiplePlayers)
                     }
                 }
             }
