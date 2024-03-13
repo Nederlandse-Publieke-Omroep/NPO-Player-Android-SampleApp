@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import com.bitmovin.player.ui.getSystemUiVisibilityFlags
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
@@ -480,14 +479,6 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    @Suppress("DEPRECATION")
-    private fun doSystemUiVisibility(fullScreen: Boolean) {
-        runOnUiThread {
-            val uiParams = getSystemUiVisibilityFlags(fullScreen, true)
-            window.decorView.systemUiVisibility = uiParams
-        }
-    }
-
     private val fullScreenHandler = object : NPOFullScreenHandler {
         private var fullscreen = false
         override val isFullscreen: Boolean get() = fullscreen
@@ -504,7 +495,6 @@ class PlayerActivity : BaseActivity() {
                     btnPlayPause.isVisible = true
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                doSystemUiVisibility(false)
             }
         }
 
@@ -516,7 +506,6 @@ class PlayerActivity : BaseActivity() {
                     btnPlayPause.isVisible = false
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                doSystemUiVisibility(true)
             }
         }
 
@@ -525,7 +514,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         override fun onResume() {
-            doSystemUiVisibility(isFullscreen)
+            // Do nothing
         }
     }
 
