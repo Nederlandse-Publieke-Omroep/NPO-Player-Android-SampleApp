@@ -180,9 +180,9 @@ class PlayerActivity : BaseActivity() {
                     )
                     attachToLifecycle(lifecycle)
 
-                    binding.npoVideoPlayer.attachPlayer(this, null)
+                    binding.npoVideoPlayer.attachPlayer(this, uiConfig)
                     if (showMultiplePlayers) {
-                        binding.npoVideoPlayerTwo.attachPlayer(this, uiConfig)
+                        binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
                     }
                     binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                 }

@@ -101,7 +101,6 @@ class PlayerViewModel @Inject constructor(
     fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean) -> Unit) {
         viewModelScope.launch {
             val playerConfig = NPOPlayerBitmovinConfig(
-                uiConfig = NPOUiConfig.Disabled,
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
             )
