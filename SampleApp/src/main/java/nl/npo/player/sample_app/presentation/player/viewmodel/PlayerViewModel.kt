@@ -18,7 +18,6 @@ import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
-import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.sample_app.domain.SettingsRepository
 import nl.npo.player.sample_app.domain.TokenProvider
 import nl.npo.player.sample_app.domain.model.StreamInfoResult
@@ -101,16 +100,12 @@ class PlayerViewModel @Inject constructor(
     fun getPlayerConfig(callback: (NPOPlayerConfig) -> Unit) {
         viewModelScope.launch {
             NPOPlayerBitmovinConfig(
-                uiConfig = if (settingsRepository.showUi.first()) {
-                    NPOUiConfig.WebUi(
-                        supplementalCssLocation = if (settingsRepository.styling.first() == Styling.Custom) {
-                            "file:///android_asset/player_supplemental_styling.css"
-                        } else {
-                            null
-                        }
-                    )
+                autoPlayEnabled = settingsRepository.autoPlayEnabled.first(),
+                isUiEnabled = settingsRepository.showUi.first(),
+                supplementalPlayerUiCss = if (settingsRepository.styling.first() == Styling.Custom) {
+                    "file:///android_asset/player_supplemental_styling.css"
                 } else {
-                    NPOUiConfig.Disabled
+                    null
                 },
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
