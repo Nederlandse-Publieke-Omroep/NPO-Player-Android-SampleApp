@@ -16,6 +16,7 @@ import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
@@ -86,7 +87,10 @@ class PlayerViewModel @Inject constructor(
     fun loadStream(npoPlayer: NPOPlayer, npoSourceConfig: NPOSourceConfig) {
         viewModelScope.launch {
             val autoPlay = settingsRepository.autoPlayEnabled.first()
-            npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig.copy(overrideAutoPlay = autoPlay))
+            npoPlayer.loadStream(
+                npoSourceConfig.copy(overrideAutoPlay = autoPlay),
+                PlayNext(showPlayNext = true, duration = 15, offset = 30)
+            )
         }
     }
 

@@ -27,6 +27,8 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.bitmovin.bridge.OnPlayNextListener
+import nl.npo.player.library.presentation.bitmovin.enums.PlayNextState
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
@@ -77,12 +79,6 @@ class PlayerActivity : BaseActivity() {
         MediaSession(this, MEDIA_SESSION_TAG).apply {
             setCallback(mediaSessionCallback)
             isActive = true
-        }
-    }
-
-    private val onFinishedPlaybackListener: PlayerListener = object : PlayerListener {
-        override fun onPlaybackFinished(currentPosition: Double) {
-            binding.btnSwitchStreams.callOnClick()
         }
     }
 
@@ -168,7 +164,6 @@ class PlayerActivity : BaseActivity() {
                         ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
                 ).apply {
                     remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
-                    eventEmitter.addListener(onFinishedPlaybackListener)
                     eventEmitter.addListener(onPlayPauseListener)
                     npoNotificationManager = setupPlayerNotificationManager(
                         NOTIFICATION_CHANNEL_ID,
@@ -211,7 +206,6 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player?.apply {
-            eventEmitter.removeListener(onFinishedPlaybackListener)
             eventEmitter.removeListener(onPlayPauseListener)
         }
 
@@ -232,7 +226,24 @@ class PlayerActivity : BaseActivity() {
                     true
                 }
             }
-
+            setPlayNextListener(object : OnPlayNextListener {
+                override fun onStateChanged(
+                    playNextState: PlayNextState,
+                    remainingCountDownDuration: Int?
+                ) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            context,
+                            "Play Next state changed to: ${playNextState.name} ${remainingCountDownDuration?.let { ", with remainingCourtDown: $it." } ?: ""}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    when (playNextState) {
+                        PlayNextState.COUNTDOWN_FINISHED, PlayNextState.PROCEED_PRESSED -> playRandom()
+                        else -> {} // No-op
+                    }
+                }
+            })
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
                     Toast.makeText(
@@ -268,13 +279,7 @@ class PlayerActivity : BaseActivity() {
         }
         btnSwitchStreams.setOnClickListener {
             if (player?.isAdPlaying != true) {
-                linkViewModel.urlLinkList.value?.union(
-                    linkViewModel.streamLinkList.value ?: emptyList()
-                )?.random()?.let { newSource ->
-                    playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
-                        loadSource(newSource, config, uiConfig, showMultiplePlayers)
-                    }
-                }
+                playRandom()
             }
         }
         btnPlayPause.setOnClickListener {
@@ -284,6 +289,16 @@ class PlayerActivity : BaseActivity() {
                 } else {
                     play()
                 }
+            }
+        }
+    }
+
+    private fun playRandom() {
+        linkViewModel.urlLinkList.value?.union(
+            linkViewModel.streamLinkList.value ?: emptyList()
+        )?.random()?.let { newSource ->
+            playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
+                loadSource(newSource, config, uiConfig, showMultiplePlayers)
             }
         }
     }
