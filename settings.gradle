@@ -19,7 +19,6 @@ def getTagPackageCloudKey() {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
         // NPO Player library
