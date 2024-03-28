@@ -12,6 +12,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -479,6 +481,18 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun ActivityPlayerBinding.updateStatusBarVisibility(isFullScreen: Boolean) {
+        WindowInsetsControllerCompat(window, root).apply {
+            if (isFullScreen) {
+                hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                show(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+            }
+        }
+    }
+
     private val fullScreenHandler = object : NPOFullScreenHandler {
         private var fullscreen = false
         override val isFullscreen: Boolean get() = fullscreen
@@ -493,6 +507,7 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = true
                     btnPlayPause.isVisible = true
+                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }
@@ -504,6 +519,7 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = false
                     btnPlayPause.isVisible = false
+                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
@@ -514,7 +530,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         override fun onResume() {
-            // Do nothing
+            binding.updateStatusBarVisibility(isFullscreen)
         }
     }
 
