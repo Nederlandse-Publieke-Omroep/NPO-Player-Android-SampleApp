@@ -19,4 +19,14 @@
     <!--    For test testing NPO Player Receiver-->
     <string name="cast_receiver_id_test" translatable="false">72990B99</string>
     <string name="debug_casting">onScreenDebug=true</string>
+
+    <string name="setting_styling">Styling</string>
+    <string name="setting_user_type">User type</string>
+    <string name="setting_custom_settings">Custom settings</string>
+    <string name="setting_show_ui">Show UI</string>
+    <string name="setting_autoplay_enabled">Autoplay enabled</string>
+    <string name="setting_show_multiple_players">Show multiple players</string>
+    <string name="setting_pause_when_noisy">Pause when becoming noisy</string>
+    <string name="setting_pause_on_cellular">Pause on switch to cellular</string>
+    <string name="menu_settings_title">Settings</string>
 </resources>
