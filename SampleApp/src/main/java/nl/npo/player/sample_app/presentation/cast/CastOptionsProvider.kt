@@ -13,22 +13,23 @@ import com.google.android.gms.cast.framework.CastOptions
  */
 class CastOptionsProvider : BitmovinCastOptionsProvider() {
     override fun getCastOptions(context: Context): CastOptions {
-        super.getCastOptions(context)
+        val options = super.getCastOptions(context)
         return CastOptions.Builder()
-            .with(super.getCastOptions(context))
-//            .setReceiverApplicationId(context.getString(getReceiverID())) --> No longer needed as it's set by NPOCasting.initializeCasting() in the SampleApplication
+            .with(options)
             .build()
     }
 
     private fun CastOptions.Builder.with(castOptions: CastOptions): CastOptions.Builder {
         return this
             .setSupportedNamespaces(castOptions.supportedNamespaces)
-            .setCastMediaOptions(castOptions.castMediaOptions)
             .setLaunchOptions(castOptions.launchOptions)
             .setReceiverApplicationId(castOptions.receiverApplicationId)
             .setEnableReconnectionService(castOptions.enableReconnectionService)
             .setResumeSavedSession(castOptions.resumeSavedSession)
             .setStopReceiverApplicationWhenEndingSession(castOptions.stopReceiverApplicationWhenEndingSession)
+            .apply {
+                castOptions.castMediaOptions?.let(this::setCastMediaOptions)
+            }
     }
 
     companion object {
