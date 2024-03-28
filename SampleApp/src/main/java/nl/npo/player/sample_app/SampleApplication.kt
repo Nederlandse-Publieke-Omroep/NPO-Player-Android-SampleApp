@@ -54,7 +54,7 @@ class SampleApplication : Application() {
                 NPOPlayerLibrary.initialize(
                     context = this,
                     analyticsConfig = AnalyticsConfiguration.Provided(it),
-                    adManager = AdManagerProvider.getAdManager()
+                    adManager = AdManagerProvider.getAdManager(this)
                 ) {
                     environment = this@SampleApplication.environment
                     keepUIUpToDate = true
@@ -73,7 +73,7 @@ class SampleApplication : Application() {
                     withDebug = true,
                     environment = analyticsEnvironment
                 ),
-                adManager = AdManagerProvider.getAdManager()
+                adManager = AdManagerProvider.getAdManager(this)
             ) {
                 environment = this@SampleApplication.environment
                 keepUIUpToDate = true

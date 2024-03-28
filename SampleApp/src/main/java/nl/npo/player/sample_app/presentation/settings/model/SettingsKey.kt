@@ -6,6 +6,7 @@ enum class SettingsKey {
     CustomSettings,
     ShowUi,
     AutoPlayEnabled,
+    ShowMultiplePlayers,
     PauseWhenBecomingNoisy,
     PauseOnSwitchToCellularNetwork
 }

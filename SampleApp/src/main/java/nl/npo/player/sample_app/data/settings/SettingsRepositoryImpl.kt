@@ -45,6 +45,12 @@ class SettingsRepositoryImpl @Inject constructor(
         prefs.setAutoPlayEnabled(enabled)
     }
 
+    override val showMultiplePlayers: Flow<Boolean> = prefs.showMultiplePlayers
+
+    override suspend fun setShowMultiplePlayers(show: Boolean) {
+        prefs.setShowMultiplePlayers(show)
+    }
+
     override val pauseWhenBecomingNoisy: Flow<Boolean> = prefs.pauseWhenBecomingNoisy
 
     override suspend fun setPauseWhenBecomingNoisy(pause: Boolean) {

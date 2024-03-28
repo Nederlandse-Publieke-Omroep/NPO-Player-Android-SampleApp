@@ -20,6 +20,9 @@ interface SettingsRepository {
     val autoPlayEnabled: Flow<Boolean>
     suspend fun setAutoPlayEnabled(enabled: Boolean)
 
+    val showMultiplePlayers: Flow<Boolean>
+    suspend fun setShowMultiplePlayers(show: Boolean)
+
     val pauseWhenBecomingNoisy: Flow<Boolean>
     suspend fun setPauseWhenBecomingNoisy(pause: Boolean)
 

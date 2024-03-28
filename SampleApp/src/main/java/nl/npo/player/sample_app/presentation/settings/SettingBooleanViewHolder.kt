@@ -24,7 +24,10 @@ class SettingBooleanViewHolder private constructor(
     }
 
     companion object {
-        fun create(parent: ViewGroup, onValueChanged: (SettingsKey, SettingsSwitchOption) -> Unit): SettingBooleanViewHolder {
+        fun create(
+            parent: ViewGroup,
+            onValueChanged: (SettingsKey, SettingsSwitchOption) -> Unit
+        ): SettingBooleanViewHolder {
             return SettingBooleanViewHolder(
                 ItemSettingBooleanBinding.inflate(
                     LayoutInflater.from(parent.context),
