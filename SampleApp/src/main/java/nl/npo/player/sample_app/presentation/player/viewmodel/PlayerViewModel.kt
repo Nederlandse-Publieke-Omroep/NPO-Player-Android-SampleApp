@@ -89,7 +89,7 @@ class PlayerViewModel @Inject constructor(
             val autoPlay = settingsRepository.autoPlayEnabled.first()
             npoPlayer.loadStream(
                 npoSourceConfig.copy(overrideAutoPlay = autoPlay),
-                PlayNext(showPlayNext = true, duration = 15, offset = 30)
+                PlayNext(showPlayNext = true)
             )
         }
     }
