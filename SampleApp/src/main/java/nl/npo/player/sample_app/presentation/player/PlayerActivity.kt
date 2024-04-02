@@ -31,6 +31,7 @@ import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
+import nl.npo.player.library.sterads.presentation.ui.SterOverlayView
 import nl.npo.player.sample_app.R
 import nl.npo.player.sample_app.SampleApplication
 import nl.npo.player.sample_app.databinding.ActivityPlayerBinding
@@ -222,6 +223,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun ActivityPlayerBinding.setupViews() {
         npoVideoPlayer.apply {
+            setAdsOverlay(SterOverlayView(context))
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
             playerViewModel.hasCustomSettings {
