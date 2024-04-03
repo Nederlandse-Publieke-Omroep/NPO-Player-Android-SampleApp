@@ -12,6 +12,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -181,8 +183,10 @@ class PlayerActivity : BaseActivity() {
                     attachToLifecycle(lifecycle)
 
                     binding.npoVideoPlayer.attachPlayer(this, uiConfig)
+                    binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
                     if (showMultiplePlayers) {
                         binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
+                        binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
                     }
                     binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                 }
@@ -225,7 +229,6 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             setAdsOverlay(SterOverlayView(context))
             attachToLifecycle(lifecycle)
-            setFullScreenHandler(fullScreenHandler)
             playerViewModel.hasCustomSettings {
                 setSettingsButtonOnClickListener {
                     runOnUiThread {
@@ -248,7 +251,6 @@ class PlayerActivity : BaseActivity() {
 
         npoVideoPlayerTwo.apply {
             attachToLifecycle(lifecycle)
-            setFullScreenHandler(fullScreenHandler)
             playerViewModel.hasCustomSettings {
                 setSettingsButtonOnClickListener {
                     runOnUiThread {
@@ -481,6 +483,19 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun doSystemUiVisibility(fullScreen: Boolean) {
+        runOnUiThread {
+            with(WindowCompat.getInsetsController(window, window.decorView)) {
+                val type = WindowInsetsCompat.Type.systemBars()
+                if (fullScreen) {
+                    hide(type)
+                } else {
+                    show(type)
+                }
+            }
+        }
+    }
+
     private val fullScreenHandler = object : NPOFullScreenHandler {
         private var fullscreen = false
         override val isFullscreen: Boolean get() = fullscreen
@@ -497,6 +512,7 @@ class PlayerActivity : BaseActivity() {
                     btnPlayPause.isVisible = true
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                doSystemUiVisibility(false)
             }
         }
 
@@ -508,6 +524,7 @@ class PlayerActivity : BaseActivity() {
                     btnPlayPause.isVisible = false
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                doSystemUiVisibility(true)
             }
         }
 
@@ -516,7 +533,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         override fun onResume() {
-            // Do nothing
+            doSystemUiVisibility(isFullscreen)
         }
     }
 
