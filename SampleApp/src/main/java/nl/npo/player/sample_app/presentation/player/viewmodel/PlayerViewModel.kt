@@ -103,7 +103,6 @@ class PlayerViewModel @Inject constructor(
             val playerConfig = NPOPlayerBitmovinConfig(
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
-                useCustomAdsUi = true
             )
 
             val uiConfig = if (settingsRepository.showUi.first()) {
