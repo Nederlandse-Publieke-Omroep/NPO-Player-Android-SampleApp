@@ -29,4 +29,5 @@
     <string name="setting_pause_when_noisy">Pause when becoming noisy</string>
     <string name="setting_pause_on_cellular">Pause on switch to cellular</string>
     <string name="menu_settings_title">Settings</string>
+    <string name="setting_ster_ui_enabled">STER UI enabled</string>
 </resources>

@@ -49,6 +49,7 @@ class SettingsViewModel @Inject constructor(
             SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
             SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
             SettingsKey.ShowMultiplePlayers -> settingsRepository.setShowMultiplePlayers(value)
+            SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
             SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
             SettingsKey.PauseOnSwitchToCellularNetwork ->
                 settingsRepository.setPauseOnSwitchToCellularNetwork(value)
@@ -105,6 +106,14 @@ class SettingsViewModel @Inject constructor(
                     SettingsKey.AutoPlayEnabled,
                     R.string.setting_autoplay_enabled,
                     SettingsSwitchOption(settingsRepository.autoPlayEnabled.first())
+                )
+            )
+
+            add(
+                SettingsItem.Switch(
+                    SettingsKey.SterUiEnabled,
+                    R.string.setting_ster_ui_enabled,
+                    SettingsSwitchOption(settingsRepository.sterUiEnabled.first())
                 )
             )
 

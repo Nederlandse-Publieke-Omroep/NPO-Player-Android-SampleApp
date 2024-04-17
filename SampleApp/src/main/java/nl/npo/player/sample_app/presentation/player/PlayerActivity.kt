@@ -227,7 +227,6 @@ class PlayerActivity : BaseActivity() {
 
     private fun ActivityPlayerBinding.setupViews() {
         npoVideoPlayer.apply {
-            setAdsOverlay(SterOverlayView(context))
             attachToLifecycle(lifecycle)
             playerViewModel.hasCustomSettings {
                 setSettingsButtonOnClickListener {
@@ -459,6 +458,12 @@ class PlayerActivity : BaseActivity() {
 
     private fun setObservers() {
         playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
+        playerViewModel.enableSterUi.observe(this) { shouldEnable ->
+            if(shouldEnable) {
+                binding.npoVideoPlayer.setAdsOverlay(SterOverlayView(this))
+                binding.npoVideoPlayerTwo.setAdsOverlay(SterOverlayView(this))
+            }
+        }
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {

@@ -20,6 +20,9 @@ interface SettingsRepository {
     val autoPlayEnabled: Flow<Boolean>
     suspend fun setAutoPlayEnabled(enabled: Boolean)
 
+    val sterUiEnabled: Flow<Boolean>
+    suspend fun setSterUiEnabled(enabled: Boolean)
+
     val showMultiplePlayers: Flow<Boolean>
     suspend fun setShowMultiplePlayers(show: Boolean)
 

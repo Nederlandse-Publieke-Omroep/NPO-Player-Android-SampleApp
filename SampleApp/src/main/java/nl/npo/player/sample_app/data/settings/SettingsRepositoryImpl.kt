@@ -45,6 +45,12 @@ class SettingsRepositoryImpl @Inject constructor(
         prefs.setAutoPlayEnabled(enabled)
     }
 
+    override val sterUiEnabled: Flow<Boolean> = prefs.sterUiEnabled
+
+    override suspend fun setSterUiEnabled(enabled: Boolean) {
+        prefs.setSterUiEnabled(enabled)
+    }
+
     override val showMultiplePlayers: Flow<Boolean> = prefs.showMultiplePlayers
 
     override suspend fun setShowMultiplePlayers(show: Boolean) {
