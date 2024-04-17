@@ -459,7 +459,7 @@ class PlayerActivity : BaseActivity() {
     private fun setObservers() {
         playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
         playerViewModel.enableSterUi.observe(this) { shouldEnable ->
-            if(shouldEnable) {
+            if (shouldEnable) {
                 binding.npoVideoPlayer.setAdsOverlay(SterOverlayView(this))
                 binding.npoVideoPlayerTwo.setAdsOverlay(SterOverlayView(this))
             }
