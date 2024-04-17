@@ -492,9 +492,9 @@ class PlayerActivity : BaseActivity() {
     private fun doSystemUiVisibility(fullScreen: Boolean) {
         runOnUiThread {
             with(WindowCompat.getInsetsController(window, window.decorView)) {
-                val type = WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
                 systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                val type = WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
                 if (fullScreen) {
                     hide(type)
                 } else {
@@ -518,10 +518,9 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = true
                     btnPlayPause.isVisible = true
-                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                doSystemUiVisibility(false)
+                doSystemUiVisibility(fullscreen)
             }
         }
 
@@ -531,10 +530,9 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = false
                     btnPlayPause.isVisible = false
-                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                doSystemUiVisibility(true)
+                doSystemUiVisibility(fullscreen)
             }
         }
 
