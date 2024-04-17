@@ -1,6 +1,7 @@
 package nl.npo.player.sample_app.domain
 
 import kotlinx.coroutines.flow.Flow
+import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sample_app.domain.model.Styling
 import nl.npo.player.sample_app.domain.model.UserType
 
@@ -28,4 +29,7 @@ interface SettingsRepository {
 
     val pauseOnSwitchToCellularNetwork: Flow<Boolean>
     suspend fun setPauseOnSwitchToCellularNetwork(pause: Boolean)
+
+    val shouldShowPlayNext: Flow<PlayNext>
+    suspend fun setShouldPlayNext(playNext: PlayNext)
 }

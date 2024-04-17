@@ -29,8 +29,6 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.bitmovin.bridge.OnPlayNextListener
-import nl.npo.player.library.presentation.bitmovin.model.PlayNextState
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
@@ -228,23 +226,9 @@ class PlayerActivity : BaseActivity() {
                     true
                 }
             }
-            setPlayNextListener(object : OnPlayNextListener {
-                override fun onStateChanged(
-                    playNextState: PlayNextState
-                ) {
-                    runOnUiThread {
-                        Toast.makeText(
-                            context,
-                            "Play Next state changed to: ${playNextState.javaClass.simpleName} ${(playNextState as? PlayNextState.CountdownProgress)?.let { ", with remainingCourtDown: ${it.remainingCountDownDuration}." } ?: ""}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    when (playNextState) {
-                        PlayNextState.CountdownFinished, PlayNextState.ProceedPressed -> playRandom()
-                        else -> {} // No-op
-                    }
-                }
-            })
+            setOnPlayNextClickListener { _ ->
+                playRandom()
+            }
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
                     Toast.makeText(

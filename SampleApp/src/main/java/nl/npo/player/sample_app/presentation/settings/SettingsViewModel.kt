@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.sample_app.R
+import nl.npo.player.sample_app.data.model.PlayNextPref
 import nl.npo.player.sample_app.data.model.StylingPref
 import nl.npo.player.sample_app.data.model.UserTypePref
 import nl.npo.player.sample_app.data.model.toPref
@@ -59,6 +60,7 @@ class SettingsViewModel @Inject constructor(
 
     private suspend fun handlePicker(value: SettingsPickerOption) {
         when (value) {
+            is PlayNextPref -> settingsRepository.setShouldPlayNext(value.toDomain())
             is StylingPref -> settingsRepository.setStyling(value.toDomain())
             is UserTypePref -> settingsRepository.setUserType(value.toDomain())
         }
@@ -66,6 +68,15 @@ class SettingsViewModel @Inject constructor(
 
     private suspend fun generateSettingsList() {
         _settingsList.value = buildList {
+            add(
+                SettingsItem.Picker(
+                    SettingsKey.ShouldPlayNext,
+                    R.string.setting_play_next,
+                    settingsRepository.shouldShowPlayNext.first().toPref(),
+                    PlayNextPref.values().asList()
+                )
+            )
+
             add(
                 SettingsItem.Picker(
                     SettingsKey.Styling,
