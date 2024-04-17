@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.domain.common.enums.AVType
@@ -16,15 +16,22 @@ import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
+import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOUiConfig
+import nl.npo.player.sample_app.domain.SettingsRepository
 import nl.npo.player.sample_app.domain.TokenProvider
 import nl.npo.player.sample_app.domain.model.StreamInfoResult
+import nl.npo.player.sample_app.domain.model.Styling
+import nl.npo.player.sample_app.domain.model.UserType
 import nl.npo.player.sample_app.model.SourceWrapper
 import nl.npo.player.sample_app.model.StreamRetrievalState
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val tokenProvider: TokenProvider
+    private val tokenProvider: TokenProvider,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
     private val mutableState =
         MutableLiveData<StreamRetrievalState>(StreamRetrievalState.NotStarted)
@@ -33,9 +40,11 @@ class PlayerViewModel @Inject constructor(
     fun retrieveSource(item: SourceWrapper) {
         mutableState.postValue(StreamRetrievalState.Loading)
         viewModelScope.launch(Dispatchers.IO) {
-            when (val result = tokenProvider.createToken(item.uniqueId, item.asPlusUser)) {
+            val isPlusUser = settingsRepository.userType.first() == UserType.Plus
+            when (val result = tokenProvider.createToken(item.uniqueId, isPlusUser)) {
                 is StreamInfoResult.Success -> {
                     try {
+                        val autoPlay = settingsRepository.autoPlayEnabled.first()
                         val source =
                             NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(result.data.token))
                         mutableState.postValue(
@@ -43,7 +52,7 @@ class PlayerViewModel @Inject constructor(
                                 source.copy(
                                     overrideStartOffset = item.startOffset,
                                     overrideImageUrl = item.getImageUrl(source),
-                                    overrideAutoPlay = item.autoPlay,
+                                    overrideAutoPlay = autoPlay,
                                     overrideMetadata = source.metadata?.toMutableMap()
                                         ?.apply {
                                             set(
@@ -76,13 +85,8 @@ class PlayerViewModel @Inject constructor(
 
     fun loadStream(npoPlayer: NPOPlayer, npoSourceConfig: NPOSourceConfig) {
         viewModelScope.launch {
-//            withContext(Dispatchers.IO) {
-//                delay(61 * 1000)
-            withContext(Dispatchers.Main) {
-                npoPlayer.loadStream(npoSourceConfig)
-//                npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig)
-//                }
-            }
+            val autoPlay = settingsRepository.autoPlayEnabled.first()
+            npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig.copy(overrideAutoPlay = autoPlay))
         }
     }
 
@@ -92,6 +96,37 @@ class PlayerViewModel @Inject constructor(
                 throwable, sourceWrapper
             )
         )
+    }
+
+    fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean) -> Unit) {
+        viewModelScope.launch {
+            val playerConfig = NPOPlayerBitmovinConfig(
+                shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
+                shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
+            )
+
+            val uiConfig = if (settingsRepository.showUi.first()) {
+                NPOUiConfig.WebUi(
+                    supplementalCssLocation = if (settingsRepository.styling.first() == Styling.Custom) {
+                        "file:///android_asset/player_supplemental_styling.css"
+                    } else {
+                        null
+                    }
+                )
+            } else {
+                NPOUiConfig.Disabled
+            }
+
+            callback(playerConfig, uiConfig, settingsRepository.showMultiplePlayers.first())
+        }
+    }
+
+    fun hasCustomSettings(callback: () -> Unit) {
+        viewModelScope.launch {
+            if (settingsRepository.showCustomSettings.first()) {
+                callback()
+            }
+        }
     }
 
     companion object {

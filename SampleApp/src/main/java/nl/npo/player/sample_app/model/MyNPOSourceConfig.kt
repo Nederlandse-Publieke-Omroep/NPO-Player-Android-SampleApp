@@ -17,7 +17,6 @@ data class MyNPOSourceConfig(
     override val avType: AVType? = null,
     override val isLiveStream: Boolean? = null,
     override val sourceType: NPOSourceType = NPOSourceType.Progressive,
-    override val autoPlay: Boolean = false,
     override val subtitles: List<Subtitle> = emptyList(),
     override val thumbnailTrack: String? = null,
     override val drmToken: String? = null,

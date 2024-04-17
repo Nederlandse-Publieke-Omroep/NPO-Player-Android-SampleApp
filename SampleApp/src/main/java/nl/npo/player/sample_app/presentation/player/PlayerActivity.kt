@@ -12,8 +12,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import com.bitmovin.player.ui.getSystemUiVisibilityFlags
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
@@ -28,12 +29,12 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
+import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sample_app.R
 import nl.npo.player.sample_app.SampleApplication
-import nl.npo.player.sample_app.data.ads.AdManagerProvider
 import nl.npo.player.sample_app.databinding.ActivityPlayerBinding
 import nl.npo.player.sample_app.extension.observeNonNull
 import nl.npo.player.sample_app.model.SourceWrapper
@@ -139,7 +140,9 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        loadSource(sourceWrapper)
+        playerViewModel.getConfiguration { playerConfig, uiConfig, showMultiplePlayers ->
+            loadSource(sourceWrapper, playerConfig, uiConfig, showMultiplePlayers)
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -149,27 +152,23 @@ class PlayerActivity : BaseActivity() {
         super.onConfigurationChanged(newConfig)
     }
 
-    private fun loadSource(sourceWrapper: SourceWrapper) {
+    private fun loadSource(
+        sourceWrapper: SourceWrapper,
+        playerConfig: NPOPlayerConfig,
+        uiConfig: NPOUiConfig,
+        showMultiplePlayers: Boolean
+    ) {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title)
-            sourceWrapper.autoPlay
+
             try {
                 player = NPOPlayerLibrary.getPlayer(
                     context = binding.root.context,
-                    npoPlayerConfig = NPOPlayerBitmovinConfig(
-                        autoPlayEnabled = false,
-                        isUiEnabled = sourceWrapper.uiEnabled,
-                        supplementalPlayerUiCss = null, // "file:///android_asset/player_supplemental_styling.css",
-                        shouldPauseOnSwitchToCellularNetwork = true,
-                        shouldPauseWhenBecomingNoisy = true,
-                        applyLivestreamCastWorkAround = true
-                    ),
-                    adManager = AdManagerProvider.getAdManager(),
+                    npoPlayerConfig = playerConfig,
                     pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                         ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
                 ).apply {
-                    attachToLifecycle(lifecycle)
                     remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                     eventEmitter.addListener(onFinishedPlaybackListener)
                     eventEmitter.addListener(onPlayPauseListener)
@@ -180,7 +179,13 @@ class PlayerActivity : BaseActivity() {
                         NOTIFICATION_ID,
                         mediaSession.sessionToken
                     )
-                    binding.npoVideoPlayer.attachPlayer(this)
+                    attachToLifecycle(lifecycle)
+
+                    binding.npoVideoPlayer.attachPlayer(this, uiConfig)
+                    if (showMultiplePlayers) {
+                        binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
+                    }
+                    binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                 }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog.Builder(this)
@@ -221,12 +226,38 @@ class PlayerActivity : BaseActivity() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             setFullScreenHandler(fullScreenHandler)
-            setSettingsButtonOnClickListener {
-                runOnUiThread {
-                    showSettings()
+            playerViewModel.hasCustomSettings {
+                setSettingsButtonOnClickListener {
+                    runOnUiThread {
+                        showSettings()
+                    }
+                    true
                 }
-                true
             }
+
+            setPlayPauseButtonOnClickListener { isPlayPressed ->
+                runOnUiThread {
+                    Toast.makeText(
+                        context,
+                        "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+        npoVideoPlayerTwo.apply {
+            attachToLifecycle(lifecycle)
+            setFullScreenHandler(fullScreenHandler)
+            playerViewModel.hasCustomSettings {
+                setSettingsButtonOnClickListener {
+                    runOnUiThread {
+                        showSettings()
+                    }
+                    true
+                }
+            }
+
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
                     Toast.makeText(
@@ -239,11 +270,12 @@ class PlayerActivity : BaseActivity() {
         }
         btnSwitchStreams.setOnClickListener {
             if (player?.isAdPlaying != true) {
-                val newSource = linkViewModel.urlLinkList.value?.union(
+                linkViewModel.urlLinkList.value?.union(
                     linkViewModel.streamLinkList.value ?: emptyList()
-                )?.random()
-                newSource?.let {
-                    loadSource(it)
+                )?.random()?.let { newSource ->
+                    playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
+                        loadSource(newSource, config, uiConfig, showMultiplePlayers)
+                    }
                 }
             }
         }
@@ -259,7 +291,6 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showSettings() {
-
         getSettings().let { settings ->
             AlertDialog.Builder(this@PlayerActivity).setItems(
                 settings.map { it.name }.toTypedArray()
@@ -450,11 +481,15 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    @Suppress("DEPRECATION")
-    private fun doSystemUiVisibility(fullScreen: Boolean) {
-        runOnUiThread {
-            val uiParams = getSystemUiVisibilityFlags(fullScreen, true)
-            window.decorView.systemUiVisibility = uiParams
+    private fun ActivityPlayerBinding.updateStatusBarVisibility(isFullScreen: Boolean) {
+        WindowInsetsControllerCompat(window, root).apply {
+            if (isFullScreen) {
+                hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                show(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+            }
         }
     }
 
@@ -472,9 +507,9 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = true
                     btnPlayPause.isVisible = true
+                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                doSystemUiVisibility(false)
             }
         }
 
@@ -484,9 +519,9 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = false
                     btnPlayPause.isVisible = false
+                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                doSystemUiVisibility(true)
             }
         }
 
@@ -495,7 +530,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         override fun onResume() {
-            doSystemUiVisibility(isFullscreen)
+            binding.updateStatusBarVisibility(isFullscreen)
         }
     }
 
