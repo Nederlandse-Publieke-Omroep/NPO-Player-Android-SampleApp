@@ -14,6 +14,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -491,7 +492,9 @@ class PlayerActivity : BaseActivity() {
     private fun doSystemUiVisibility(fullScreen: Boolean) {
         runOnUiThread {
             with(WindowCompat.getInsetsController(window, window.decorView)) {
-                val type = WindowInsetsCompat.Type.systemBars()
+                val type = WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 if (fullScreen) {
                     hide(type)
                 } else {
@@ -515,6 +518,7 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = true
                     btnPlayPause.isVisible = true
+                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 doSystemUiVisibility(false)
@@ -527,6 +531,7 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = false
                     btnPlayPause.isVisible = false
+                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 doSystemUiVisibility(true)
