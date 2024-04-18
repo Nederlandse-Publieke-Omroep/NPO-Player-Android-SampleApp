@@ -142,6 +142,11 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
+        playerViewModel.shouldAddSterOverlay {
+            binding.npoVideoPlayer.setAdsOverlay(SterOverlayView(this))
+            binding.npoVideoPlayerTwo.setAdsOverlay(SterOverlayView(this))
+        }
+
         playerViewModel.getConfiguration { playerConfig, uiConfig, showMultiplePlayers ->
             loadSource(sourceWrapper, playerConfig, uiConfig, showMultiplePlayers)
         }
@@ -459,12 +464,6 @@ class PlayerActivity : BaseActivity() {
 
     private fun setObservers() {
         playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
-        playerViewModel.enableSterUi.observe(this) { shouldEnable ->
-            if (shouldEnable) {
-                binding.npoVideoPlayer.setAdsOverlay(SterOverlayView(this))
-                binding.npoVideoPlayerTwo.setAdsOverlay(SterOverlayView(this))
-            }
-        }
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {

@@ -3,7 +3,6 @@ package nl.npo.player.sample_app.presentation.player.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -37,8 +36,6 @@ class PlayerViewModel @Inject constructor(
     private val mutableState =
         MutableLiveData<StreamRetrievalState>(StreamRetrievalState.NotStarted)
     val retrievalState: LiveData<StreamRetrievalState> = mutableState
-
-    val enableSterUi = settingsRepository.sterUiEnabled.asLiveData()
 
     fun retrieveSource(item: SourceWrapper) {
         mutableState.postValue(StreamRetrievalState.Loading)
@@ -127,6 +124,14 @@ class PlayerViewModel @Inject constructor(
     fun hasCustomSettings(callback: () -> Unit) {
         viewModelScope.launch {
             if (settingsRepository.showCustomSettings.first()) {
+                callback()
+            }
+        }
+    }
+
+    fun shouldAddSterOverlay(callback: () -> Unit) {
+        viewModelScope.launch {
+            if (settingsRepository.sterUiEnabled.first()) {
                 callback()
             }
         }
