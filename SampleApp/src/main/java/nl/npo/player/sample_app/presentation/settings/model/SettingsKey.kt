@@ -8,5 +8,6 @@ enum class SettingsKey {
     AutoPlayEnabled,
     ShowMultiplePlayers,
     PauseWhenBecomingNoisy,
-    PauseOnSwitchToCellularNetwork
+    PauseOnSwitchToCellularNetwork,
+    ShouldPlayNext
 }

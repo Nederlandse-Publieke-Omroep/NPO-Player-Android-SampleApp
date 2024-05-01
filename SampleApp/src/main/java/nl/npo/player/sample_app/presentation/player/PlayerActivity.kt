@@ -82,12 +82,6 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private val onFinishedPlaybackListener: PlayerListener = object : PlayerListener {
-        override fun onPlaybackFinished(currentPosition: Double) {
-            binding.btnSwitchStreams.callOnClick()
-        }
-    }
-
     private val onPlayPauseListener: PlayerListener = object : PlayerListener {
         override fun onPlaybackFinished(currentPosition: Double) {
             binding.btnPlayPause.isVisible = false
@@ -170,7 +164,6 @@ class PlayerActivity : BaseActivity() {
                         ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
                 ).apply {
                     remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
-                    eventEmitter.addListener(onFinishedPlaybackListener)
                     eventEmitter.addListener(onPlayPauseListener)
                     npoNotificationManager = setupPlayerNotificationManager(
                         NOTIFICATION_CHANNEL_ID,
@@ -213,7 +206,6 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player?.apply {
-            eventEmitter.removeListener(onFinishedPlaybackListener)
             eventEmitter.removeListener(onPlayPauseListener)
         }
 
@@ -234,7 +226,9 @@ class PlayerActivity : BaseActivity() {
                     true
                 }
             }
-
+            setOnPlayNextClickListener { _ ->
+                playRandom()
+            }
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
                     Toast.makeText(
@@ -270,13 +264,7 @@ class PlayerActivity : BaseActivity() {
         }
         btnSwitchStreams.setOnClickListener {
             if (player?.isAdPlaying != true) {
-                linkViewModel.urlLinkList.value?.union(
-                    linkViewModel.streamLinkList.value ?: emptyList()
-                )?.random()?.let { newSource ->
-                    playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
-                        loadSource(newSource, config, uiConfig, showMultiplePlayers)
-                    }
-                }
+                playRandom()
             }
         }
         btnPlayPause.setOnClickListener {
@@ -286,6 +274,16 @@ class PlayerActivity : BaseActivity() {
                 } else {
                     play()
                 }
+            }
+        }
+    }
+
+    private fun playRandom() {
+        linkViewModel.urlLinkList.value?.union(
+            linkViewModel.streamLinkList.value ?: emptyList()
+        )?.random()?.let { newSource ->
+            playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
+                loadSource(newSource, config, uiConfig, showMultiplePlayers)
             }
         }
     }
@@ -457,6 +455,9 @@ class PlayerActivity : BaseActivity() {
 
     private fun setObservers() {
         playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
+        // Initialize the link lists even though we don't do anything with the changes yet.
+        linkViewModel.urlLinkList.observeNonNull(this) {}
+        linkViewModel.streamLinkList.observeNonNull(this) {}
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {

@@ -86,7 +86,10 @@ class PlayerViewModel @Inject constructor(
     fun loadStream(npoPlayer: NPOPlayer, npoSourceConfig: NPOSourceConfig) {
         viewModelScope.launch {
             val autoPlay = settingsRepository.autoPlayEnabled.first()
-            npoPlayer.loadStreamWithDRMRefresh(npoSourceConfig.copy(overrideAutoPlay = autoPlay))
+            npoPlayer.loadStream(
+                npoSourceConfig.copy(overrideAutoPlay = autoPlay),
+                settingsRepository.shouldShowPlayNext.first()
+            )
         }
     }
 

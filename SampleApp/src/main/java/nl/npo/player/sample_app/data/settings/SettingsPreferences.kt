@@ -4,9 +4,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sample_app.data.model.StylingPref
 import nl.npo.player.sample_app.data.model.UserTypePref
 import nl.npo.player.sample_app.data.settings.module.SettingsDataStore
@@ -26,6 +28,10 @@ class SettingsPreferences @Inject constructor(
         val showMultiplePlayers = booleanPreferencesKey("showMultiplePlayers")
         val pauseWhenBecomingNoisy = booleanPreferencesKey("pauseWhenBecomingNoisy")
         val pauseOnSwitchToCellularNetwork = booleanPreferencesKey("pauseOnSwitchToCellularNetwork")
+        val shouldPlayNext = booleanPreferencesKey("shouldPlayNext")
+        val shouldAutoPlayNext = booleanPreferencesKey("shouldAutoPlayNext")
+        val playNextDuration = intPreferencesKey("playNextDuration")
+        val playNextOffset = intPreferencesKey("playNextOffset")
     }
 
     val styling: Flow<StylingPref>
@@ -113,6 +119,26 @@ class SettingsPreferences @Inject constructor(
     suspend fun setPauseOnSwitchToCellularNetwork(pause: Boolean) {
         dataStore.edit { prefs ->
             prefs[Keys.pauseOnSwitchToCellularNetwork] = pause
+        }
+    }
+
+    val shouldPlayNext: Flow<PlayNext>
+        get() = dataStore.data.map { prefs ->
+            val duration = prefs[Keys.playNextDuration] ?: 10
+            PlayNext(
+                showPlayNext = prefs[Keys.shouldPlayNext] ?: false,
+                duration = duration,
+                offset = prefs[Keys.playNextOffset] ?: duration,
+                autoPlayNextEnabled = prefs[Keys.shouldAutoPlayNext] ?: true
+            )
+        }
+
+    suspend fun setShouldPlayNext(playNext: PlayNext) {
+        dataStore.edit { prefs ->
+            prefs[Keys.shouldPlayNext] = playNext.showPlayNext
+            prefs[Keys.shouldAutoPlayNext] = playNext.autoPlayNextEnabled
+            prefs[Keys.playNextDuration] = playNext.duration
+            prefs[Keys.playNextOffset] = playNext.offset
         }
     }
 }
