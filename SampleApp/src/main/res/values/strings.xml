@@ -20,6 +20,7 @@
     <string name="cast_receiver_id_test" translatable="false">72990B99</string>
     <string name="debug_casting">onScreenDebug=true</string>
 
+    <string name="setting_play_next">Play Next</string>
     <string name="setting_styling">Styling</string>
     <string name="setting_user_type">User type</string>
     <string name="setting_custom_settings">Custom settings</string>

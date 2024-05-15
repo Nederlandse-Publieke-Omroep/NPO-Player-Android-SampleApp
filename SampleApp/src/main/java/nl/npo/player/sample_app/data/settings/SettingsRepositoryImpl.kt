@@ -2,6 +2,7 @@ package nl.npo.player.sample_app.data.settings
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sample_app.data.model.StylingPref
 import nl.npo.player.sample_app.data.model.UserTypePref
 import nl.npo.player.sample_app.data.model.toPref
@@ -68,5 +69,12 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setPauseOnSwitchToCellularNetwork(pause: Boolean) {
         prefs.setPauseOnSwitchToCellularNetwork(pause)
+    }
+
+    override val shouldShowPlayNext: Flow<PlayNext> =
+        prefs.shouldPlayNext
+
+    override suspend fun setShouldPlayNext(playNext: PlayNext) {
+        prefs.setShouldPlayNext(playNext)
     }
 }
