@@ -8,12 +8,7 @@ plugins {
 }
 
 android {
-    buildFeatures {
-        buildConfig = true
-    }
-
     compileSdk 34
-
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
@@ -100,6 +95,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         viewBinding = true
     }
 
@@ -125,8 +121,7 @@ dependencies {
     implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    ACCImplementation "nl.npo.player.library:sterAds:$libVersionName"
-    PRODImplementation "nl.npo.player.library:sterAds:$libVersionName"
+    implementation "nl.npo.player.library:sterAds:$libVersionName"
 
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
