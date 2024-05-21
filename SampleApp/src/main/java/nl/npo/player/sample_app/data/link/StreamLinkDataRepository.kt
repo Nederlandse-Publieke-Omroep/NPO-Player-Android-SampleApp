@@ -18,13 +18,6 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "Live NPO1: LI_NL1_4188102",
-                testingDescription = "Playback Live DVR",
-                uniqueId = "LI_NL1_4188102",
-                getStreamLink = true,
-                imageUrl = "https://cdn.npoplayer.nl/posters/npo1_afbeelding.jpg"
-            ),
-            SourceWrapper(
-                title = "Live NPO1: LI_NL1_4188102",
                 testingDescription = "Playback Live DVR (DRM)",
                 uniqueId = "LI_NL1_4188102",
                 getStreamLink = true,
