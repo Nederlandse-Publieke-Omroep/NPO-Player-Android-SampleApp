@@ -10,6 +10,7 @@ import nl.npo.player.sample_app.data.link.StreamLinkDataRepository
 import nl.npo.player.sample_app.data.link.URLLinkDataRepository
 import nl.npo.player.sample_app.data.streamlink.StreamInfoRepository
 import nl.npo.player.sample_app.domain.LinkRepository
+import nl.npo.player.sample_app.domain.SettingsRepository
 import nl.npo.player.sample_app.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sample_app.domain.annotation.StreamLinkRepository
 import nl.npo.player.sample_app.domain.annotation.URLLinkRepository
@@ -30,9 +31,11 @@ object LinkRepositoryModule {
     @Provides
     fun provideOfflineLinkRepo(
         npoOfflineContentManager: NPOOfflineContentManager,
-        streamInfoRepository: StreamInfoRepository
+        streamInfoRepository: StreamInfoRepository,
+        settingsRepository: SettingsRepository
     ): LinkRepository.OfflineLinkRepository = OfflineContentDataRepository(
         npoOfflineContentManager,
-        streamInfoRepository
+        streamInfoRepository,
+        settingsRepository
     )
 }
