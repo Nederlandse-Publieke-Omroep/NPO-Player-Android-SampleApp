@@ -109,6 +109,14 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://images.npo.nl/header/2560x1440/Karen-Pirie-Key_Art_cdn_header-1673600845.jpg"
             ),
             SourceWrapper(
+                title = "Beste Zangers- s14-e5",
+                testingDescription = "Karsu - No DRM",
+                uniqueId = "AT_2160754",
+                getStreamLink = true,
+                startOffset = (60.1*41),
+                imageUrl = "https://assets-start.npo.nl/resources/2023/07/03/5a718c06-b2de-4035-ac9a-4c6919a9828a.jpg?dimensions=600x600"
+            ),
+            SourceWrapper(
                 title = "Op1 - POMS_BV_20012834",
                 testingDescription = "Segment 1 (POMS)",
                 uniqueId = "POMS_BV_20012834",
