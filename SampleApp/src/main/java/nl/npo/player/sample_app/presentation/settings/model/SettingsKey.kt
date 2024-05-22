@@ -5,6 +5,7 @@ enum class SettingsKey {
     UserType,
     CustomSettings,
     ShowUi,
+    SterUiEnabled,
     AutoPlayEnabled,
     ShowMultiplePlayers,
     PauseWhenBecomingNoisy,

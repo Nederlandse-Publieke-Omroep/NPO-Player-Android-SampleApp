@@ -24,6 +24,7 @@ class SettingsPreferences @Inject constructor(
         val userType = stringPreferencesKey("userType")
         val settingsType = booleanPreferencesKey("settingsType")
         val showUi = booleanPreferencesKey("showUi")
+        val sterUiEnabled = booleanPreferencesKey("sterUiEnabled")
         val autoPlayEnabled = booleanPreferencesKey("autoPlayEnabled")
         val showMultiplePlayers = booleanPreferencesKey("showMultiplePlayers")
         val pauseWhenBecomingNoisy = booleanPreferencesKey("pauseWhenBecomingNoisy")
@@ -86,6 +87,17 @@ class SettingsPreferences @Inject constructor(
     suspend fun setAutoPlayEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[Keys.autoPlayEnabled] = enabled
+        }
+    }
+
+    val sterUiEnabled: Flow<Boolean>
+        get() = dataStore.data.map { prefs ->
+            prefs[Keys.sterUiEnabled] ?: true
+        }
+
+    suspend fun setSterUiEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[Keys.sterUiEnabled] = enabled
         }
     }
 

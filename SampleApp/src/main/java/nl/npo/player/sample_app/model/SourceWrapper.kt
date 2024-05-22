@@ -11,8 +11,6 @@ data class SourceWrapper(
     val getStreamLink: Boolean,
     val streamUrl: String? = null,
     val startOffset: Double = 0.0,
-    val autoPlay: Boolean = false,
-    val uiEnabled: Boolean = true,
     val offlineDownloadAllowed: Boolean = false,
     val imageUrl: String? = "https://cdn.npoplayer.nl/posters/default-npo-poster.png",
     val preferThisImageUrlOverStreamLink: Boolean = false,
@@ -24,8 +22,7 @@ data class SourceWrapper(
         startOffset = startOffset,
         imageUrl = imageUrl
     ) else null,
-    val npoOfflineContent: NPOOfflineContent? = null,
-    val asPlusUser: Boolean = true
+    val npoOfflineContent: NPOOfflineContent? = null
 ) : Serializable {
     override fun toString(): String {
         return "$title - $uniqueId"

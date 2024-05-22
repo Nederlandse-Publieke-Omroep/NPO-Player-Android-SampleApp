@@ -8,12 +8,7 @@ plugins {
 }
 
 android {
-    buildFeatures {
-        buildConfig = true
-    }
-
     compileSdk 34
-
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
@@ -100,6 +95,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         viewBinding = true
     }
 
@@ -123,18 +119,17 @@ kapt {
 
 dependencies {
     implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    ACCImplementation "nl.npo.player.library:sterAds:$libVersionName"
-    PRODImplementation "nl.npo.player.library:sterAds:$libVersionName"
+    implementation "nl.npo.player.library:sterAds:$libVersionName"
 
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
-    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation "androidx.fragment:fragment-ktx:1.7.1"
 
 
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
@@ -150,8 +145,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
 
     //only needed if Chromecast is used
-    implementation "com.google.android.gms:play-services-cast-framework:21.3.0"
-    implementation 'androidx.mediarouter:mediarouter:1.6.0'  //only needed if Chromecast is used
+    implementation "com.google.android.gms:play-services-cast-framework:21.4.0"
+    implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'
 
@@ -167,8 +162,7 @@ dependencies {
     releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
 
     // Preferences
-    implementation "androidx.datastore:datastore-preferences:1.0.0"
-
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
 }
 
 kapt {

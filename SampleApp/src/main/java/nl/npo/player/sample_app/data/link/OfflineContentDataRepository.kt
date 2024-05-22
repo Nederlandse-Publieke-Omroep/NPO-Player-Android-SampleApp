@@ -1,5 +1,6 @@
 package nl.npo.player.sample_app.data.link
 
+import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.model.JWTString
@@ -9,16 +10,19 @@ import nl.npo.player.library.domain.offline.NPOOfflineContentManager
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.sample_app.domain.LinkRepository
+import nl.npo.player.sample_app.domain.SettingsRepository
 import nl.npo.player.sample_app.domain.TokenProvider
 import nl.npo.player.sample_app.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sample_app.domain.model.StreamInfoResult
+import nl.npo.player.sample_app.domain.model.UserType
 import nl.npo.player.sample_app.model.SourceWrapper
 import javax.inject.Inject
 
 @OfflineLinkRepository
 class OfflineContentDataRepository @Inject constructor(
     private val npoOfflineContentManager: NPOOfflineContentManager,
-    private val tokenProvider: TokenProvider
+    private val tokenProvider: TokenProvider,
+    private val settingsRepository: SettingsRepository
 ) : LinkRepository.OfflineLinkRepository {
     override suspend fun getSourceList(): List<SourceWrapper> {
         return npoOfflineContentManager.getAll().map { offlineContent ->
@@ -26,7 +30,6 @@ class OfflineContentDataRepository @Inject constructor(
                 npoSourceConfig = null,
                 uniqueId = offlineContent.uniqueId,
                 getStreamLink = false,
-                autoPlay = true,
                 title = offlineContent.getOriginalSource().title ?: offlineContent.uniqueId,
                 npoOfflineContent = offlineContent
             )
@@ -36,9 +39,10 @@ class OfflineContentDataRepository @Inject constructor(
     @Throws(NPOOfflineContentException::class)
     override suspend fun createOfflineContent(sourceWrapper: SourceWrapper): NPOOfflineContent {
         val npoSource = sourceWrapper.npoSourceConfig ?: run {
+            val isPlusUser = settingsRepository.userType.first() == UserType.Plus
             when (
                 val result = tokenProvider.createToken(
-                    sourceWrapper.uniqueId, sourceWrapper.asPlusUser
+                    sourceWrapper.uniqueId, isPlusUser
                 )
             ) {
                 is StreamInfoResult.Success -> {

@@ -105,7 +105,7 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             val playerConfig = NPOPlayerBitmovinConfig(
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
-                shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first()
+                shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
             )
 
             val uiConfig = if (settingsRepository.showUi.first()) {
@@ -127,6 +127,14 @@ class PlayerViewModel @Inject constructor(
     fun hasCustomSettings(callback: () -> Unit) {
         viewModelScope.launch {
             if (settingsRepository.showCustomSettings.first()) {
+                callback()
+            }
+        }
+    }
+
+    fun shouldAddSterOverlay(callback: () -> Unit) {
+        viewModelScope.launch {
+            if (settingsRepository.sterUiEnabled.first()) {
                 callback()
             }
         }

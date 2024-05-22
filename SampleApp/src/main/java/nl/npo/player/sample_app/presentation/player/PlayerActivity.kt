@@ -12,6 +12,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -87,14 +88,14 @@ class PlayerActivity : BaseActivity() {
             binding.btnPlayPause.isVisible = false
         }
 
-        override fun onPaused(currentPosition: Double) {
+        override fun onPaused(currentPosition: Double, isAd: Boolean) {
             binding.btnPlayPause.apply {
                 isVisible = !fullScreenHandler.isFullscreen
                 setImageResource(android.R.drawable.ic_media_play)
             }
         }
 
-        override fun onPlaying(currentPosition: Double) {
+        override fun onPlaying(currentPosition: Double, isAd: Boolean) {
             binding.btnPlayPause.apply {
                 isVisible = !fullScreenHandler.isFullscreen
                 setImageResource(android.R.drawable.ic_media_pause)
@@ -175,8 +176,10 @@ class PlayerActivity : BaseActivity() {
                     attachToLifecycle(lifecycle)
 
                     binding.npoVideoPlayer.attachPlayer(this, uiConfig)
+                    binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
                     if (showMultiplePlayers) {
                         binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
+                        binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
                     }
                     binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                 }
@@ -217,7 +220,6 @@ class PlayerActivity : BaseActivity() {
     private fun ActivityPlayerBinding.setupViews() {
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
-            setFullScreenHandler(fullScreenHandler)
             playerViewModel.hasCustomSettings {
                 setSettingsButtonOnClickListener {
                     runOnUiThread {
@@ -242,7 +244,6 @@ class PlayerActivity : BaseActivity() {
 
         npoVideoPlayerTwo.apply {
             attachToLifecycle(lifecycle)
-            setFullScreenHandler(fullScreenHandler)
             playerViewModel.hasCustomSettings {
                 setSettingsButtonOnClickListener {
                     runOnUiThread {
@@ -482,14 +483,17 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private fun ActivityPlayerBinding.updateStatusBarVisibility(isFullScreen: Boolean) {
-        WindowInsetsControllerCompat(window, root).apply {
-            if (isFullScreen) {
-                hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+    private fun doSystemUiVisibility(fullScreen: Boolean) {
+        runOnUiThread {
+            with(WindowCompat.getInsetsController(window, window.decorView)) {
                 systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            } else {
-                show(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+                val type = WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
+                if (fullScreen) {
+                    hide(type)
+                } else {
+                    show(type)
+                }
             }
         }
     }
@@ -508,9 +512,9 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = true
                     btnPlayPause.isVisible = true
-                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                doSystemUiVisibility(fullscreen)
             }
         }
 
@@ -520,9 +524,9 @@ class PlayerActivity : BaseActivity() {
                 binding.apply {
                     btnSwitchStreams.isVisible = false
                     btnPlayPause.isVisible = false
-                    updateStatusBarVisibility(fullscreen)
                 }
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                doSystemUiVisibility(fullscreen)
             }
         }
 
@@ -531,7 +535,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         override fun onResume() {
-            binding.updateStatusBarVisibility(isFullscreen)
+            doSystemUiVisibility(isFullscreen)
         }
     }
 
