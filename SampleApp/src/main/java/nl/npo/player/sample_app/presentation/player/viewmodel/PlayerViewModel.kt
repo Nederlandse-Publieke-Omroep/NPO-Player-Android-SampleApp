@@ -15,8 +15,8 @@ import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
+import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.presentation.bitmovin.model.NPOPlayerBitmovinConfig
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.sample_app.domain.SettingsRepository
@@ -103,9 +103,10 @@ class PlayerViewModel @Inject constructor(
 
     fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean) -> Unit) {
         viewModelScope.launch {
-            val playerConfig = NPOPlayerBitmovinConfig(
+            val playerConfig = NPOPlayerConfig(
                 shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                 shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
+                bufferConfig = NPOBufferConfig(),
             )
 
             val uiConfig = if (settingsRepository.showUi.first()) {

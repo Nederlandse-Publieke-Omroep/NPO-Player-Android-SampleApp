@@ -3,7 +3,7 @@ package nl.npo.player.sample_app.model
 import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.enums.NPOSourceType
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.stream_link.model.Subtitle
+import nl.npo.player.library.domain.streamLink.model.Subtitle
 
 @kotlinx.serialization.Serializable
 data class MyNPOSourceConfig(
@@ -20,5 +20,5 @@ data class MyNPOSourceConfig(
     override val subtitles: List<Subtitle> = emptyList(),
     override val thumbnailTrack: String? = null,
     override val drmToken: String? = null,
-    override val durationInMillis: Long? = null
+    override val durationInMillis: Long? = null,
 ) : NPOSourceConfig
