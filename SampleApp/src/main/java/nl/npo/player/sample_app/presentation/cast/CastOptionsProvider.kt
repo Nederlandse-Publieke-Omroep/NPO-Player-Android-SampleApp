@@ -28,7 +28,7 @@ class CastOptionsProvider : BitmovinCastOptionsProvider() {
             .setResumeSavedSession(castOptions.resumeSavedSession)
             .setStopReceiverApplicationWhenEndingSession(castOptions.stopReceiverApplicationWhenEndingSession)
             .apply {
-                castOptions.castMediaOptions?.let(this::setCastMediaOptions)
+                castOptions.castMediaOptions.let(this::setCastMediaOptions)
             }
     }
 

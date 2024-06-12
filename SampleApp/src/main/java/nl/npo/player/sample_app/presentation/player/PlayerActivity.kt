@@ -59,22 +59,23 @@ class PlayerActivity : BaseActivity() {
     private val linkViewModel by viewModels<LinksViewModel>()
     private var npoNotificationManager: NPONotificationManager? = null
 
-    private val mediaSessionCallback = object : MediaSession.Callback() {
-        override fun onPlay() {
-            super.onPlay()
-            player?.play()
-        }
+    private val mediaSessionCallback =
+        object : MediaSession.Callback() {
+            override fun onPlay() {
+                super.onPlay()
+                player?.play()
+            }
 
-        override fun onPause() {
-            super.onPause()
-            player?.pause()
-        }
+            override fun onPause() {
+                super.onPause()
+                player?.pause()
+            }
 
-        override fun onStop() {
-            super.onStop()
-            player?.pause()
+            override fun onStop() {
+                super.onStop()
+                player?.pause()
+            }
         }
-    }
 
     private val mediaSession by lazy {
         MediaSession(this, MEDIA_SESSION_TAG).apply {
@@ -83,44 +84,54 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private val onPlayPauseListener: PlayerListener = object : PlayerListener {
-        override fun onPlaybackFinished(currentPosition: Double) {
-            binding.btnPlayPause.isVisible = false
-        }
+    private val onPlayPauseListener: PlayerListener =
+        object : PlayerListener {
+            override fun onPlaybackFinished(currentPosition: Double) {
+                binding.btnPlayPause.isVisible = false
+            }
 
-        override fun onPaused(currentPosition: Double, isAd: Boolean) {
-            binding.btnPlayPause.apply {
-                isVisible = !fullScreenHandler.isFullscreen
-                setImageResource(android.R.drawable.ic_media_play)
+            override fun onPaused(
+                currentPosition: Double,
+                isAd: Boolean,
+            ) {
+                binding.btnPlayPause.apply {
+                    isVisible = !fullScreenHandler.isFullscreen
+                    setImageResource(android.R.drawable.ic_media_play)
+                }
+            }
+
+            override fun onPlaying(
+                currentPosition: Double,
+                isAd: Boolean,
+            ) {
+                binding.btnPlayPause.apply {
+                    isVisible = !fullScreenHandler.isFullscreen
+                    setImageResource(android.R.drawable.ic_media_pause)
+                }
+            }
+
+            override fun onSourceLoaded(
+                currentPosition: Double,
+                playerSource: PlayerSource,
+            ) {
+                binding.btnPlayPause.apply {
+                    isVisible = !fullScreenHandler.isFullscreen
+                    setImageResource(android.R.drawable.ic_media_play)
+                }
+            }
+
+            override fun onSourceError(currentPosition: Double) {
+                binding.btnPlayPause.isVisible = false
+            }
+
+            override fun onSourceLoad(currentPosition: Double) {
+                binding.btnPlayPause.isVisible = false
+            }
+
+            override fun onCanStartPlayingBecauseSwitchedToWiFi() {
+                player?.play()
             }
         }
-
-        override fun onPlaying(currentPosition: Double, isAd: Boolean) {
-            binding.btnPlayPause.apply {
-                isVisible = !fullScreenHandler.isFullscreen
-                setImageResource(android.R.drawable.ic_media_pause)
-            }
-        }
-
-        override fun onSourceLoaded(currentPosition: Double, playerSource: PlayerSource) {
-            binding.btnPlayPause.apply {
-                isVisible = !fullScreenHandler.isFullscreen
-                setImageResource(android.R.drawable.ic_media_play)
-            }
-        }
-
-        override fun onSourceError(currentPosition: Double) {
-            binding.btnPlayPause.isVisible = false
-        }
-
-        override fun onSourceLoad(currentPosition: Double) {
-            binding.btnPlayPause.isVisible = false
-        }
-
-        override fun onCanStartPlayingBecauseSwitchedToWiFi() {
-            player?.play()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,45 +162,47 @@ class PlayerActivity : BaseActivity() {
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
         uiConfig: NPOUiConfig,
-        showMultiplePlayers: Boolean
+        showMultiplePlayers: Boolean,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title)
 
             try {
-                player = NPOPlayerLibrary.getPlayer(
-                    context = binding.root.context,
-                    npoPlayerConfig = playerConfig,
-                    pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                        ?: PlayerTagProvider.getPageTracker(PageConfiguration(title))
-                ).apply {
-                    remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
-                    eventEmitter.addListener(onPlayPauseListener)
-                    npoNotificationManager = setupPlayerNotificationManager(
-                        NOTIFICATION_CHANNEL_ID,
-                        R.string.app_name,
-                        R.drawable.ic_launcher_foreground,
-                        NOTIFICATION_ID,
-                        mediaSession.sessionToken
-                    )
-                    attachToLifecycle(lifecycle)
+                player =
+                    NPOPlayerLibrary.getPlayer(
+                        context = binding.root.context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
+                            ?: PlayerTagProvider.getPageTracker(PageConfiguration(title)),
+                    ).apply {
+                        remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
+                        eventEmitter.addListener(onPlayPauseListener)
+                        npoNotificationManager =
+                            setupPlayerNotificationManager(
+                                NOTIFICATION_CHANNEL_ID,
+                                R.string.app_name,
+                                R.drawable.ic_launcher_foreground,
+                                NOTIFICATION_ID,
+                                mediaSession.sessionToken,
+                            )
+                        attachToLifecycle(lifecycle)
 
-                    binding.npoVideoPlayer.attachPlayer(this, uiConfig)
-                    binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
-                    if (showMultiplePlayers) {
-                        binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
-                        binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
+                        binding.npoVideoPlayer.attachPlayer(this, uiConfig)
+                        binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
+                        if (showMultiplePlayers) {
+                            binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
+                            binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
+                        }
+                        binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                     }
-                    binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
-                }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog.Builder(this)
                     .setTitle("Error")
                     .setMessage("Player Analytics not initialized correctly. ${e.message}")
                     .setCancelable(false)
                     .setPositiveButton(
-                        "Ok"
+                        "Ok",
                     ) { _, _ -> finish() }
                     .show()
                 return
@@ -236,7 +249,7 @@ class PlayerActivity : BaseActivity() {
                     Toast.makeText(
                         context,
                         "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 }
             }
@@ -258,15 +271,13 @@ class PlayerActivity : BaseActivity() {
                     Toast.makeText(
                         context,
                         "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 }
             }
         }
         btnSwitchStreams.setOnClickListener {
-            if (player?.isAdPlaying != true) {
-                playRandom()
-            }
+            playRandom()
         }
         btnPlayPause.setOnClickListener {
             player?.apply {
@@ -281,8 +292,8 @@ class PlayerActivity : BaseActivity() {
 
     private fun playRandom() {
         linkViewModel.urlLinkList.value?.union(
-            linkViewModel.streamLinkList.value ?: emptyList()
-        )?.random()?.let { newSource ->
+            linkViewModel.streamLinkList.value ?: emptyList(),
+        )?.elementAt(15)?.let { newSource ->
             playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
                 loadSource(newSource, config, uiConfig, showMultiplePlayers)
             }
@@ -292,7 +303,7 @@ class PlayerActivity : BaseActivity() {
     private fun showSettings() {
         getSettings().let { settings ->
             AlertDialog.Builder(this@PlayerActivity).setItems(
-                settings.map { it.name }.toTypedArray()
+                settings.map { it.name }.toTypedArray(),
             ) { dialog, which ->
                 when (settings[which]) {
                     PlayerSettings.SUBTITLES -> showSubtitleDialog()
@@ -312,7 +323,7 @@ class PlayerActivity : BaseActivity() {
             audioQualitiesSettings(),
             audioTrackSettings(),
             videoQualitiesSettings(),
-            PlayerSettings.SPEED
+            PlayerSettings.SPEED,
         )
     }
 
@@ -324,8 +335,7 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? =
-        if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.getVideoQualities()?.size ?: 0) > 0) PlayerSettings.VIDEO_QUALITIES else null
@@ -334,7 +344,7 @@ class PlayerActivity : BaseActivity() {
         player?.getSubtitleTracks()?.let { npoSubtitleTracks ->
             AlertDialog.Builder(this).setSingleChoiceItems(
                 npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
-                npoSubtitleTracks.indexOf(player?.getSelectedSubtitleTrack())
+                npoSubtitleTracks.indexOf(player?.getSelectedSubtitleTrack()),
             ) { dialog, which ->
                 player?.selectSubtitleTrack(npoSubtitleTracks[which])
                 dialog.dismiss()
@@ -346,7 +356,7 @@ class PlayerActivity : BaseActivity() {
         player?.getAudioTracks()?.let { audioTracks ->
             AlertDialog.Builder(this).setSingleChoiceItems(
                 audioTracks.map { it.label ?: it.id }.toTypedArray(),
-                audioTracks.indexOf(player?.getSelectedAudioTrack())
+                audioTracks.indexOf(player?.getSelectedAudioTrack()),
             ) { dialog, which ->
                 player?.selectAudioTrack(audioTracks[which])
                 dialog.dismiss()
@@ -358,7 +368,7 @@ class PlayerActivity : BaseActivity() {
         player?.getAudioQualities()?.let { npoAudioQualities ->
             AlertDialog.Builder(this).setSingleChoiceItems(
                 npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
-                npoAudioQualities.indexOf(player?.getSelectedAudioQuality())
+                npoAudioQualities.indexOf(player?.getSelectedAudioQuality()),
             ) { dialog, which ->
                 player?.selectAudioQuality(npoAudioQualities[which])
                 dialog.dismiss()
@@ -370,7 +380,7 @@ class PlayerActivity : BaseActivity() {
         player?.getVideoQualities()?.let { videoQualities ->
             AlertDialog.Builder(this).setSingleChoiceItems(
                 videoQualities.map { it.label ?: it.id }.toTypedArray(),
-                videoQualities.indexOf(player?.getSelectedVideoQuality())
+                videoQualities.indexOf(player?.getSelectedVideoQuality()),
             ) { dialog, which ->
                 player?.selectVideoQuality(videoQualities[which])
                 dialog.dismiss()
@@ -384,8 +394,8 @@ class PlayerActivity : BaseActivity() {
                 speeds.map { "${it.name} (${it.value}x)" }.toTypedArray(),
                 speeds.indexOf(
                     speeds.firstOrNull { it.value == player?.playbackSpeed }
-                        ?: PlaybackSpeeds.NORMAL
-                )
+                        ?: PlaybackSpeeds.NORMAL,
+                ),
             ) { dialog, which ->
                 player?.playbackSpeed = speeds[which].value
                 dialog.dismiss()
@@ -402,7 +412,7 @@ class PlayerActivity : BaseActivity() {
             when (pageTracker) {
                 is PageTracker -> PlayerTagProvider.getPageTracker(pageTracker)
                 else -> PlayerTagProvider.getPageTracker(PageConfiguration(title))
-            }
+            },
         )
     }
 
@@ -410,7 +420,7 @@ class PlayerActivity : BaseActivity() {
         player?.let {
             playerViewModel.loadStream(
                 npoPlayer = it,
-                npoSourceConfig = npoSourceConfig
+                npoSourceConfig = npoSourceConfig,
             )
         }
         binding.apply {
@@ -419,10 +429,13 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private fun handleError(throwable: Throwable?, retry: () -> Unit) {
+    private fun handleError(
+        throwable: Throwable?,
+        retry: () -> Unit,
+    ) {
         Log.d(
             PlayerActivity::class.simpleName,
-            "Loading stream in player failed with result:$throwable"
+            "Loading stream in player failed with result:$throwable",
         )
         throwable?.printStackTrace()
         when (throwable) {
@@ -463,22 +476,24 @@ class PlayerActivity : BaseActivity() {
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
-            is StreamRetrievalState.Success -> with(retrievalState) {
-                loadStreamURL(npoSourceConfig)
-            }
-
-            is StreamRetrievalState.Error -> with(retrievalState) {
-                handleError(throwable) {
-                    playerViewModel.retrieveSource(sourceWrapper)
+            is StreamRetrievalState.Success ->
+                with(retrievalState) {
+                    loadStreamURL(npoSourceConfig)
                 }
-            }
+
+            is StreamRetrievalState.Error ->
+                with(retrievalState) {
+                    handleError(throwable) {
+                        playerViewModel.retrieveSource(sourceWrapper)
+                    }
+                }
 
             StreamRetrievalState.Loading -> {
                 handleLoading()
             }
 
             StreamRetrievalState.NotStarted -> {
-                /* NO-OP */
+                // NO-OP
             }
         }
     }
@@ -488,7 +503,8 @@ class PlayerActivity : BaseActivity() {
             with(WindowCompat.getInsetsController(window, window.decorView)) {
                 systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                val type = WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
+                val type =
+                    WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
                 if (fullScreen) {
                     hide(type)
                 } else {
@@ -498,46 +514,47 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private val fullScreenHandler = object : NPOFullScreenHandler {
-        private var fullscreen = false
-        override val isFullscreen: Boolean get() = fullscreen
+    private val fullScreenHandler =
+        object : NPOFullScreenHandler {
+            private var fullscreen = false
+            override val isFullscreen: Boolean get() = fullscreen
 
-        override fun onDestroy() {
-            // DO nothing
-        }
+            override fun onDestroy() {
+                // DO nothing
+            }
 
-        override fun onFullscreenExitRequested() {
-            fullscreen = false
-            runOnUiThread {
-                binding.apply {
-                    btnSwitchStreams.isVisible = true
-                    btnPlayPause.isVisible = true
+            override fun onFullscreenExitRequested() {
+                fullscreen = false
+                runOnUiThread {
+                    binding.apply {
+                        btnSwitchStreams.isVisible = true
+                        btnPlayPause.isVisible = true
+                    }
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    doSystemUiVisibility(fullscreen)
                 }
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                doSystemUiVisibility(fullscreen)
+            }
+
+            override fun onFullscreenRequested() {
+                fullscreen = true
+                runOnUiThread {
+                    binding.apply {
+                        btnSwitchStreams.isVisible = false
+                        btnPlayPause.isVisible = false
+                    }
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    doSystemUiVisibility(fullscreen)
+                }
+            }
+
+            override fun onPause() {
+                // Do nothing
+            }
+
+            override fun onResume() {
+                doSystemUiVisibility(isFullscreen)
             }
         }
-
-        override fun onFullscreenRequested() {
-            fullscreen = true
-            runOnUiThread {
-                binding.apply {
-                    btnSwitchStreams.isVisible = false
-                    btnPlayPause.isVisible = false
-                }
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                doSystemUiVisibility(fullscreen)
-            }
-        }
-
-        override fun onPause() {
-            // Do nothing
-        }
-
-        override fun onResume() {
-            doSystemUiVisibility(isFullscreen)
-        }
-    }
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
@@ -548,10 +565,11 @@ class PlayerActivity : BaseActivity() {
         fun Intent.getSourceWrapper(): SourceWrapper? {
             val offlineSource: NPOOfflineSourceConfig?
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                offlineSource = this@getSourceWrapper.getParcelableExtra(
-                    PLAYER_OFFLINE_SOURCE,
-                    NPOOfflineSourceConfig::class.java
-                )
+                offlineSource =
+                    this@getSourceWrapper.getParcelableExtra(
+                        PLAYER_OFFLINE_SOURCE,
+                        NPOOfflineSourceConfig::class.java,
+                    )
                 getSerializableExtra(PLAYER_SOURCE, SourceWrapper::class.java)
             } else {
                 offlineSource = this@getSourceWrapper.getParcelableExtra(PLAYER_OFFLINE_SOURCE)
@@ -564,7 +582,7 @@ class PlayerActivity : BaseActivity() {
 
         fun getStartIntent(
             packageContext: Context,
-            sourceWrapper: SourceWrapper
+            sourceWrapper: SourceWrapper,
         ): Intent {
             return Intent(packageContext, PlayerActivity::class.java).apply {
                 if (sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig) {
