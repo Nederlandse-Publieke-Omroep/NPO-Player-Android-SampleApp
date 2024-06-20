@@ -175,8 +175,8 @@ class PlayerActivity : BaseActivity() {
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
                             pageTracker =
-                                pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title)),
+                            pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
+                                ?: PlayerTagProvider.getPageTracker(PageConfiguration(title)),
                         ).apply {
                             remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                             eventEmitter.addListener(onPlayPauseListener)
