@@ -16,7 +16,7 @@ android {
         localProperties.load(propertiesFile.newDataInputStream())
     }
 
-    namespace 'nl.npo.player.sample_app'
+    namespace 'nl.npo.player.sampleApp'
 
     defaultConfig {
         minSdk 24
@@ -24,7 +24,7 @@ android {
         versionCode 1
         versionName "$libVersionName"
 
-        applicationId "nl.npo.player.sample_app"
+        applicationId "nl.npo.player.sampleApp"
         manifestPlaceholders = [
                 'YOUR-PLAYER-LICENSE-KEY'   : "${localProperties.your_player_license_key_here}",
                 'YOUR-ANALYTICS-LICENSE-KEY': "${localProperties.your_analytics_license_key_here}",

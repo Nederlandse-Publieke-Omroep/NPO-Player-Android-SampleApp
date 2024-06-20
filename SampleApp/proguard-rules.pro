@@ -21,9 +21,9 @@
 #-renamesourcefileattribute SourceFile
 
 ## SampleApp classes to not minify:
--keep class nl.npo.player.sample_app.domain.model.TokenResponse { *; }
--keep class nl.npo.player.sample_app.data.streamlink.StreamInfoRepository { *; }
--keepclassmembers class nl.npo.player.sample_app.data.streamlink.StreamInfoRepository {
+-keep class nl.npo.player.sampleApp.domain.model.TokenResponse { *; }
+-keep class nl.npo.player.sampleApp.data.streamlink.StreamInfoRepository { *; }
+-keepclassmembers class nl.npo.player.sampleApp.data.streamlink.StreamInfoRepository {
   <init>(...);
   <fields>;
 }

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context="nl.npo.player.sample_app.presentation.player.PlayerActivity">
+    tools:context="nl.npo.player.sampleApp.presentation.player.PlayerActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
