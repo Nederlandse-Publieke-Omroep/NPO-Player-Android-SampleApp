@@ -170,34 +170,37 @@ class PlayerActivity : BaseActivity() {
 
             try {
                 player =
-                    NPOPlayerLibrary.getPlayer(
-                        context = binding.root.context,
-                        npoPlayerConfig = playerConfig,
-                        pageTracker = pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                            ?: PlayerTagProvider.getPageTracker(PageConfiguration(title)),
-                    ).apply {
-                        remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
-                        eventEmitter.addListener(onPlayPauseListener)
-                        npoNotificationManager =
-                            setupPlayerNotificationManager(
-                                NOTIFICATION_CHANNEL_ID,
-                                R.string.app_name,
-                                R.drawable.ic_launcher_foreground,
-                                NOTIFICATION_ID,
-                                mediaSession.sessionToken,
-                            )
-                        attachToLifecycle(lifecycle)
+                    NPOPlayerLibrary
+                        .getPlayer(
+                            context = binding.root.context,
+                            npoPlayerConfig = playerConfig,
+                            pageTracker =
+                                pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
+                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title)),
+                        ).apply {
+                            remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
+                            eventEmitter.addListener(onPlayPauseListener)
+                            npoNotificationManager =
+                                setupPlayerNotificationManager(
+                                    NOTIFICATION_CHANNEL_ID,
+                                    R.string.app_name,
+                                    R.drawable.ic_launcher_foreground,
+                                    NOTIFICATION_ID,
+                                    mediaSession.sessionToken,
+                                )
+                            attachToLifecycle(lifecycle)
 
-                        binding.npoVideoPlayer.attachPlayer(this, uiConfig)
-                        binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
-                        if (showMultiplePlayers) {
-                            binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
-                            binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
+                            binding.npoVideoPlayer.attachPlayer(this, uiConfig)
+                            binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
+                            if (showMultiplePlayers) {
+                                binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
+                                binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
+                            }
+                            binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                         }
-                        binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
-                    }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
-                AlertDialog.Builder(this)
+                AlertDialog
+                    .Builder(this)
                     .setTitle("Error")
                     .setMessage("Player Analytics not initialized correctly. ${e.message}")
                     .setCancelable(false)
@@ -246,11 +249,12 @@ class PlayerActivity : BaseActivity() {
             }
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
-                    Toast.makeText(
-                        context,
-                        "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Toast
+                        .makeText(
+                            context,
+                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+                            Toast.LENGTH_SHORT,
+                        ).show()
                 }
             }
         }
@@ -268,11 +272,12 @@ class PlayerActivity : BaseActivity() {
 
             setPlayPauseButtonOnClickListener { isPlayPressed ->
                 runOnUiThread {
-                    Toast.makeText(
-                        context,
-                        "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Toast
+                        .makeText(
+                            context,
+                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+                            Toast.LENGTH_SHORT,
+                        ).show()
                 }
             }
         }
@@ -291,41 +296,44 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun playRandom() {
-        linkViewModel.urlLinkList.value?.union(
-            linkViewModel.streamLinkList.value ?: emptyList(),
-        )?.elementAt(15)?.let { newSource ->
-            playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
-                loadSource(newSource, config, uiConfig, showMultiplePlayers)
+        linkViewModel.urlLinkList.value
+            ?.union(linkViewModel.streamLinkList.value ?: emptyList())
+            ?.random()
+            ?.let { newSource ->
+                playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
+                    loadSource(newSource, config, uiConfig, showMultiplePlayers)
+                }
             }
-        }
     }
 
     private fun showSettings() {
         getSettings().let { settings ->
-            AlertDialog.Builder(this@PlayerActivity).setItems(
-                settings.map { it.name }.toTypedArray(),
-            ) { dialog, which ->
-                when (settings[which]) {
-                    PlayerSettings.SUBTITLES -> showSubtitleDialog()
-                    PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
-                    PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
-                    PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
-                    PlayerSettings.SPEED -> showSpeedSelectionDialog()
-                }
-                dialog.dismiss()
-            }.create().show()
+            AlertDialog
+                .Builder(this@PlayerActivity)
+                .setItems(
+                    settings.map { it.name }.toTypedArray(),
+                ) { dialog, which ->
+                    when (settings[which]) {
+                        PlayerSettings.SUBTITLES -> showSubtitleDialog()
+                        PlayerSettings.AUDIO_QUALITIES -> showAudioQualityDialog()
+                        PlayerSettings.AUDIO_TRACKS -> showAudioTracksDialog()
+                        PlayerSettings.VIDEO_QUALITIES -> showVideoQualityDialog()
+                        PlayerSettings.SPEED -> showSpeedSelectionDialog()
+                    }
+                    dialog.dismiss()
+                }.create()
+                .show()
         }
     }
 
-    private fun getSettings(): List<PlayerSettings> {
-        return listOfNotNull(
+    private fun getSettings(): List<PlayerSettings> =
+        listOfNotNull(
             subtitleSettings(),
             audioQualitiesSettings(),
             audioTrackSettings(),
             videoQualitiesSettings(),
             PlayerSettings.SPEED,
         )
-    }
 
     private fun subtitleSettings(): PlayerSettings? {
         val tracks = player?.getSubtitleTracks() ?: return null
@@ -342,70 +350,88 @@ class PlayerActivity : BaseActivity() {
 
     private fun showSubtitleDialog() {
         player?.getSubtitleTracks()?.let { npoSubtitleTracks ->
-            AlertDialog.Builder(this).setSingleChoiceItems(
-                npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
-                npoSubtitleTracks.indexOf(player?.getSelectedSubtitleTrack()),
-            ) { dialog, which ->
-                player?.selectSubtitleTrack(npoSubtitleTracks[which])
-                dialog.dismiss()
-            }.create().show()
+            AlertDialog
+                .Builder(this)
+                .setSingleChoiceItems(
+                    npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
+                    npoSubtitleTracks.indexOf(player?.getSelectedSubtitleTrack()),
+                ) { dialog, which ->
+                    player?.selectSubtitleTrack(npoSubtitleTracks[which])
+                    dialog.dismiss()
+                }.create()
+                .show()
         }
     }
 
     private fun showAudioTracksDialog() {
         player?.getAudioTracks()?.let { audioTracks ->
-            AlertDialog.Builder(this).setSingleChoiceItems(
-                audioTracks.map { it.label ?: it.id }.toTypedArray(),
-                audioTracks.indexOf(player?.getSelectedAudioTrack()),
-            ) { dialog, which ->
-                player?.selectAudioTrack(audioTracks[which])
-                dialog.dismiss()
-            }.create().show()
+            AlertDialog
+                .Builder(this)
+                .setSingleChoiceItems(
+                    audioTracks.map { it.label ?: it.id }.toTypedArray(),
+                    audioTracks.indexOf(player?.getSelectedAudioTrack()),
+                ) { dialog, which ->
+                    player?.selectAudioTrack(audioTracks[which])
+                    dialog.dismiss()
+                }.create()
+                .show()
         }
     }
 
     private fun showAudioQualityDialog() {
         player?.getAudioQualities()?.let { npoAudioQualities ->
-            AlertDialog.Builder(this).setSingleChoiceItems(
-                npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
-                npoAudioQualities.indexOf(player?.getSelectedAudioQuality()),
-            ) { dialog, which ->
-                player?.selectAudioQuality(npoAudioQualities[which])
-                dialog.dismiss()
-            }.create().show()
+            AlertDialog
+                .Builder(this)
+                .setSingleChoiceItems(
+                    npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
+                    npoAudioQualities.indexOf(player?.getSelectedAudioQuality()),
+                ) { dialog, which ->
+                    player?.selectAudioQuality(npoAudioQualities[which])
+                    dialog.dismiss()
+                }.create()
+                .show()
         }
     }
 
     private fun showVideoQualityDialog() {
         player?.getVideoQualities()?.let { videoQualities ->
-            AlertDialog.Builder(this).setSingleChoiceItems(
-                videoQualities.map { it.label ?: it.id }.toTypedArray(),
-                videoQualities.indexOf(player?.getSelectedVideoQuality()),
-            ) { dialog, which ->
-                player?.selectVideoQuality(videoQualities[which])
-                dialog.dismiss()
-            }.create().show()
+            AlertDialog
+                .Builder(this)
+                .setSingleChoiceItems(
+                    videoQualities.map { it.label ?: it.id }.toTypedArray(),
+                    videoQualities.indexOf(player?.getSelectedVideoQuality()),
+                ) { dialog, which ->
+                    player?.selectVideoQuality(videoQualities[which])
+                    dialog.dismiss()
+                }.create()
+                .show()
         }
     }
 
     private fun showSpeedSelectionDialog() {
         PlaybackSpeeds.values().let { speeds ->
-            AlertDialog.Builder(this).setSingleChoiceItems(
-                speeds.map { "${it.name} (${it.value}x)" }.toTypedArray(),
-                speeds.indexOf(
-                    speeds.firstOrNull { it.value == player?.playbackSpeed }
-                        ?: PlaybackSpeeds.NORMAL,
-                ),
-            ) { dialog, which ->
-                player?.playbackSpeed = speeds[which].value
-                dialog.dismiss()
-            }.create().show()
+            AlertDialog
+                .Builder(this)
+                .setSingleChoiceItems(
+                    speeds.map { "${it.name} (${it.value}x)" }.toTypedArray(),
+                    speeds.indexOf(
+                        speeds.firstOrNull { it.value == player?.playbackSpeed }
+                            ?: PlaybackSpeeds.NORMAL,
+                    ),
+                ) { dialog, which ->
+                    player?.playbackSpeed = speeds[which].value
+                    dialog.dismiss()
+                }.create()
+                .show()
         }
     }
 
     private fun changePageTracker(title: String) {
         val pageTracker =
-            (application as SampleApplication).npoTag?.pageTrackerBuilder()?.withPageName(title)
+            (application as SampleApplication)
+                .npoTag
+                ?.pageTrackerBuilder()
+                ?.withPageName(title)
                 ?.build()
 
         player?.changePageTracker(
@@ -583,8 +609,8 @@ class PlayerActivity : BaseActivity() {
         fun getStartIntent(
             packageContext: Context,
             sourceWrapper: SourceWrapper,
-        ): Intent {
-            return Intent(packageContext, PlayerActivity::class.java).apply {
+        ): Intent =
+            Intent(packageContext, PlayerActivity::class.java).apply {
                 if (sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig) {
                     putExtra(PLAYER_OFFLINE_SOURCE, sourceWrapper.npoSourceConfig as Parcelable)
                     putExtra(PLAYER_SOURCE, sourceWrapper.copy(npoSourceConfig = null))
@@ -592,6 +618,5 @@ class PlayerActivity : BaseActivity() {
                     putExtra(PLAYER_SOURCE, sourceWrapper)
                 }
             }
-        }
     }
 }
