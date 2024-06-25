@@ -28,6 +28,7 @@ class SettingsPreferences
             val showUi = booleanPreferencesKey("showUi")
             val sterUiEnabled = booleanPreferencesKey("sterUiEnabled")
             val autoPlayEnabled = booleanPreferencesKey("autoPlayEnabled")
+            val onlyStreamLinkRandom = booleanPreferencesKey("onlyStreamLinkRandom")
             val showMultiplePlayers = booleanPreferencesKey("showMultiplePlayers")
             val pauseWhenBecomingNoisy = booleanPreferencesKey("pauseWhenBecomingNoisy")
             val pauseOnSwitchToCellularNetwork = booleanPreferencesKey("pauseOnSwitchToCellularNetwork")
@@ -94,6 +95,18 @@ class SettingsPreferences
         suspend fun setAutoPlayEnabled(enabled: Boolean) {
             dataStore.edit { prefs ->
                 prefs[Keys.autoPlayEnabled] = enabled
+            }
+        }
+
+        val onlyStreamLinkRandomEnabled: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.onlyStreamLinkRandom] ?: false
+                }
+
+        suspend fun setOnlyStreamLinkRandomEnabled(enabled: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.onlyStreamLinkRandom] = enabled
             }
         }
 

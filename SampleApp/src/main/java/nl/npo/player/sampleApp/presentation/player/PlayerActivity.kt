@@ -296,14 +296,20 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun playRandom() {
-        linkViewModel.urlLinkList.value
-            ?.union(linkViewModel.streamLinkList.value ?: emptyList())
-            ?.random()
-            ?.let { newSource ->
-                playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
-                    loadSource(newSource, config, uiConfig, showMultiplePlayers)
+        playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
+            if (enabled) {
+                linkViewModel.streamLinkList.value
+            } else {
+                linkViewModel.streamLinkList.value?.union(
+                    linkViewModel.urlLinkList.value ?: emptyList(),
+                )
+            }?.random()
+                ?.let { newSource ->
+                    playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
+                        loadSource(newSource, config, uiConfig, showMultiplePlayers)
+                    }
                 }
-            }
+        }
     }
 
     private fun showSettings() {

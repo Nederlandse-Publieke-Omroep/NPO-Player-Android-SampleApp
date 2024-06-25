@@ -57,6 +57,7 @@ class SettingsViewModel
                 SettingsKey.CustomSettings -> settingsRepository.setShowCustomSettings(value)
                 SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
                 SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
+                SettingsKey.OnlyStreamLinkRandomEnabled -> settingsRepository.setOnlyStreamLinkRandomEnabled(value)
                 SettingsKey.ShowMultiplePlayers -> settingsRepository.setShowMultiplePlayers(value)
                 SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
@@ -126,6 +127,14 @@ class SettingsViewModel
                             SettingsKey.AutoPlayEnabled,
                             R.string.setting_autoplay_enabled,
                             SettingsSwitchOption(settingsRepository.autoPlayEnabled.first()),
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.OnlyStreamLinkRandomEnabled,
+                            R.string.setting_only_streamlink_random_enabled,
+                            SettingsSwitchOption(settingsRepository.onlyStreamLinkRandomEnabled.first()),
                         ),
                     )
 
