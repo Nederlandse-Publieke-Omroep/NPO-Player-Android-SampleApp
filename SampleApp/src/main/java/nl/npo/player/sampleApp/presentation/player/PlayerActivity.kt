@@ -29,10 +29,12 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.player.ui.model.NPOPictureInPictureHandler
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
+import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.SampleApplication
@@ -58,6 +60,7 @@ class PlayerActivity : BaseActivity() {
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val linkViewModel by viewModels<LinksViewModel>()
     private var npoNotificationManager: NPONotificationManager? = null
+    private var pipHandler: NPOPictureInPictureHandler? = null
 
     private val mediaSessionCallback =
         object : MediaSession.Callback() {
@@ -192,6 +195,12 @@ class PlayerActivity : BaseActivity() {
 
                             binding.npoVideoPlayer.attachPlayer(this, uiConfig)
                             binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
+                            pipHandler =
+                                DefaultNPOPictureInPictureHandler(
+                                    this@PlayerActivity,
+                                    this,
+                                )
+                            binding.npoVideoPlayer.setPiPHandler(pipHandler)
                             if (showMultiplePlayers) {
                                 binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
                                 binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
@@ -220,6 +229,13 @@ class PlayerActivity : BaseActivity() {
             sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig)
             else -> finish()
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (player?.isPlaying == true) {
+            pipHandler?.enterPictureInPicture()
         }
     }
 

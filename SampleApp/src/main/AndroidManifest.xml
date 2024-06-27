@@ -51,6 +51,7 @@
             android:name=".presentation.player.PlayerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="false"
+            android:supportsPictureInPicture="true"
             android:theme="@style/Theme.NPOPlayer" />
         <!-- Following lines are needed for the usage of cast -->
         <activity
