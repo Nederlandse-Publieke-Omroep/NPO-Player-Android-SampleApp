@@ -143,8 +143,16 @@ class PlayerActivity : BaseActivity() {
         binding.setupViews()
         setObservers()
         NPOCasting.updateCastingContext(this)
+        loadSourceWrapperFromIntent(intent)
+    }
 
-        sourceWrapper = intent.getSourceWrapper() ?: run {
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        loadSourceWrapperFromIntent(intent)
+    }
+
+    private fun loadSourceWrapperFromIntent(intent: Intent?) {
+        sourceWrapper = intent?.getSourceWrapper() ?: run {
             finish()
             return
         }
@@ -234,7 +242,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (player?.isPlaying == true) {
+        if (pipHandler?.isPictureInPictureAvailable == true && player?.isPlaying == true) {
             pipHandler?.enterPictureInPicture()
         }
     }
