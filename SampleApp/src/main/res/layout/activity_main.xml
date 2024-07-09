@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingHorizontal="@dimen/general_padding"
-    tools:context="nl.npo.player.sample_app.presentation.MainActivity">
+    tools:context="nl.npo.player.sampleApp.presentation.MainActivity">
 
     <EditText
         android:id="@+id/etPrid"
