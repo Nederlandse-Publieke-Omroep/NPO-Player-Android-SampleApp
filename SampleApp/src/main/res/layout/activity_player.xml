@@ -79,7 +79,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="@dimen/general_padding"
         android:layout_toEndOf="@id/placeholder"
-        android:backgroundTint="@color/purple_500"
+        android:backgroundTint="@color/orange_light"
         android:src="@android:drawable/ic_media_play"
         android:visibility="gone"
         tools:visibility="visible" />
