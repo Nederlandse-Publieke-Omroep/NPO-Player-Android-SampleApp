@@ -7,6 +7,7 @@ enum class SettingsKey {
     ShowUi,
     SterUiEnabled,
     AutoPlayEnabled,
+    OnlyStreamLinkRandomEnabled,
     ShowMultiplePlayers,
     PauseWhenBecomingNoisy,
     PauseOnSwitchToCellularNetwork,

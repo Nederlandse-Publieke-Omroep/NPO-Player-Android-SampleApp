@@ -26,6 +26,10 @@ interface SettingsRepository {
 
     suspend fun setAutoPlayEnabled(enabled: Boolean)
 
+    val onlyStreamLinkRandomEnabled: Flow<Boolean>
+
+    suspend fun setOnlyStreamLinkRandomEnabled(enabled: Boolean)
+
     val sterUiEnabled: Flow<Boolean>
 
     suspend fun setSterUiEnabled(enabled: Boolean)

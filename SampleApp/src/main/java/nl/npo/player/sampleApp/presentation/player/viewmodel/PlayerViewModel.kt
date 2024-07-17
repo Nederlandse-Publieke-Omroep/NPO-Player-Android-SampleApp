@@ -159,6 +159,12 @@ class PlayerViewModel
             }
         }
 
+        fun onlyStreamLinkRandomEnabled(callback: (Boolean) -> Unit) {
+            viewModelScope.launch {
+                callback(settingsRepository.onlyStreamLinkRandomEnabled.first())
+            }
+        }
+
         fun shouldAddSterOverlay(callback: () -> Unit) {
             viewModelScope.launch {
                 if (settingsRepository.sterUiEnabled.first()) {

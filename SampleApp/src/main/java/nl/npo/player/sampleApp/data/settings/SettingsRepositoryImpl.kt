@@ -48,6 +48,12 @@ class SettingsRepositoryImpl
             prefs.setAutoPlayEnabled(enabled)
         }
 
+        override val onlyStreamLinkRandomEnabled: Flow<Boolean> = prefs.onlyStreamLinkRandomEnabled
+
+        override suspend fun setOnlyStreamLinkRandomEnabled(enabled: Boolean) {
+            prefs.setOnlyStreamLinkRandomEnabled(enabled)
+        }
+
         override val sterUiEnabled: Flow<Boolean> = prefs.sterUiEnabled
 
         override suspend fun setSterUiEnabled(enabled: Boolean) {
