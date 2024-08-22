@@ -16,6 +16,9 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastState
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
@@ -120,6 +123,25 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
+                }
+                player?.getSubtitleTracks()?.selectFirstNotOff()
+            }
+
+            override fun onSubtitleTracksChanged(
+                oldTracks: List<NPOSubtitleTrack>,
+                newTracks: List<NPOSubtitleTrack>,
+            ) {
+                super.onSubtitleTracksChanged(oldTracks, newTracks)
+                if (player?.getSelectedSubtitleTrack() == NPOSubtitleTrack.OFF) {
+                    newTracks.selectFirstNotOff()
+                }
+            }
+
+            fun List<NPOSubtitleTrack>.selectFirstNotOff() {
+                if (isNotEmpty()) {
+                    firstOrNull { it != NPOSubtitleTrack.OFF }?.let { subtitle ->
+                        player?.selectSubtitleTrack(subtitle)
+                    }
                 }
             }
 
@@ -258,6 +280,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupViews() {
+        setupCastButton()
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             playerViewModel.hasCustomSettings {
@@ -317,6 +340,15 @@ class PlayerActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun ActivityPlayerBinding.setupCastButton() {
+        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
+        castContext.addCastStateListener { state ->
+            mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+        }
+        mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
+        CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
     }
 
     private fun playRandom() {
@@ -439,7 +471,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showSpeedSelectionDialog() {
-        PlaybackSpeeds.values().let { speeds ->
+        PlaybackSpeeds.entries.let { speeds ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
