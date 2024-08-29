@@ -20,6 +20,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
+        mavenLocal()
         mavenCentral()
         // NPO Player library
         maven {
@@ -32,7 +33,6 @@ dependencyResolutionManagement {
         maven {
             url "https://packagecloud.io/priv/${getTagPackageCloudKey()}/npo-data/npotag-v2-android/maven2"
         }
-        mavenLocal()
     }
 }
 rootProject.name = "NPO Player Android SampleApp"

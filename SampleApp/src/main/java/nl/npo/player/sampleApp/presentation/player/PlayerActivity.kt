@@ -19,7 +19,6 @@ import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
@@ -30,6 +29,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPictureInPictureHandler
+import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
@@ -116,6 +116,7 @@ class PlayerActivity : BaseActivity() {
             override fun onSourceLoaded(
                 currentPosition: Double,
                 playerSource: PlayerSource,
+                streamOptions: StreamOptions
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -123,7 +124,12 @@ class PlayerActivity : BaseActivity() {
                 }
             }
 
-            override fun onSourceError(currentPosition: Double) {
+            override fun onSourceError(
+                currentPosition: Double,
+                code: Int,
+                message: String?,
+                data: Any?
+            ) {
                 binding.btnPlayPause.isVisible = false
             }
 
@@ -164,7 +170,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE && !fullScreenHandler.isFullscreen) {
-            binding.npoVideoPlayer.setFullScreen(true)
+//            binding.npoVideoPlayer.setFullScreen(true)
         }
         super.onConfigurationChanged(newConfig)
     }
@@ -199,21 +205,22 @@ class PlayerActivity : BaseActivity() {
                                     NOTIFICATION_ID,
                                     mediaSession.sessionToken,
                                 )
-                            attachToLifecycle(lifecycle)
+//                            attachToLifecycle(lifecycle)
 
-                            binding.npoVideoPlayer.attachPlayer(this, uiConfig)
-                            binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
+//                            binding.npoVideoPlayer.attachPlayer(this, uiConfig)
+                            binding.npoVideoPlayer.attachPlayer(this, lifecycle)
+//                            binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
                             pipHandler =
                                 DefaultNPOPictureInPictureHandler(
                                     this@PlayerActivity,
                                     this,
                                 )
-                            binding.npoVideoPlayer.setPiPHandler(pipHandler)
+//                            binding.npoVideoPlayer.setPiPHandler(pipHandler)
                             if (showMultiplePlayers) {
-                                binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
-                                binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
+//                                binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
+//                                binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
                             }
-                            binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
+//                            binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
                         }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog
@@ -258,53 +265,53 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupViews() {
-        npoVideoPlayer.apply {
-            attachToLifecycle(lifecycle)
-            playerViewModel.hasCustomSettings {
-                setSettingsButtonOnClickListener {
-                    runOnUiThread {
-                        showSettings()
-                    }
-                    true
-                }
-            }
-            setOnPlayNextClickListener { _ ->
-                playRandom()
-            }
-            setPlayPauseButtonOnClickListener { isPlayPressed ->
-                runOnUiThread {
-                    Toast
-                        .makeText(
-                            context,
-                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                }
-            }
-        }
-
-        npoVideoPlayerTwo.apply {
-            attachToLifecycle(lifecycle)
-            playerViewModel.hasCustomSettings {
-                setSettingsButtonOnClickListener {
-                    runOnUiThread {
-                        showSettings()
-                    }
-                    true
-                }
-            }
-
-            setPlayPauseButtonOnClickListener { isPlayPressed ->
-                runOnUiThread {
-                    Toast
-                        .makeText(
-                            context,
-                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                }
-            }
-        }
+//        npoVideoPlayer.apply {
+//            attachToLifecycle(lifecycle)
+//            playerViewModel.hasCustomSettings {
+//                setSettingsButtonOnClickListener {
+//                    runOnUiThread {
+//                        showSettings()
+//                    }
+//                    true
+//                }
+//            }
+//            setOnPlayNextClickListener { _ ->
+//                playRandom()
+//            }
+//            setPlayPauseButtonOnClickListener { isPlayPressed ->
+//                runOnUiThread {
+//                    Toast
+//                        .makeText(
+//                            context,
+//                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+//                            Toast.LENGTH_SHORT,
+//                        ).show()
+//                }
+//            }
+//        }
+//
+//        npoVideoPlayerTwo.apply {
+//            attachToLifecycle(lifecycle)
+//            playerViewModel.hasCustomSettings {
+//                setSettingsButtonOnClickListener {
+//                    runOnUiThread {
+//                        showSettings()
+//                    }
+//                    true
+//                }
+//            }
+//
+//            setPlayPauseButtonOnClickListener { isPlayPressed ->
+//                runOnUiThread {
+//                    Toast
+//                        .makeText(
+//                            context,
+//                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+//                            Toast.LENGTH_SHORT,
+//                        ).show()
+//                }
+//            }
+//        }
         btnSwitchStreams.setOnClickListener {
             playRandom()
         }

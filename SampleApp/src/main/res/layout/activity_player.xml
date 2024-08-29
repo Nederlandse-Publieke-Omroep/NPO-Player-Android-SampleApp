@@ -12,27 +12,16 @@
         android:layout_height="match_parent"
         android:layout_above="@id/btnSwitchStreams">
 
-        <nl.npo.player.library.presentation.view.NPOVideoPlayerView
+        <nl.npo.player.library.presentation.compose.NPOComposeVideoPlayerView
             android:id="@+id/npo_video_player"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@id/npo_video_player_two"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="16:9"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="spread" />
-
-        <nl.npo.player.library.presentation.view.NPOVideoPlayerView
-            android:id="@+id/npo_video_player_two"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="16:9"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/npo_video_player" />
 
         <ProgressBar
             android:id="@+id/loading_indicator"
