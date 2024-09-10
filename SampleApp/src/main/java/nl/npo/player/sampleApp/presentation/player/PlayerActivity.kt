@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.player
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -46,6 +47,7 @@ import nl.npo.player.sampleApp.extension.observeNonNull
 import nl.npo.player.sampleApp.model.SourceWrapper
 import nl.npo.player.sampleApp.model.StreamRetrievalState
 import nl.npo.player.sampleApp.presentation.BaseActivity
+import nl.npo.player.sampleApp.presentation.MainActivity
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
 import nl.npo.player.sampleApp.presentation.player.viewmodel.PlayerViewModel
@@ -64,6 +66,7 @@ class PlayerActivity : BaseActivity() {
     private val linkViewModel by viewModels<LinksViewModel>()
     private var npoNotificationManager: NPONotificationManager? = null
     private var pipHandler: NPOPictureInPictureHandler? = null
+    private var backstackLost = false
 
     private val mediaSessionCallback =
         object : MediaSession.Callback() {
@@ -266,6 +269,37 @@ class PlayerActivity : BaseActivity() {
         super.onUserLeaveHint()
         if (pipHandler?.isPictureInPictureAvailable == true && player?.isPlaying == true) {
             pipHandler?.enterPictureInPicture()
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (isInPictureInPictureMode) {
+            binding.mediaRouteButton.isVisible = false
+        } else {
+            backstackLost = true
+            val castContext = CastContext.getSharedInstance(this@PlayerActivity)
+            binding.mediaRouteButton.isVisible =
+                castContext.castState != CastState.NO_DEVICES_AVAILABLE
+        }
+    }
+
+    override fun finish() {
+        if (backstackLost) {
+            finishAndRemoveTask()
+            startActivity(
+                Intent.makeRestartActivityTask(
+                    ComponentName(
+                        this,
+                        MainActivity::class.java,
+                    ),
+                ),
+            )
+        } else {
+            super.finish()
         }
     }
 

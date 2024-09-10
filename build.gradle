@@ -24,7 +24,8 @@ plugins {
 
 apply from: 'spotless.gradle'
 
-configurations.all {
+configurations.configureEach {
     // 2 minutes caching for changing library so SNAPSHOT testing is easier
+    resolutionStrategy.cacheDynamicVersionsFor 120, 'seconds'
     resolutionStrategy.cacheChangingModulesFor 120, 'seconds'
 }
