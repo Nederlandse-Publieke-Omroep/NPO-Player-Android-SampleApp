@@ -19,10 +19,10 @@ import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
-import nl.npo.player.library.domain.common.model.PlayerSource
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
@@ -115,8 +115,8 @@ class PlayerActivity : BaseActivity() {
 
             override fun onSourceLoaded(
                 currentPosition: Double,
-                playerSource: PlayerSource,
-                streamOptions: StreamOptions
+                source: NPOSourceConfig,
+                streamOptions: StreamOptions,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -128,12 +128,15 @@ class PlayerActivity : BaseActivity() {
                 currentPosition: Double,
                 code: Int,
                 message: String?,
-                data: Any?
+                data: Any?,
             ) {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onSourceLoad(currentPosition: Double) {
+            override fun onSourceLoad(
+                currentPosition: Double,
+                source: NPOSourceConfig,
+            ) {
                 binding.btnPlayPause.isVisible = false
             }
 
@@ -205,10 +208,10 @@ class PlayerActivity : BaseActivity() {
                                     NOTIFICATION_ID,
                                     mediaSession.sessionToken,
                                 )
-//                            attachToLifecycle(lifecycle)
+                            attachToLifecycle(lifecycle)
 
 //                            binding.npoVideoPlayer.attachPlayer(this, uiConfig)
-                            binding.npoVideoPlayer.attachPlayer(this, lifecycle)
+                            binding.npoVideoPlayer.attachPlayer(this)
 //                            binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
                             pipHandler =
                                 DefaultNPOPictureInPictureHandler(
