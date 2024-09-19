@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.model
 
+import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import java.io.Serializable
@@ -13,6 +14,7 @@ data class SourceWrapper(
     val startOffset: Double = 0.0,
     val offlineDownloadAllowed: Boolean = false,
     val imageUrl: String? = "https://cdn.npoplayer.nl/posters/default-npo-poster.png",
+    val avType: AVType? = null,
     val preferThisImageUrlOverStreamLink: Boolean = false,
     val overrideStreamLinkTitleAndDescription: Boolean = false,
     val npoSourceConfig: NPOSourceConfig? =
@@ -23,13 +25,12 @@ data class SourceWrapper(
                 streamUrl = streamUrl!!,
                 startOffset = startOffset,
                 imageUrl = imageUrl,
+                avType = avType,
             )
         } else {
             null
         },
     val npoOfflineContent: NPOOfflineContent? = null,
 ) : Serializable {
-    override fun toString(): String {
-        return "$title - $uniqueId"
-    }
+    override fun toString(): String = "$title - $uniqueId"
 }

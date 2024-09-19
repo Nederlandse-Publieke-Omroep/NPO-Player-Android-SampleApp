@@ -337,7 +337,8 @@ class PlayerActivity : BaseActivity() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.random()
+            }?.filter { it.avType != player?.npoSourceConfig?.avType }
+                ?.random()
                 ?.let { newSource ->
                     playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
                         loadSource(newSource, config, uiConfig, showMultiplePlayers)

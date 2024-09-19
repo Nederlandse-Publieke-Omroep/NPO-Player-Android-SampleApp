@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.data.link
 
+import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.sampleApp.domain.LinkRepository
 import nl.npo.player.sampleApp.domain.annotation.StreamLinkRepository
 import nl.npo.player.sampleApp.model.SourceWrapper
@@ -15,6 +16,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 uniqueId = "LI_NL1_4188102",
                 imageUrl = "https://cdn.npoplayer.nl/posters/npo1_afbeelding.jpg",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Live NPO1: LI_NL1_4188102",
@@ -22,12 +24,14 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_NL1_4188102",
                 getStreamLink = true,
                 imageUrl = "https://cdn.npoplayer.nl/posters/npo1_afbeelding.jpg",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Visual Radio 1: LI_RADIO1_300877",
                 testingDescription = "Playback Live NO-DVR (DRM)",
                 uniqueId = "LI_RADIO1_300877",
                 getStreamLink = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877",
@@ -36,6 +40,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg",
                 preferThisImageUrlOverStreamLink = false,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877",
@@ -45,6 +50,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg",
                 preferThisImageUrlOverStreamLink = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Beste Zangers - s14-e5 - Karsu",
@@ -53,6 +59,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 startOffset = (60.1 * 41),
                 imageUrl = "https://assets-start.npo.nl/resources/2023/07/03/5a718c06-b2de-4035-ac9a-4c6919a9828a.jpg?dimensions=600x600",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877 ",
@@ -62,6 +69,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg",
                 overrideStreamLinkTitleAndDescription = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877 ",
@@ -70,6 +78,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg",
                 preferThisImageUrlOverStreamLink = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Nederland Zingt: VPWON_1336246",
@@ -78,6 +87,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Teledoc Campus: AT_2031723",
@@ -85,6 +95,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "AT_2031723",
                 getStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/608874",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Op1 - POMS_BV_20012834",
@@ -92,6 +103,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "POMS_BV_20012834",
                 getStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/1812849",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Op1 POMS_BV_20012835",
@@ -99,6 +111,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "POMS_BV_20012835",
                 getStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/1812845",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "NOS Noord-, Zuidlijn: POW_03900426",
@@ -107,6 +120,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/1071323",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Jacobine op 2: KN_1728228",
@@ -115,18 +129,21 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/1724048",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "POW_05216736 - Age restriction",
                 testingDescription = "As START user should give error warning. As PLUS user should play.",
                 uniqueId = "POW_05216736",
                 getStreamLink = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Radio 1: LI_RA1_8167349",
                 testingDescription = "Playback Audio",
                 uniqueId = "LI_RA1_8167349",
                 getStreamLink = true,
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Radio 1: LI_RA1_8167349",
@@ -134,6 +151,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_RA1_8167349",
                 getStreamLink = true,
                 startOffset = -(10 * 60.0),
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Nederland Zingt: VPWON_1336246",
@@ -142,6 +160,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Karen Pirie: POW_05275080",
@@ -149,6 +168,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "POW_05275080",
                 getStreamLink = true,
                 imageUrl = "https://assets-start.npo.nl/resources/2023/06/30/30260132-88aa-48f6-9838-ba1397e6475c.jpg?dimensions=900x900",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Radio 2: LI_RA2_8167353",
@@ -156,6 +176,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_RA2_8167353",
                 getStreamLink = true,
                 imageUrl = "https://www.npoluister.nl/assets/images/omroepen/logo-radio2.png",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Sterren NL: LI_RA2_837085",
@@ -163,36 +184,42 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_RA2_837085",
                 getStreamLink = true,
                 imageUrl = "https://www.nporadio5.nl/sterrennl/images/blue-diamonds.webp",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Soul&Jazz: LI_RA6_837069",
                 testingDescription = "",
                 uniqueId = "LI_RA6_837069",
                 getStreamLink = true,
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "NOS Journaal: POW_05467390",
                 testingDescription = "",
                 uniqueId = "POW_05467390",
                 getStreamLink = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Visual Radio 3FM: LI_3FM_300881",
                 testingDescription = "",
                 uniqueId = "LI_3FM_300881",
                 getStreamLink = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Radio 3FM: LI_3FM_8167356",
                 testingDescription = "",
                 uniqueId = "LI_3FM_8167356",
                 getStreamLink = true,
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "FUNX ICECAST: LI_FUNX_837073",
                 testingDescription = "",
                 uniqueId = "LI_FUNX_837073",
                 getStreamLink = true,
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "De Laatste Walvisvaarders: PREPR_RA1_17306750",
@@ -201,6 +228,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s1072/c1072x603/s1072x603>/2012559.jpg",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Wie is de Mol - Seizoen 2024 - Afl. 3",
@@ -209,6 +237,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/2070960",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Wie is de Mol - Seizoen 2024 - Afl. 9",
@@ -217,6 +246,7 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 imageUrl = "https://images.poms.omroep.nl/image/s1080/2070960",
+                avType = AVType.VIDEO,
             ),
         )
     }

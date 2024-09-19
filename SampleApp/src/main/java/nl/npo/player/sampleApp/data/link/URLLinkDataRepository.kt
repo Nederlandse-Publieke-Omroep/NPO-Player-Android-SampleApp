@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.data.link
 
+import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.sampleApp.domain.LinkRepository
 import nl.npo.player.sampleApp.domain.annotation.URLLinkRepository
 import nl.npo.player.sampleApp.model.SourceWrapper
@@ -14,6 +15,7 @@ object URLLinkDataRepository : LinkRepository {
                 uniqueId = "shattered-3Mb.mp4",
                 getStreamLink = false,
                 offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "ANNE+GIJS",
@@ -23,6 +25,7 @@ object URLLinkDataRepository : LinkRepository {
                 getStreamLink = false,
                 offlineDownloadAllowed = true,
                 imageUrl = "https://podcast.npo.nl/data/thumb/anne.300.1568c637575040b86689f72716ca9a16.jpg",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Ezelsoren - Kun je `alles` weten?",
@@ -31,6 +34,7 @@ object URLLinkDataRepository : LinkRepository {
                 getStreamLink = false,
                 offlineDownloadAllowed = true,
                 imageUrl = "https://podcast.npo.nl/data/thumb/ezelsoren.300.260c12b1df81859381eddb8418fa43a9.jpg",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Bolletje en pluisje - De Wind - (Start 60 seconds in)",
@@ -40,6 +44,7 @@ object URLLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = true,
                 startOffset = 60.0,
                 imageUrl = "https://podcast.npo.nl/data/thumb/bolletje-en-pluisje.300.5d9d8ccc6281bf467eb4f07f532154f5.jpg",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Vroeg! - The red pill community",
@@ -48,6 +53,7 @@ object URLLinkDataRepository : LinkRepository {
                 getStreamLink = false,
                 offlineDownloadAllowed = true,
                 imageUrl = "https://podcast.npo.nl/data/thumb/vroeg.300.55e145fb429eaf2239e89148ef811c82.jpg",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "LOCAL CONTENT: Zin in Zappelin!",
@@ -55,6 +61,7 @@ object URLLinkDataRepository : LinkRepository {
                 uniqueId = "AT_16803685",
                 getStreamLink = false,
                 imageUrl = "https://podcast.npo.nl/data/thumb/zin-in-zappelin.300.01f147069806c59cd40c8b5aae360371.jpg",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "FUNX - Icecast stream",
@@ -64,6 +71,7 @@ object URLLinkDataRepository : LinkRepository {
                 imageUrl =
                     "https://cms-assets.nporadio.nl/npoFunx/_600x515_crop_center-center_none/" +
                         "FunX_FMA23_Header_Desktop.jpg?v=1679646843",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "FUNX Arab - Icecast stream",
@@ -73,6 +81,7 @@ object URLLinkDataRepository : LinkRepository {
                 imageUrl =
                     "https://cms-assets.nporadio.nl/npoFunx/_600x515_crop_center-center_none/" +
                         "FunX_FMA23_Header_Desktop.jpg?v=1679646843",
+                avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Piepshow - Test video URL",
@@ -84,6 +93,7 @@ object URLLinkDataRepository : LinkRepository {
                 imageUrl =
                     "https://content.radioveronica.nl/images/66qysnomiif1/3Cy1DKrJZpB4uq4CHxA5d1/" +
                         "31a2820a631bdea44fe6bdcfd054ec68/Radio-Veronica_Martijn-Muijs_1200x675.jpg?fit=thumb&w=774&h=465&fm=webp",
+                avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "Bitmovin/Dashif sample livestream",
@@ -93,6 +103,7 @@ object URLLinkDataRepository : LinkRepository {
                 imageUrl =
                     "https://content.radioveronica.nl/images/66qysnomiif1/3Cy1DKrJZpB4uq4CHxA5d1/" +
                         "31a2820a631bdea44fe6bdcfd054ec68/Radio-Veronica_Martijn-Muijs_1200x675.jpg?fit=thumb&w=774&h=465&fm=webp",
+                avType = AVType.VIDEO,
             ),
         )
     }
