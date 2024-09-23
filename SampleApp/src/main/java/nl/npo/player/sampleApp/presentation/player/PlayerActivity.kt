@@ -166,14 +166,18 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, uiConfig, showMultiplePlayers ->
-            loadSource(sourceWrapper, playerConfig, uiConfig, showMultiplePlayers)
+        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI ->
+            loadSource(sourceWrapper, playerConfig, uiConfig, showNativePlayerUI)
         }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE && !fullScreenHandler.isFullscreen) {
-//            binding.npoVideoPlayer.setFullScreen(true)
+            if (binding.npoVideoPlayerNative.isVisible) {
+                // TODO: Send fullscreen event to native player when possible
+            } else {
+                binding.npoVideoPlayerWeb.setFullScreen(true)
+            }
         }
         super.onConfigurationChanged(newConfig)
     }
@@ -182,7 +186,7 @@ class PlayerActivity : BaseActivity() {
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
         uiConfig: NPOUiConfig,
-        showMultiplePlayers: Boolean,
+        showNativeUI: Boolean,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
@@ -210,20 +214,45 @@ class PlayerActivity : BaseActivity() {
                                 )
                             attachToLifecycle(lifecycle)
 
-//                            binding.npoVideoPlayer.attachPlayer(this, uiConfig)
-                            binding.npoVideoPlayer.attachPlayer(this)
-//                            binding.npoVideoPlayer.setFullScreenHandler(fullScreenHandler)
                             pipHandler =
                                 DefaultNPOPictureInPictureHandler(
                                     this@PlayerActivity,
                                     this,
                                 )
-//                            binding.npoVideoPlayer.setPiPHandler(pipHandler)
-                            if (showMultiplePlayers) {
-//                                binding.npoVideoPlayerTwo.attachPlayer(this, NPOUiConfig.Disabled)
-//                                binding.npoVideoPlayerTwo.setFullScreenHandler(fullScreenHandler)
+                            if (showNativeUI) {
+                                binding.npoVideoPlayerNative.attachPlayer(this)
+                            } else {
+                                val player = this
+                                binding.npoVideoPlayerWeb.apply {
+                                    attachPlayer(player, uiConfig)
+                                    setFullScreenHandler(fullScreenHandler)
+                                    setPiPHandler(pipHandler)
+                                    attachToLifecycle(lifecycle)
+                                    playerViewModel.hasCustomSettings {
+                                        setSettingsButtonOnClickListener {
+                                            runOnUiThread {
+                                                showSettings()
+                                            }
+                                            true
+                                        }
+                                    }
+                                    setOnPlayNextClickListener { _ ->
+                                        playRandom()
+                                    }
+                                    setPlayPauseButtonOnClickListener { isPlayPressed ->
+                                        runOnUiThread {
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "${if (isPlayPressed) "Play" else "Pause"} pressed.",
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                        }
+                                    }
+                                }
                             }
-//                            binding.npoVideoPlayerTwo.isVisible = showMultiplePlayers
+                            binding.npoVideoPlayerNative.isVisible = showNativeUI
+                            binding.npoVideoPlayerWeb.isVisible = !showNativeUI
                         }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog
@@ -268,53 +297,6 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupViews() {
-//        npoVideoPlayer.apply {
-//            attachToLifecycle(lifecycle)
-//            playerViewModel.hasCustomSettings {
-//                setSettingsButtonOnClickListener {
-//                    runOnUiThread {
-//                        showSettings()
-//                    }
-//                    true
-//                }
-//            }
-//            setOnPlayNextClickListener { _ ->
-//                playRandom()
-//            }
-//            setPlayPauseButtonOnClickListener { isPlayPressed ->
-//                runOnUiThread {
-//                    Toast
-//                        .makeText(
-//                            context,
-//                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-//                            Toast.LENGTH_SHORT,
-//                        ).show()
-//                }
-//            }
-//        }
-//
-//        npoVideoPlayerTwo.apply {
-//            attachToLifecycle(lifecycle)
-//            playerViewModel.hasCustomSettings {
-//                setSettingsButtonOnClickListener {
-//                    runOnUiThread {
-//                        showSettings()
-//                    }
-//                    true
-//                }
-//            }
-//
-//            setPlayPauseButtonOnClickListener { isPlayPressed ->
-//                runOnUiThread {
-//                    Toast
-//                        .makeText(
-//                            context,
-//                            "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-//                            Toast.LENGTH_SHORT,
-//                        ).show()
-//                }
-//            }
-//        }
         btnSwitchStreams.setOnClickListener {
             playRandom()
         }
@@ -340,8 +322,8 @@ class PlayerActivity : BaseActivity() {
             }?.filter { it.avType != player?.npoSourceConfig?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, uiConfig, showMultiplePlayers ->
-                        loadSource(newSource, config, uiConfig, showMultiplePlayers)
+                    playerViewModel.getConfiguration { config, uiConfig, showNativePlayerUI ->
+                        loadSource(newSource, config, uiConfig, showNativePlayerUI)
                     }
                 }
         }

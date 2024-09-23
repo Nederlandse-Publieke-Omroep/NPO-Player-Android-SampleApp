@@ -58,7 +58,7 @@ class SettingsViewModel
                 SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
                 SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
                 SettingsKey.OnlyStreamLinkRandomEnabled -> settingsRepository.setOnlyStreamLinkRandomEnabled(value)
-                SettingsKey.ShowMultiplePlayers -> settingsRepository.setShowMultiplePlayers(value)
+                SettingsKey.ShowNativePlayerUI -> settingsRepository.setShowNativeUIPlayer(value)
                 SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
                 SettingsKey.PauseOnSwitchToCellularNetwork ->
@@ -148,9 +148,9 @@ class SettingsViewModel
 
                     add(
                         SettingsItem.Switch(
-                            SettingsKey.ShowMultiplePlayers,
-                            R.string.setting_show_multiple_players,
-                            SettingsSwitchOption(settingsRepository.showMultiplePlayers.first()),
+                            SettingsKey.ShowNativePlayerUI,
+                            R.string.setting_show_native_player_ui,
+                            SettingsSwitchOption(settingsRepository.showNativeUIPlayer.first()),
                         ),
                     )
 

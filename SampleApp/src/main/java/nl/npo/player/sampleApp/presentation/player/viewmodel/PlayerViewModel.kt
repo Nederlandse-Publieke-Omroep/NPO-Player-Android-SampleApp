@@ -147,7 +147,7 @@ class PlayerViewModel
                         NPOUiConfig.Disabled
                     }
 
-                callback(playerConfig, uiConfig, settingsRepository.showMultiplePlayers.first())
+                callback(playerConfig, uiConfig, settingsRepository.showNativeUIPlayer.first())
             }
         }
 
