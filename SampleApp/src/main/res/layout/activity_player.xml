@@ -39,10 +39,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:indeterminate="true"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
@@ -83,5 +83,16 @@
         android:src="@android:drawable/ic_media_play"
         android:visibility="gone"
         tools:visibility="visible" />
+
+    <androidx.mediarouter.app.MediaRouteButton
+        style="@style/Widget.Design.FloatingActionButton"
+        android:id="@+id/media_route_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/general_padding"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/btnSwitchStreams"
+        android:mediaRouteTypes="user"
+        android:visibility="visible" />
 
 </RelativeLayout>
