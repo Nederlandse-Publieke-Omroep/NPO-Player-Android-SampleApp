@@ -199,7 +199,7 @@ class PlayerActivity : BaseActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE && !fullScreenHandler.isFullscreen) {
             if (binding.npoVideoPlayerNative.isVisible) {
-                // TODO: Send fullscreen event to native player when possible
+                binding.npoVideoPlayerNative.setFullScreen(true)
             } else {
                 binding.npoVideoPlayerWeb.setFullScreen(true)
             }
@@ -246,6 +246,7 @@ class PlayerActivity : BaseActivity() {
                                 )
                             if (showNativeUI) {
                                 binding.npoVideoPlayerNative.attachPlayer(this)
+                                binding.npoVideoPlayerNative.setFullScreenHandler(fullScreenHandler)
                             } else {
                                 val player = this
                                 binding.npoVideoPlayerWeb.apply {
@@ -553,6 +554,7 @@ class PlayerActivity : BaseActivity() {
             "Loading stream in player failed with result:$throwable",
         )
         throwable?.printStackTrace()
+//        player?.setPlayerError(0, throwable?.message)
         when (throwable) {
             is NPOPlayerException.StreamLinkException -> {
                 binding.apply {
