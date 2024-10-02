@@ -17,6 +17,7 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.sampleApp.domain.SettingsRepository
@@ -124,7 +125,7 @@ class PlayerViewModel
             )
         }
 
-        fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean) -> Unit) {
+        fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean, NPOPlayerColors?) -> Unit) {
             viewModelScope.launch {
                 val playerConfig =
                     NPOPlayerConfig(
@@ -146,8 +147,19 @@ class PlayerViewModel
                     } else {
                         NPOUiConfig.Disabled
                     }
+                val npoPlayerColors =
+                    if (settingsRepository.styling.first() == Styling.Custom) {
+                        NPOPlayerColors(textColor = 0xFFFF0000, iconColor = 0xFF00FF00)
+                    } else {
+                        null
+                    }
 
-                callback(playerConfig, uiConfig, settingsRepository.showNativeUIPlayer.first())
+                callback(
+                    playerConfig,
+                    uiConfig,
+                    settingsRepository.showNativeUIPlayer.first(),
+                    npoPlayerColors,
+                )
             }
         }
 

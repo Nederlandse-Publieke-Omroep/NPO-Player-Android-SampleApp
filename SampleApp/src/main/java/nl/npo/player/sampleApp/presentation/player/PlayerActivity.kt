@@ -33,6 +33,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPictureInPictureHandler
+import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
@@ -191,8 +192,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI ->
-            loadSource(sourceWrapper, playerConfig, uiConfig, showNativePlayerUI)
+        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors ->
+            loadSource(sourceWrapper, playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors)
         }
     }
 
@@ -212,6 +213,7 @@ class PlayerActivity : BaseActivity() {
         playerConfig: NPOPlayerConfig,
         uiConfig: NPOUiConfig,
         showNativeUI: Boolean,
+        npoPlayerColors: NPOPlayerColors?,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
@@ -245,7 +247,10 @@ class PlayerActivity : BaseActivity() {
                                     this,
                                 )
                             if (showNativeUI) {
-                                binding.npoVideoPlayerNative.attachPlayer(this)
+                                binding.npoVideoPlayerNative.attachPlayer(
+                                    npoPlayer = this,
+                                    npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
+                                )
                                 binding.npoVideoPlayerNative.setFullScreenHandler(fullScreenHandler)
                             } else {
                                 val player = this
@@ -389,8 +394,8 @@ class PlayerActivity : BaseActivity() {
             }?.filter { it.avType != player?.npoSourceConfig?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, uiConfig, showNativePlayerUI ->
-                        loadSource(newSource, config, uiConfig, showNativePlayerUI)
+                    playerViewModel.getConfiguration { config, uiConfig, showNativePlayerUI, npoPlayerColors ->
+                        loadSource(newSource, config, uiConfig, showNativePlayerUI, npoPlayerColors)
                     }
                 }
         }
@@ -554,7 +559,7 @@ class PlayerActivity : BaseActivity() {
             "Loading stream in player failed with result:$throwable",
         )
         throwable?.printStackTrace()
-//        player?.setPlayerError(0, throwable?.message)
+        player?.setPlayerError(0, throwable?.message)
         when (throwable) {
             is NPOPlayerException.StreamLinkException -> {
                 binding.apply {
