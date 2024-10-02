@@ -215,7 +215,7 @@ class PlayerActivity : BaseActivity() {
     ) {
         val title = sourceWrapper.title
         if (player == null) {
-            logPageAnalytics(title)
+            logPageAnalytics(title ?: "")
 
             try {
                 player =
@@ -225,7 +225,7 @@ class PlayerActivity : BaseActivity() {
                             npoPlayerConfig = playerConfig,
                             pageTracker =
                                 pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title)),
+                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
                         ).apply {
                             remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                             eventEmitter.addListener(onPlayPauseListener)
@@ -294,7 +294,7 @@ class PlayerActivity : BaseActivity() {
             }
         } else {
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
-            changePageTracker(title)
+            changePageTracker(title ?: "")
         }
 
         when {

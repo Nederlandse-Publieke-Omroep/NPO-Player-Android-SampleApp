@@ -6,7 +6,7 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import java.io.Serializable
 
 data class SourceWrapper(
-    val title: String,
+    val title: String?,
     val testingDescription: String = "",
     val uniqueId: String,
     val getStreamLink: Boolean,

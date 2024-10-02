@@ -67,7 +67,7 @@ class PlayerViewModel
                                         // We add this so the Cast Receiver shows the debug log when casting.
                                         overrideTitle =
                                             if (item.overrideStreamLinkTitleAndDescription) {
-                                                "SampleApp override title: ${item.title}"
+                                                item.title
                                             } else {
                                                 source.title
                                             },

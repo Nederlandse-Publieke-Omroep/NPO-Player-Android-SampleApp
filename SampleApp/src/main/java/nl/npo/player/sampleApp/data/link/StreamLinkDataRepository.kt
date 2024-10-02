@@ -63,7 +63,17 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877 ",
-                testingDescription = "editTitle & editDescription",
+                testingDescription = "Edited Title & edited Description",
+                uniqueId = "AT_300002877",
+                startOffset = 10 * 60.0,
+                getStreamLink = true,
+                imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg",
+                overrideStreamLinkTitleAndDescription = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = null,
+                testingDescription = "No Title & editedDescription",
                 uniqueId = "AT_300002877",
                 startOffset = 10 * 60.0,
                 getStreamLink = true,
