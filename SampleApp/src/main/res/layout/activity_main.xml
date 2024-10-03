@@ -58,22 +58,21 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/btn_offline_content"
-        app:layout_constraintBottom_toTopOf="@id/cast_mini_controller"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@android:layout/simple_list_item_1" />
 
     <!--   The MiniPlayer that shows up at the bottom of the activity if a cast session is running             -->
-    <fragment
-        android:id="@+id/cast_mini_controller"
-        class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:castShowImageThumbnail="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout="@layout/cast_mini_controller" />
+<!--    <fragment-->
+<!--        android:id="@+id/cast_mini_controller"-->
+<!--        class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:visibility="gone"-->
+<!--        app:castShowImageThumbnail="true"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        tools:layout="@layout/cast_mini_controller" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

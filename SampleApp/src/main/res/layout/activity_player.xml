@@ -84,15 +84,15 @@
         android:visibility="gone"
         tools:visibility="visible" />
 
-    <androidx.mediarouter.app.MediaRouteButton
-        style="@style/Widget.Design.FloatingActionButton"
-        android:id="@+id/media_route_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/general_padding"
-        android:layout_alignParentEnd="true"
-        android:layout_above="@id/btnSwitchStreams"
-        android:mediaRouteTypes="user"
-        android:visibility="visible" />
+<!--    <androidx.mediarouter.app.MediaRouteButton-->
+<!--        style="@style/Widget.Design.FloatingActionButton"-->
+<!--        android:id="@+id/media_route_button"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginEnd="@dimen/general_padding"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        android:layout_above="@id/btnSwitchStreams"-->
+<!--        android:mediaRouteTypes="user"-->
+<!--        android:visibility="visible" />-->
 
 </RelativeLayout>

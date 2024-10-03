@@ -12,9 +12,7 @@ import android.view.inputmethod.EditorInfo
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
-import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityMainBinding
 import nl.npo.player.sampleApp.extension.observeNonNull
@@ -40,7 +38,7 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
         // Update the context the BitmovinCastManager is using
         // This should be done in every Activity's onCreate using the cast function
-        NPOCasting.updateCastingContext(this)
+//        NPOCasting.updateCastingContext(this)
 
         binding.setupViews()
         setObservers()
@@ -62,7 +60,7 @@ class MainActivity : BaseActivity() {
         menuInflater.inflate(R.menu.menu_activity_main, menu)
 
         // Adding a Cast Button in the menu bar
-        CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
+//        CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
         return true
     }
 

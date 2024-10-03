@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import dagger.hilt.android.AndroidEntryPoint
-import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.domain.offline.NPOOfflineContentManager
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.databinding.ActivityOfflineBinding
@@ -34,7 +33,7 @@ class OfflineActivity : BaseActivity() {
         binding.setupViews()
         // Update the context the BitmovinCastManager is using
         // This should be done in every Activity's onCreate using the cast function
-        NPOCasting.updateCastingContext(this)
+//        NPOCasting.updateCastingContext(this)
         setObservers()
         logPageAnalytics("OfflineActivity")
     }
@@ -85,14 +84,13 @@ class OfflineActivity : BaseActivity() {
         }
     }
 
-    private fun onItemLongClicked(sourceWrapper: SourceWrapper): Boolean {
-        return if (sourceWrapper.npoOfflineContent != null) {
+    private fun onItemLongClicked(sourceWrapper: SourceWrapper): Boolean =
+        if (sourceWrapper.npoOfflineContent != null) {
             showDeleteDialog(sourceWrapper)
             true
         } else {
             false
         }
-    }
 
     private fun showDeleteDialog(sourceWrapper: SourceWrapper) {
         val alertDialog: AlertDialog = AlertDialog.Builder(this).create()

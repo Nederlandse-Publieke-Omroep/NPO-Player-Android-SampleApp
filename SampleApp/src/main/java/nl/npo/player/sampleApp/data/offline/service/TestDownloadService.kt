@@ -11,14 +11,16 @@ class TestDownloadService : NPODownloadService() {
     override fun getForegroundNotification(downloadStates: Array<out BitmovinDownloadState>): Notification {
         val title = "Downloading: ${downloadStates.getTitles()}"
         val titleShort = "Downloading ${downloadStates.size} item(s)"
-        return Notification.Builder.recoverBuilder(
-            applicationContext,
-            super.getForegroundNotification(downloadStates),
-        ).setSmallIcon(androidx.mediarouter.R.drawable.ic_audiotrack_dark).setColor(Color.RED)
+        return Notification.Builder
+            .recoverBuilder(
+                applicationContext,
+                super.getForegroundNotification(downloadStates),
+            ).setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setColor(Color.RED)
             .setLargeIcon(
                 Icon.createWithResource(applicationContext, R.mipmap.ic_launcher),
-            )
-            .setContentTitle(titleShort).setStyle(Notification.BigTextStyle().bigText(title))
+            ).setContentTitle(titleShort)
+            .setStyle(Notification.BigTextStyle().bigText(title))
             .build()
     }
 

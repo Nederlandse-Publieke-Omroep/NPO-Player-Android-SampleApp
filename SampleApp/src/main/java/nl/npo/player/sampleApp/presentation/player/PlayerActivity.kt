@@ -17,11 +17,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import com.google.android.gms.cast.framework.CastButtonFactory
-import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.CastState
 import dagger.hilt.android.AndroidEntryPoint
-import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
@@ -167,7 +163,7 @@ class PlayerActivity : BaseActivity() {
         setContentView(binding.root)
         binding.setupViews()
         setObservers()
-        NPOCasting.updateCastingContext(this)
+//        NPOCasting.updateCastingContext(this)
         loadSourceWrapperFromIntent(intent)
     }
 
@@ -278,12 +274,12 @@ class PlayerActivity : BaseActivity() {
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
-            binding.mediaRouteButton.isVisible = false
+//            binding.mediaRouteButton.isVisible = false
         } else {
             backstackLost = true
-            val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-            binding.mediaRouteButton.isVisible =
-                castContext.castState != CastState.NO_DEVICES_AVAILABLE
+//            val castContext = CastContext.getSharedInstance(this@PlayerActivity)
+//            binding.mediaRouteButton.isVisible =
+//                castContext.castState != CastState.NO_DEVICES_AVAILABLE
         }
     }
 
@@ -314,7 +310,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupViews() {
-        setupCastButton()
+//        setupCastButton()
         npoVideoPlayer.apply {
             attachToLifecycle(lifecycle)
             playerViewModel.hasCustomSettings {
@@ -376,14 +372,14 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private fun ActivityPlayerBinding.setupCastButton() {
-        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-        castContext.addCastStateListener { state ->
-            mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
-        }
-        mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
-        CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
-    }
+//    private fun ActivityPlayerBinding.setupCastButton() {
+//        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
+//        castContext.addCastStateListener { state ->
+//            mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+//        }
+//        mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
+//        CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
+//    }
 
     private fun playRandom() {
         playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
