@@ -144,6 +144,7 @@ class PlayerActivity : BaseActivity() {
 
             fun List<NPOSubtitleTrack>.selectFirstNotOff() {
                 if (isNotEmpty()) {
+                    // Als we een specifieke taal willen kunnen we die zo aanroepen:  && it.label?.equals("ar", true) == true
                     firstOrNull { it != NPOSubtitleTrack.OFF }?.let { subtitle ->
                         player?.selectSubtitleTrack(subtitle)
                     }
