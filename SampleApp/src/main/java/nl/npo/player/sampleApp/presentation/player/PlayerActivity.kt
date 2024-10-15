@@ -127,25 +127,6 @@ class PlayerActivity : BaseActivity() {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
                 }
-                player?.getSubtitleTracks()?.selectFirstNotOff()
-            }
-
-            override fun onSubtitleTracksChanged(
-                oldTracks: List<NPOSubtitleTrack>,
-                newTracks: List<NPOSubtitleTrack>,
-            ) {
-                super.onSubtitleTracksChanged(oldTracks, newTracks)
-                if (player?.getSelectedSubtitleTrack() == NPOSubtitleTrack.OFF) {
-                    newTracks.selectFirstNotOff()
-                }
-            }
-
-            fun List<NPOSubtitleTrack>.selectFirstNotOff() {
-                if (isNotEmpty()) {
-                    firstOrNull { it != NPOSubtitleTrack.OFF }?.let { subtitle ->
-                        player?.selectSubtitleTrack(subtitle)
-                    }
-                }
             }
 
             override fun onSourceError(currentPosition: Double) {
