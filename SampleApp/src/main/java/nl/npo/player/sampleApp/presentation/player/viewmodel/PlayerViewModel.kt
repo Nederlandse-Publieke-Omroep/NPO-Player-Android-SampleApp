@@ -78,6 +78,9 @@ class PlayerViewModel
                                             } else {
                                                 source.description
                                             },
+                                        overrideNicamContentDescription =
+                                            item.overrideNicamContentDescription
+                                                ?: source.nicamContentDescription,
                                     ),
                                     item,
                                 ),

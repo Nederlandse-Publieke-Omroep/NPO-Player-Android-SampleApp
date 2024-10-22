@@ -1,8 +1,10 @@
 package nl.npo.player.sampleApp.data.link
 
 import nl.npo.player.library.domain.common.enums.AVType
+import nl.npo.player.library.domain.streamLink.model.Nicam
 import nl.npo.player.sampleApp.domain.LinkRepository
 import nl.npo.player.sampleApp.domain.annotation.URLLinkRepository
+import nl.npo.player.sampleApp.model.MyNicamContentDescription
 import nl.npo.player.sampleApp.model.SourceWrapper
 
 @URLLinkRepository
@@ -16,6 +18,20 @@ object URLLinkDataRepository : LinkRepository {
                 getStreamLink = false,
                 offlineDownloadAllowed = true,
                 avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "SHATTERED: DOLBY ATMOS – H.264",
+                testingDescription = "Custom NICAM content description",
+                streamUrl = "https://media.developer.dolby.com/Atmos/MP4/shattered-3Mb.mp4",
+                uniqueId = "shattered-3Mb.mp4",
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+                overrideNicamContentDescription =
+                    MyNicamContentDescription(
+                        ageRating = Nicam.Age.AGE_ALL,
+                        warnings = listOf(Nicam.Warning.VIOLENCE),
+                    ),
             ),
             SourceWrapper(
                 title = "ANNE+GIJS",
