@@ -68,7 +68,7 @@ jobs:
   - job: BuildAndPublishSampleApp
     dependsOn:
       - CodeCheckOnPush
-    condition: and(succeeded(), eq(variables.isMain, true))
+    condition: and(succeeded(), or(eq(variables.isMain, true), eq(variables['Build.Reason'], 'Manual')))
     steps:
       - task: JavaToolInstaller@0
         inputs:
@@ -108,7 +108,6 @@ jobs:
         inputs:
           contents: '**/*.apk'
           targetFolder: '$(build.artifactStagingDirectory)'
-      - task: PublishBuildArtifacts@1
 
       - task: AppCenterDistribute@3
         name: ACC_Build
@@ -123,3 +122,30 @@ jobs:
             Automated CI Release build number $(build.buildNumber) for branch name $(branchName).
           destinationType: 'groups'
           isSilent: false
+
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          options: '-PisSnapshot=true'
+          gradleOptions: '-Xmx3072m'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'clean SampleApp:assemblePRODDebug'
+      - task: CopyFiles@2
+        inputs:
+          contents: '**/*.apk'
+          targetFolder: '$(build.artifactStagingDirectory)'
+
+      - task: AppCenterDistribute@3
+        name: PROD_Build
+        inputs:
+          serverEndpoint: 'NPO Player Android SampleApp PROD'
+          appSlug: 'NPO/Player-SKO-DEMO-PROD'
+          appFile: 'SampleApp/build/outputs/apk/PROD/debug/SampleApp-PROD-debug.apk'
+          releaseNotesOption: 'input'
+          releaseNotesInput: |+
+            Automated CI Release build number $(build.buildNumber) for branch name $(branchName).
+          destinationType: 'groups'
+          isSilent: false
+      - task: PublishBuildArtifacts@1
