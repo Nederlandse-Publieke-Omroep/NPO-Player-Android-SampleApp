@@ -152,7 +152,7 @@ class PlayerViewModel
                     }
                 val npoPlayerColors =
                     if (settingsRepository.styling.first() == Styling.Custom) {
-                        NPOPlayerColors(textColor = 0xFFFF0000, iconColor = 0xFF00FF00)
+                        NPOPlayerColors(textColor = 0xFFFF0000, iconColor = 0xFF00FF00, primaryColor = 0xFF00FF00)
                     } else {
                         null
                     }

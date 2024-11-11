@@ -13,6 +13,7 @@
         android:layout_above="@id/btnSwitchStreams">
 
         <nl.npo.player.library.presentation.mobile.view.NPOComposeVideoPlayerView
+            android:keepScreenOn="true"
             android:id="@+id/npo_video_player_native"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -24,6 +25,7 @@
             app:layout_constraintVertical_chainStyle="spread" />
 
         <nl.npo.player.library.presentation.view.NPOVideoPlayerView
+            android:keepScreenOn="true"
             android:id="@+id/npo_video_player_web"
             android:layout_width="0dp"
             android:layout_height="0dp"
