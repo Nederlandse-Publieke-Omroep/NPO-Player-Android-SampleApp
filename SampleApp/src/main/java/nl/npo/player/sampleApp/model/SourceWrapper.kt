@@ -17,6 +17,7 @@ data class SourceWrapper(
     val avType: AVType? = null,
     val preferThisImageUrlOverStreamLink: Boolean = false,
     val overrideStreamLinkTitleAndDescription: Boolean = false,
+    val overrideNicamContentDescription: MyNicamContentDescription? = null,
     val npoSourceConfig: NPOSourceConfig? =
         if (!getStreamLink) {
             MyNPOSourceConfig(
@@ -26,6 +27,7 @@ data class SourceWrapper(
                 startOffset = startOffset,
                 imageUrl = imageUrl,
                 avType = avType,
+                nicamContentDescription = overrideNicamContentDescription,
             )
         } else {
             null
