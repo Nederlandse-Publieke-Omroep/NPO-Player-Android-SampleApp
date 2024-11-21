@@ -124,6 +124,7 @@ class PlayerActivity : BaseActivity() {
                 currentPosition: Double,
                 source: NPOSourceConfig,
                 streamOptions: StreamOptions,
+                maxTimeShift: Double
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen

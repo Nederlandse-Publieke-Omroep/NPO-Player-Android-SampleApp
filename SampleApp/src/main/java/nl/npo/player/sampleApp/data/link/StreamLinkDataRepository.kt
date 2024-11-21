@@ -1,8 +1,10 @@
 package nl.npo.player.sampleApp.data.link
 
 import nl.npo.player.library.domain.common.enums.AVType
+import nl.npo.player.library.domain.streamLink.model.Nicam
 import nl.npo.player.sampleApp.domain.LinkRepository
 import nl.npo.player.sampleApp.domain.annotation.StreamLinkRepository
+import nl.npo.player.sampleApp.model.MyNicamContentDescription
 import nl.npo.player.sampleApp.model.SourceWrapper
 
 @StreamLinkRepository
@@ -98,6 +100,20 @@ object StreamLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
                 avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "Nederland Zingt: VPWON_1336246",
+                testingDescription = "Override NICAM information",
+                uniqueId = "VPWON_1336246",
+                getStreamLink = true,
+                offlineDownloadAllowed = true,
+                imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
+                avType = AVType.VIDEO,
+                overrideNicamContentDescription =
+                    MyNicamContentDescription(
+                        ageRating = Nicam.Age.AGE_TOUS,
+                        warnings = listOf(Nicam.Warning.UNRATED),
+                    ),
             ),
             SourceWrapper(
                 title = "Teledoc Campus: AT_2031723",
