@@ -183,7 +183,7 @@ class PlayerActivity : BaseActivity() {
         loadSourceWrapperFromIntent(intent)
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         loadSourceWrapperFromIntent(intent)
     }
@@ -248,14 +248,24 @@ class PlayerActivity : BaseActivity() {
                                     this@PlayerActivity,
                                     this,
                                 )
+
+                            val player = this
                             if (showNativeUI) {
-                                binding.npoVideoPlayerNative.attachPlayer(
-                                    npoPlayer = this,
-                                    npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
-                                )
-                                binding.npoVideoPlayerNative.setFullScreenHandler(fullScreenHandler)
+                                binding.npoVideoPlayerNative.apply {
+                                    attachPlayer(
+                                        npoPlayer = player,
+                                        npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
+                                    )
+                                    setFullScreenHandler(fullScreenHandler)
+
+                                    playerViewModel.hasCustomSettings {
+                                        setSettingsButtonOnClickListener {
+                                            showSettings()
+                                            setSettingsButtonState(true)
+                                        }
+                                    }
+                                }
                             } else {
-                                val player = this
                                 binding.npoVideoPlayerWeb.apply {
                                     attachPlayer(player, uiConfig)
                                     setFullScreenHandler(fullScreenHandler)
@@ -418,7 +428,10 @@ class PlayerActivity : BaseActivity() {
                         PlayerSettings.SPEED -> showSpeedSelectionDialog()
                     }
                     dialog.dismiss()
-                }.create()
+                }.setOnDismissListener {
+                    binding.npoVideoPlayerNative.setSettingsButtonState(false)
+                }
+                    .create()
                 .show()
         }
     }
