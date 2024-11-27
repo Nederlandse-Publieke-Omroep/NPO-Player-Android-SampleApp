@@ -134,11 +134,23 @@ class PlayerActivity : BaseActivity() {
             }
 
             override fun onSourceLoad(currentPosition: Double) {
+                // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
+                player?.seekOrTimeShift(10000.0)
+
                 binding.btnPlayPause.isVisible = false
             }
 
             override fun onCanStartPlayingBecauseSwitchedToWiFi() {
                 player?.play()
+            }
+
+            override fun onPlayerError(
+                currentPosition: Double,
+                code: Int,
+                message: String?,
+                data: Any?,
+            ) {
+                Log.w("SampleAppTest", "Error: code: $code, message: $message")
             }
         }
 
