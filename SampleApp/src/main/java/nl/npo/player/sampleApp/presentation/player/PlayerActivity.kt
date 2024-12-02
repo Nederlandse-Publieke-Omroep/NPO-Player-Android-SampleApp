@@ -124,7 +124,7 @@ class PlayerActivity : BaseActivity() {
                 currentPosition: Double,
                 source: NPOSourceConfig,
                 streamOptions: StreamOptions,
-                maxTimeShift: Double
+                maxTimeShift: Double,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -179,8 +179,12 @@ class PlayerActivity : BaseActivity() {
         setContentView(binding.root)
         binding.setupViews()
         setObservers()
-        NPOCasting.updateCastingContext(this)
         loadSourceWrapperFromIntent(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        NPOCasting.updateCastingContext(this)
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -254,6 +258,10 @@ class PlayerActivity : BaseActivity() {
                                     npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
                                 )
                                 binding.npoVideoPlayerNative.setFullScreenHandler(fullScreenHandler)
+
+                                binding.npoVideoPlayerNative.setPlayNextListener { _ ->
+                                    playRandom()
+                                }
                             } else {
                                 val player = this
                                 binding.npoVideoPlayerWeb.apply {
