@@ -124,7 +124,7 @@ class PlayerActivity : BaseActivity() {
                 currentPosition: Double,
                 source: NPOSourceConfig,
                 streamOptions: StreamOptions,
-                maxTimeShift: Double
+                maxTimeShift: Double,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -179,11 +179,15 @@ class PlayerActivity : BaseActivity() {
         setContentView(binding.root)
         binding.setupViews()
         setObservers()
-        NPOCasting.updateCastingContext(this)
         loadSourceWrapperFromIntent(intent)
     }
 
-    override fun onNewIntent(intent: Intent) {
+    override fun onResume() {
+        super.onResume()
+        NPOCasting.updateCastingContext(this)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         loadSourceWrapperFromIntent(intent)
     }
@@ -257,6 +261,9 @@ class PlayerActivity : BaseActivity() {
                                         npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
                                     )
                                     setFullScreenHandler(fullScreenHandler)
+                                    setPlayNextListener { _ ->
+                                        playRandom()
+                                    }
 
                                     playerViewModel.hasCustomSettings {
                                         setSettingsButtonOnClickListener {
