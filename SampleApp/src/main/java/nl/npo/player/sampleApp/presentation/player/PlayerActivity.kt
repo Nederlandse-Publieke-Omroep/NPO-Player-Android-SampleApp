@@ -438,7 +438,7 @@ class PlayerActivity : BaseActivity() {
                 }.setOnDismissListener {
                     binding.npoVideoPlayerNative.setSettingsButtonState(false)
                 }
-                    .create()
+                .create()
                 .show()
         }
     }
