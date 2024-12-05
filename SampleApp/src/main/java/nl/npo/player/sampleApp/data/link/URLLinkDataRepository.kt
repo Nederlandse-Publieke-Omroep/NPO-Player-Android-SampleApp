@@ -12,6 +12,22 @@ object URLLinkDataRepository : LinkRepository {
     private val urlLinkSourceList: List<SourceWrapper> by lazy {
         listOf(
             SourceWrapper(
+                title = "Audiodescriptie test stream",
+                streamUrl = "https://dev-tommie.cdn.streamgate.nl/video/npo/dering/thering.ism/.mpd",
+                uniqueId = "dev-tommie-ad.mpd",
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "Audiodescriptie test stream v2",
+                streamUrl = "https://dev-tommie.cdn.streamgate.nl/video/npo/dering/dering_v2.ism/.mpd",
+                uniqueId = "dev-tommie-ad_v2.mpd",
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "SHATTERED: DOLBY ATMOS – H.264",
                 streamUrl = "https://media.developer.dolby.com/Atmos/MP4/shattered-3Mb.mp4",
                 uniqueId = "shattered-3Mb.mp4",
