@@ -32,7 +32,6 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.player.ui.model.NPOPictureInPictureHandler
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
@@ -66,7 +65,6 @@ class PlayerActivity : BaseActivity() {
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val linkViewModel by viewModels<LinksViewModel>()
     private var npoNotificationManager: NPONotificationManager? = null
-    private var pipHandler: NPOPictureInPictureHandler? = null
     private var backstackLost = false
 
     private val mediaSessionCallback =
@@ -232,8 +230,8 @@ class PlayerActivity : BaseActivity() {
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
                             pageTracker =
-                                pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
+                            pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
+                                ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
                         ).apply {
                             remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                             eventEmitter.addListener(onPlayPauseListener)
@@ -247,12 +245,6 @@ class PlayerActivity : BaseActivity() {
                                 )
                             attachToLifecycle(lifecycle)
 
-                            pipHandler =
-                                DefaultNPOPictureInPictureHandler(
-                                    this@PlayerActivity,
-                                    this,
-                                )
-
                             val player = this
                             if (showNativeUI) {
                                 binding.npoVideoPlayerNative.apply {
@@ -264,6 +256,7 @@ class PlayerActivity : BaseActivity() {
                                     setPlayNextListener { _ ->
                                         playRandom()
                                     }
+                                    enablePictureInPictureSupport(this@PlayerActivity)
 
                                     playerViewModel.hasCustomSettings {
                                         setSettingsButtonOnClickListener {
@@ -276,7 +269,12 @@ class PlayerActivity : BaseActivity() {
                                 binding.npoVideoPlayerWeb.apply {
                                     attachPlayer(player, uiConfig)
                                     setFullScreenHandler(fullScreenHandler)
-                                    setPiPHandler(pipHandler)
+                                    setPiPHandler(
+                                        DefaultNPOPictureInPictureHandler(
+                                            this@PlayerActivity,
+                                            player
+                                        )
+                                    )
                                     attachToLifecycle(lifecycle)
                                     playerViewModel.hasCustomSettings {
                                         setSettingsButtonOnClickListener {
@@ -331,9 +329,11 @@ class PlayerActivity : BaseActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (pipHandler?.isPictureInPictureAvailable == true && player?.isPlaying == true) {
-            pipHandler?.enterPictureInPicture()
-        }
+        if(player?.isPlaying != true) return
+
+        with(binding) {
+            npoVideoPlayerNative.pipHandler ?: npoVideoPlayerWeb.pipHandler
+        }?.enterPictureInPicture()
     }
 
     override fun onPictureInPictureModeChanged(
@@ -460,7 +460,8 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.getVideoQualities()?.size ?: 0) > 0) PlayerSettings.VIDEO_QUALITIES else null
