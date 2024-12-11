@@ -56,7 +56,7 @@ class MainActivity : BaseActivity() {
 
     private fun setObservers() {
         viewModel.enableCasting.observe(this) {
-            if(it != NPOCasting.isCastingEnabled) {
+            if (it != NPOCasting.isCastingEnabled) {
                 NPOCasting.setCastingEnabled(it)
                 startActivity(Intent(this, MainActivity::class.java))
                 finishAffinity()
@@ -73,7 +73,7 @@ class MainActivity : BaseActivity() {
         menu.findItem(R.id.media_route_menu_item).isVisible = NPOCasting.isCastingEnabled
 
         // Adding a Cast Button in the menu bar
-        if(NPOCasting.isCastingEnabled) {
+        if (NPOCasting.isCastingEnabled) {
             CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
         }
         return true

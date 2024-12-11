@@ -92,4 +92,4 @@ class SettingsRepositoryImpl
         override suspend fun setEnableCasting(enabled: Boolean) {
             prefs.setEnableCasting(enabled)
         }
-}
+    }

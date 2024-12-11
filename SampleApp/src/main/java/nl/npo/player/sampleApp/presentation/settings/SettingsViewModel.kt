@@ -66,7 +66,8 @@ class SettingsViewModel
                 SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
                 SettingsKey.Styling,
                 SettingsKey.UserType,
-                SettingsKey.ShouldPlayNext -> Unit
+                SettingsKey.ShouldPlayNext,
+                -> Unit
             }
         }
 

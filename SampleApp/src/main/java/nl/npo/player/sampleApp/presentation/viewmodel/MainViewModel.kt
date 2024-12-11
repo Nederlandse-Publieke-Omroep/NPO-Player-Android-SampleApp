@@ -7,8 +7,10 @@ import nl.npo.player.sampleApp.domain.SettingsRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
-    settingsRepository: SettingsRepository
-) : ViewModel() {
-    val enableCasting = settingsRepository.enableCasting.asLiveData()
-}
+class MainViewModel
+    @Inject
+    constructor(
+        settingsRepository: SettingsRepository,
+    ) : ViewModel() {
+        val enableCasting = settingsRepository.enableCasting.asLiveData()
+    }

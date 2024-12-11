@@ -370,7 +370,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupCastButton() {
-        if(!NPOCasting.isCastingEnabled) {
+        if (!NPOCasting.isCastingEnabled) {
             mediaRouteButton.isVisible = false
             return
         }
