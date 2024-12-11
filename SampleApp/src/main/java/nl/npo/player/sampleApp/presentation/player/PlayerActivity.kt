@@ -154,6 +154,10 @@ class PlayerActivity : BaseActivity() {
             }
         }
 
+    private val castStateListener: (Int) -> Unit = { state ->
+        binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -303,6 +307,7 @@ class PlayerActivity : BaseActivity() {
 
         npoNotificationManager?.setPlayer(null)
         mediaSession.release()
+        CastContext.getSharedInstance(this@PlayerActivity).removeCastStateListener(castStateListener)
         super.onDestroy()
     }
 
@@ -376,9 +381,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-        castContext.addCastStateListener { state ->
-            mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
-        }
+        castContext.addCastStateListener(castStateListener)
         mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
         CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
     }
