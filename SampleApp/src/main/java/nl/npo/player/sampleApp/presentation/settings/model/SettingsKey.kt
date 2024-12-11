@@ -12,4 +12,5 @@ enum class SettingsKey {
     PauseWhenBecomingNoisy,
     PauseOnSwitchToCellularNetwork,
     ShouldPlayNext,
+    EnableCasting
 }

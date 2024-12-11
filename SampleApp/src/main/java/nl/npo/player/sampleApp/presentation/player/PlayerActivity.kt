@@ -370,6 +370,11 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupCastButton() {
+        if(!NPOCasting.isCastingEnabled) {
+            mediaRouteButton.isVisible = false
+            return
+        }
+
         val castContext = CastContext.getSharedInstance(this@PlayerActivity)
         castContext.addCastStateListener { state ->
             mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
