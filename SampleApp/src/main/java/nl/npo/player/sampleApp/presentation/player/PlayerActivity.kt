@@ -230,8 +230,8 @@ class PlayerActivity : BaseActivity() {
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
                             pageTracker =
-                            pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
+                                pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
+                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
                         ).apply {
                             remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                             eventEmitter.addListener(onPlayPauseListener)
@@ -272,8 +272,8 @@ class PlayerActivity : BaseActivity() {
                                     setPiPHandler(
                                         DefaultNPOPictureInPictureHandler(
                                             this@PlayerActivity,
-                                            player
-                                        )
+                                            player,
+                                        ),
                                     )
                                     attachToLifecycle(lifecycle)
                                     playerViewModel.hasCustomSettings {
@@ -329,7 +329,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if(player?.isPlaying != true) return
+        if (player?.isPlaying != true) return
 
         with(binding) {
             npoVideoPlayerNative.pipHandler ?: npoVideoPlayerWeb.pipHandler
@@ -437,8 +437,7 @@ class PlayerActivity : BaseActivity() {
                     dialog.dismiss()
                 }.setOnDismissListener {
                     binding.npoVideoPlayerNative.setSettingsButtonState(false)
-                }
-                .create()
+                }.create()
                 .show()
         }
     }
@@ -460,8 +459,7 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? =
-        if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.getVideoQualities()?.size ?: 0) > 0) PlayerSettings.VIDEO_QUALITIES else null
