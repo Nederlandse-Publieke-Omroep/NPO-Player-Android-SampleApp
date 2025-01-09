@@ -35,6 +35,7 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.mobile.model.PlayNextListenerResult
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
@@ -253,8 +254,10 @@ class PlayerActivity : BaseActivity() {
                                         npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
                                     )
                                     setFullScreenHandler(fullScreenHandler)
-                                    setPlayNextListener { _ ->
-                                        playRandom()
+                                    setPlayNextListener { action ->
+                                        when (action) {
+                                            is PlayNextListenerResult.Triggered -> playRandom()
+                                        }
                                     }
                                     enablePictureInPictureSupport(this@PlayerActivity)
 
