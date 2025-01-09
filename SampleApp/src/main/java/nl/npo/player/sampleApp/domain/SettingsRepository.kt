@@ -49,4 +49,8 @@ interface SettingsRepository {
     val shouldShowPlayNext: Flow<PlayNext>
 
     suspend fun setShouldPlayNext(playNext: PlayNext)
+
+    val enableCasting: Flow<Boolean>
+
+    suspend fun setEnableCasting(enabled: Boolean)
 }
