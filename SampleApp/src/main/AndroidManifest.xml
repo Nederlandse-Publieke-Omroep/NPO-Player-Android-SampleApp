@@ -19,6 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NPOPlayerLibraryAndroid"
+        tools:remove="android:taskAffinity"
         tools:replace="android:label"
         tools:targetApi="32">
 

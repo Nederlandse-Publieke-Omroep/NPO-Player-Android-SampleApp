@@ -85,4 +85,11 @@ class SettingsRepositoryImpl
         override suspend fun setShouldPlayNext(playNext: PlayNext) {
             prefs.setShouldPlayNext(playNext)
         }
+
+        override val enableCasting: Flow<Boolean> =
+            prefs.enableCasting
+
+        override suspend fun setEnableCasting(enabled: Boolean) {
+            prefs.setEnableCasting(enabled)
+        }
     }

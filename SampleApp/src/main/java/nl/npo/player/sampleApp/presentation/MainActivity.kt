@@ -24,11 +24,13 @@ import nl.npo.player.sampleApp.presentation.offline.OfflineActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.settings.SettingsBottomSheetDialog
 import nl.npo.player.sampleApp.presentation.viewmodel.LinksViewModel
+import nl.npo.player.sampleApp.presentation.viewmodel.MainViewModel
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val viewModel by viewModels<LinksViewModel>()
+    private val viewModel by viewModels<MainViewModel>()
+    private val linksViewModel by viewModels<LinksViewModel>()
     private val streamLinkAdapter =
         MainListAdapter(emptyList(), ::onSourceWrapperListItemClicked)
     private val urlLinkAdapter =
@@ -53,16 +55,27 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        viewModel.streamLinkList.observeNonNull(this, ::setStreamAdapter)
-        viewModel.urlLinkList.observeNonNull(this, ::setURLAdapter)
+        viewModel.enableCasting.observe(this) {
+            if (it != NPOCasting.isCastingEnabled) {
+                NPOCasting.setCastingEnabled(it)
+                startActivity(Intent(this, MainActivity::class.java))
+                finishAffinity()
+            }
+        }
+        linksViewModel.streamLinkList.observeNonNull(this, ::setStreamAdapter)
+        linksViewModel.urlLinkList.observeNonNull(this, ::setURLAdapter)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val menuInflater = menuInflater
         menuInflater.inflate(R.menu.menu_activity_main, menu)
 
+        menu.findItem(R.id.media_route_menu_item).isVisible = NPOCasting.isCastingEnabled
+
         // Adding a Cast Button in the menu bar
-        CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
+        if (NPOCasting.isCastingEnabled) {
+            CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
+        }
         return true
     }
 

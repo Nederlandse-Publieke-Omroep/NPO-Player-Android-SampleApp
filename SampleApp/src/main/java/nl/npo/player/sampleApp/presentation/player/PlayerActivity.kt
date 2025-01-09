@@ -129,26 +129,6 @@ class PlayerActivity : BaseActivity() {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
                 }
-                player?.getSubtitleTracks()?.selectFirstNotOff()
-            }
-
-            override fun onSubtitleTracksChanged(
-                oldTracks: List<NPOSubtitleTrack>,
-                newTracks: List<NPOSubtitleTrack>,
-            ) {
-                super.onSubtitleTracksChanged(oldTracks, newTracks)
-                if (player?.getSelectedSubtitleTrack() == NPOSubtitleTrack.OFF) {
-                    newTracks.selectFirstNotOff()
-                }
-            }
-
-            fun List<NPOSubtitleTrack>.selectFirstNotOff() {
-                if (isNotEmpty()) {
-                    // Als we een specifieke taal willen kunnen we die zo aanroepen:  && it.label?.equals("ar", true) == true
-                    firstOrNull { it != NPOSubtitleTrack.OFF }?.let { subtitle ->
-                        player?.selectSubtitleTrack(subtitle)
-                    }
-                }
             }
 
             override fun onSourceError(
@@ -164,13 +144,29 @@ class PlayerActivity : BaseActivity() {
                 currentPosition: Double,
                 source: NPOSourceConfig,
             ) {
+                // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
+                player?.seekOrTimeShift(10000.0)
+
                 binding.btnPlayPause.isVisible = false
             }
 
             override fun onCanStartPlayingBecauseSwitchedToWiFi() {
                 player?.play()
             }
+
+            override fun onPlayerError(
+                currentPosition: Double,
+                code: Int,
+                message: String?,
+                data: Any?,
+            ) {
+                Log.w("SampleAppTest", "Error: code: $code, message: $message")
+            }
         }
+
+    private val castStateListener: (Int) -> Unit = { state ->
+        binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -377,6 +373,7 @@ class PlayerActivity : BaseActivity() {
 
         npoNotificationManager?.setPlayer(null)
         mediaSession.release()
+        CastContext.getSharedInstance(this@PlayerActivity).removeCastStateListener(castStateListener)
         super.onDestroy()
     }
 
@@ -397,10 +394,13 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupCastButton() {
-        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-        castContext.addCastStateListener { state ->
-            mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+        if (!NPOCasting.isCastingEnabled) {
+            mediaRouteButton.isVisible = false
+            return
         }
+
+        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
+        castContext.addCastStateListener(castStateListener)
         mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
         CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
     }
