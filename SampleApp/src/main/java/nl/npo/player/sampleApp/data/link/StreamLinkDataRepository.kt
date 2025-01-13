@@ -12,6 +12,15 @@ object StreamLinkDataRepository : LinkRepository {
     private val streamLinkSourceList: List<SourceWrapper> by lazy {
         listOf(
             SourceWrapper(
+                title = "Audio description test: AD_DASH_20241209",
+                testingDescription = "Audio description test",
+                uniqueId = "AD_DASH_20241209",
+                getStreamLink = true,
+                imageUrl = "https://assets-start.npo.nl/resources/2024/07/26/ed3443af-3829-4e33-a952-c37356d87fb3.jpg?dimensions=375x375",
+                preferThisImageUrlOverStreamLink = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "Live NPO1: LI_NL1_4188102",
                 testingDescription = "Playback Live DVR from startpos",
                 startOffset = -(10 * 60.0),

@@ -63,8 +63,11 @@ class SettingsViewModel
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
                 SettingsKey.PauseOnSwitchToCellularNetwork ->
                     settingsRepository.setPauseOnSwitchToCellularNetwork(value)
-
-                else -> Unit
+                SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
+                SettingsKey.Styling,
+                SettingsKey.UserType,
+                SettingsKey.ShouldPlayNext,
+                -> Unit
             }
         }
 
@@ -167,6 +170,14 @@ class SettingsViewModel
                             SettingsKey.PauseOnSwitchToCellularNetwork,
                             R.string.setting_pause_on_cellular,
                             SettingsSwitchOption(settingsRepository.pauseOnSwitchToCellularNetwork.first()),
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.EnableCasting,
+                            R.string.setting_enable_casting,
+                            SettingsSwitchOption(settingsRepository.enableCasting.first()),
                         ),
                     )
                 }

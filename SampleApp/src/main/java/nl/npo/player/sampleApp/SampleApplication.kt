@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.AnalyticsEnvironment
@@ -14,6 +16,7 @@ import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.library.npotag.model.AnalyticsConfiguration
 import nl.npo.player.sampleApp.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.data.offline.service.TestDownloadService
+import nl.npo.player.sampleApp.domain.SettingsRepository
 import nl.npo.player.sampleApp.presentation.cast.CastOptionsProvider
 import nl.npo.tag.sdk.NpoTag
 import nl.npo.tag.sdk.atinternet.ATInternetPlugin
@@ -32,6 +35,9 @@ class SampleApplication : Application() {
     @Inject
     lateinit var analyticsEnvironment: AnalyticsEnvironment
 
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+
     override fun onCreate() {
         super.onCreate()
         analyticsConfiguration =
@@ -49,6 +55,7 @@ class SampleApplication : Application() {
 
     fun initiatePlayerLibrary(withNPOTag: Boolean) {
         val list = listOf(ChuckerInterceptor.Builder(this).build())
+        val enableCasting = runBlocking { settingsRepository.enableCasting.first() }
         if (withNPOTag) {
             // Either create your own NpoTag implementation which can be used for app analytics:
             npoTag =
@@ -60,6 +67,7 @@ class SampleApplication : Application() {
                     ) {
                         environment = this@SampleApplication.environment
                         keepUIUpToDate = true
+                        this.enableCasting = enableCasting
                         addInterceptors(list)
                     }
                 }
@@ -80,6 +88,7 @@ class SampleApplication : Application() {
             ) {
                 environment = this@SampleApplication.environment
                 keepUIUpToDate = true
+                this.enableCasting = enableCasting
                 addInterceptors(list)
             }
         }
