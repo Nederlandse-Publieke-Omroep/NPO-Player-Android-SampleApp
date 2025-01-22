@@ -1,11 +1,10 @@
 package nl.npo.player.sampleApp.presentation.player.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOPlayerLibrary
@@ -38,64 +37,78 @@ class PlayerViewModel
         private val tokenProvider: TokenProvider,
         private val settingsRepository: SettingsRepository,
     ) : ViewModel() {
-        private val mutableState =
-            MutableLiveData<StreamRetrievalState>(StreamRetrievalState.NotStarted)
-        val retrievalState: LiveData<StreamRetrievalState> = mutableState
+        private val _streamRetrievalState =
+            MutableStateFlow<StreamRetrievalState>(StreamRetrievalState.NotStarted)
+        val streamRetrievalState = _streamRetrievalState.asLiveData()
 
         fun retrieveSource(item: SourceWrapper) {
-            mutableState.postValue(StreamRetrievalState.Loading)
-            viewModelScope.launch(Dispatchers.IO) {
-                val isPlusUser = settingsRepository.userType.first() == UserType.Plus
-                when (val result = tokenProvider.createToken(item.uniqueId, isPlusUser)) {
-                    is StreamInfoResult.Success -> {
-                        try {
-                            val autoPlay = settingsRepository.autoPlayEnabled.first()
-                            val source =
-                                NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(result.data.token))
-                            mutableState.postValue(
-                                StreamRetrievalState.Success(
-                                    source.copy(
-                                        overrideStartOffset = item.startOffset,
-                                        overrideImageUrl = item.getImageUrl(source),
-                                        overrideAutoPlay = autoPlay,
-                                        overrideMetadata =
-                                            source.metadata
-                                                ?.toMutableMap()
-                                                ?.apply {
-                                                    set(
-                                                        "appletest",
-                                                        "true",
-                                                    )
-                                                },
-                                        // We add this so the Cast Receiver shows the debug log when casting.
-                                        overrideTitle =
-                                            if (item.overrideStreamLinkTitleAndDescription) {
-                                                item.title
-                                            } else {
-                                                source.title
-                                            },
-                                        overrideDescription =
-                                            if (item.overrideStreamLinkTitleAndDescription) {
-                                                "SampleApp override description: ${item.testingDescription}"
-                                            } else {
-                                                source.description
-                                            },
-                                        overrideNicamContentDescription =
-                                            item.overrideNicamContentDescription
-                                                ?: source.nicamContentDescription,
-                                    ),
-                                    item,
-                                ),
-                            )
-                        } catch (throwable: NPOPlayerException) {
-                            postError(throwable.toNPOPlayerError(), item)
-                        }
-                    } // Happy path
-                    is StreamInfoResult.Error -> {
-                        postError(NPOPlayerError.StreamLink.AuthorisationFailed(NPOPlayerException.AUTHORISATION_FAILED), item)
-                    }
+            viewModelScope.launch {
+                _streamRetrievalState.emit(StreamRetrievalState.Loading)
+                val mergedSource = fetchAndMergeSource(item) ?: return@launch
+                _streamRetrievalState.emit(StreamRetrievalState.Success(mergedSource, item))
+            }
+        }
+
+        private suspend fun createToken(
+            itemId: String,
+            isPlusUser: Boolean,
+        ): String? {
+            return when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
+                is StreamInfoResult.Success -> tokenResult.data.token
+                else -> {
+                    null
                 }
             }
+        }
+
+        private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper): NPOSourceConfig? {
+            val isPlusUser = settingsRepository.userType.first() == UserType.Plus
+            val token = createToken(sourceWrapper.uniqueId, isPlusUser) ?: return null
+
+            return try {
+                val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
+                mergeSourceWrapperWithSource(sourceWrapper, source)
+            } catch (e: NPOPlayerException) {
+                handleError(e.toNPOPlayerError(), sourceWrapper)
+                null
+            }
+        }
+
+        private suspend fun mergeSourceWrapperWithSource(
+            sourceWrapper: SourceWrapper,
+            source: NPOSourceConfig,
+        ): NPOSourceConfig {
+            val autoPlay = settingsRepository.autoPlayEnabled.first()
+            return source.copy(
+                overrideStartOffset = sourceWrapper.startOffset,
+                overrideImageUrl = sourceWrapper.getImageUrl(source),
+                overrideAutoPlay = autoPlay,
+                overrideMetadata =
+                    source.metadata
+                        ?.toMutableMap()
+                        ?.apply {
+                            set(
+                                "appletest",
+                                "true",
+                            )
+                        },
+                // We add this so the Cast Receiver shows the debug log when casting.
+                overrideTitle =
+                    if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
+                        sourceWrapper.title
+                    } else {
+                        source.title
+                    },
+                overrideDescription =
+                    if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
+                        "SampleApp override description: ${sourceWrapper.testingDescription}"
+                    } else {
+                        source.description
+                    },
+                overrideNicamContentDescription =
+                    sourceWrapper.overrideNicamContentDescription
+                        ?: source.nicamContentDescription,
+            )
         }
 
         private fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? =
@@ -118,11 +131,11 @@ class PlayerViewModel
             }
         }
 
-        private fun postError(
+        private suspend fun handleError(
             error: NPOPlayerError,
             sourceWrapper: SourceWrapper,
         ) {
-            mutableState.postValue(
+            _streamRetrievalState.emit(
                 StreamRetrievalState.Error(
                     error,
                     sourceWrapper,
@@ -154,7 +167,11 @@ class PlayerViewModel
                     }
                 val npoPlayerColors =
                     if (settingsRepository.styling.first() == Styling.Custom) {
-                        NPOPlayerColors(textColor = 0xFFFF0000, iconColor = 0xFF00FF00, primaryColor = 0xFF00FF00)
+                        NPOPlayerColors(
+                            textColor = 0xFFFF0000,
+                            iconColor = 0xFF00FF00,
+                            primaryColor = 0xFF00FF00,
+                        )
                     } else {
                         null
                     }
@@ -188,6 +205,10 @@ class PlayerViewModel
                     callback()
                 }
             }
+        }
+
+        suspend fun retrieveSourceTest(sourceWrapper: SourceWrapper): NPOSourceConfig? {
+            return fetchAndMergeSource(sourceWrapper)
         }
 
         companion object {

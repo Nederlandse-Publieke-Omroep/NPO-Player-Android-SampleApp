@@ -166,6 +166,10 @@ class PlayerActivity : BaseActivity() {
         binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
     }
 
+    private val retryListener: suspend () -> NPOSourceConfig? = {
+        playerViewModel.retrieveSourceTest(sourceWrapper)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -261,6 +265,8 @@ class PlayerActivity : BaseActivity() {
                                             setSettingsButtonState(true)
                                         }
                                     }
+
+                                    setRetryListener(retryListener)
                                 }
                             } else {
                                 binding.npoVideoPlayerWeb.apply {
@@ -601,7 +607,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
+        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
         // Initialize the link lists even though we don't do anything with the changes yet.
         linkViewModel.urlLinkList.observeNonNull(this) {}
         linkViewModel.streamLinkList.observeNonNull(this) {}
