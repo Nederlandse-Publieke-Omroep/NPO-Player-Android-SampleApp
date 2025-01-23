@@ -36,6 +36,7 @@ class SettingsPreferences
             val shouldAutoPlayNext = booleanPreferencesKey("shouldAutoPlayNext")
             val playNextDuration = intPreferencesKey("playNextDuration")
             val playNextOffset = intPreferencesKey("playNextOffset")
+            val enableCasting = booleanPreferencesKey("enableCasting")
         }
 
         val styling: Flow<StylingPref>
@@ -176,6 +177,18 @@ class SettingsPreferences
                 prefs[Keys.shouldAutoPlayNext] = playNext.autoPlayNextEnabled
                 prefs[Keys.playNextDuration] = playNext.duration
                 prefs[Keys.playNextOffset] = playNext.offset
+            }
+        }
+
+        val enableCasting: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.enableCasting] ?: true
+                }
+
+        suspend fun setEnableCasting(enabled: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.enableCasting] = enabled
             }
         }
     }

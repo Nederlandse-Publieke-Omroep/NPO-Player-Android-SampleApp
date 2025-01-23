@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
@@ -68,31 +67,6 @@ class PlayerActivity : BaseActivity() {
     private var pipHandler: NPOPictureInPictureHandler? = null
     private var backstackLost = false
 
-    private val mediaSessionCallback =
-        object : MediaSession.Callback() {
-            override fun onPlay() {
-                super.onPlay()
-                player?.play()
-            }
-
-            override fun onPause() {
-                super.onPause()
-                player?.pause()
-            }
-
-            override fun onStop() {
-                super.onStop()
-                player?.pause()
-            }
-        }
-
-    private val mediaSession by lazy {
-        MediaSession(this, MEDIA_SESSION_TAG).apply {
-            setCallback(mediaSessionCallback)
-            isActive = true
-        }
-    }
-
     private val onPlayPauseListener: PlayerListener =
         object : PlayerListener {
             override fun onPlaybackFinished(currentPosition: Double) {
@@ -153,6 +127,10 @@ class PlayerActivity : BaseActivity() {
                 Log.w("SampleAppTest", "Error: code: $code, message: $message")
             }
         }
+
+    private val castStateListener: (Int) -> Unit = { state ->
+        binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -215,7 +193,6 @@ class PlayerActivity : BaseActivity() {
                                     R.string.app_name,
                                     R.drawable.ic_launcher_foreground,
                                     NOTIFICATION_ID,
-                                    mediaSession.sessionToken,
                                 )
                             attachToLifecycle(lifecycle)
 
@@ -302,7 +279,7 @@ class PlayerActivity : BaseActivity() {
         }
 
         npoNotificationManager?.setPlayer(null)
-        mediaSession.release()
+        CastContext.getSharedInstance(this@PlayerActivity).removeCastStateListener(castStateListener)
         super.onDestroy()
     }
 
@@ -370,10 +347,13 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupCastButton() {
-        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-        castContext.addCastStateListener { state ->
-            mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+        if (!NPOCasting.isCastingEnabled) {
+            mediaRouteButton.isVisible = false
+            return
         }
+
+        val castContext = CastContext.getSharedInstance(this@PlayerActivity)
+        castContext.addCastStateListener(castStateListener)
         mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
         CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
     }
