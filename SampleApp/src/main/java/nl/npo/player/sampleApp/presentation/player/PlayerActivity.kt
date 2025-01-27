@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
@@ -67,31 +66,6 @@ class PlayerActivity : BaseActivity() {
     private val linkViewModel by viewModels<LinksViewModel>()
     private var npoNotificationManager: NPONotificationManager? = null
     private var backstackLost = false
-
-    private val mediaSessionCallback =
-        object : MediaSession.Callback() {
-            override fun onPlay() {
-                super.onPlay()
-                player?.play()
-            }
-
-            override fun onPause() {
-                super.onPause()
-                player?.pause()
-            }
-
-            override fun onStop() {
-                super.onStop()
-                player?.pause()
-            }
-        }
-
-    private val mediaSession by lazy {
-        MediaSession(this, MEDIA_SESSION_TAG).apply {
-            setCallback(mediaSessionCallback)
-            isActive = true
-        }
-    }
 
     private val onPlayPauseListener: PlayerListener =
         object : PlayerListener {
@@ -238,7 +212,6 @@ class PlayerActivity : BaseActivity() {
                                     R.string.app_name,
                                     R.drawable.ic_launcher_foreground,
                                     NOTIFICATION_ID,
-                                    mediaSession.sessionToken,
                                 )
                             attachToLifecycle(lifecycle)
 
@@ -372,7 +345,6 @@ class PlayerActivity : BaseActivity() {
         }
 
         npoNotificationManager?.setPlayer(null)
-        mediaSession.release()
         CastContext.getSharedInstance(this@PlayerActivity).removeCastStateListener(castStateListener)
         super.onDestroy()
     }
