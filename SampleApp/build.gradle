@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')

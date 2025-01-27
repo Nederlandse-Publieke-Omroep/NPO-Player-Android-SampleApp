@@ -166,8 +166,8 @@ class PlayerActivity : BaseActivity() {
         binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
     }
 
-    private val retryListener: suspend () -> NPOSourceConfig? = {
-        playerViewModel.retrieveSourceTest(sourceWrapper)
+    private val retryListener: (Double) -> Unit = {
+        playerViewModel.retrieveSource(sourceWrapper.copy(startOffset = it))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
