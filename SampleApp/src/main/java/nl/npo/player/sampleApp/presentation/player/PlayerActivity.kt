@@ -240,9 +240,9 @@ class PlayerActivity : BaseActivity() {
                                     R.string.app_name,
                                     R.drawable.ic_launcher_foreground,
                                     NOTIFICATION_ID,
-                                    mediaSession.sessionToken,
                                 )
                             attachToLifecycle(lifecycle)
+                            setTokenRefreshCallback(retryListener)
 
                             val player = this
                             if (showNativeUI) {
@@ -265,8 +265,6 @@ class PlayerActivity : BaseActivity() {
                                             setSettingsButtonState(true)
                                         }
                                     }
-
-                                    setRetryListener(retryListener)
                                 }
                             } else {
                                 binding.npoVideoPlayerWeb.apply {
