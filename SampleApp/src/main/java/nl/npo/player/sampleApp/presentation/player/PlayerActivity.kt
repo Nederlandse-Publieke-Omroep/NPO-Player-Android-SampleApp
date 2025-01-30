@@ -28,12 +28,14 @@ import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.model.PlayNextListenerResult
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
@@ -107,9 +109,7 @@ class PlayerActivity : BaseActivity() {
 
             override fun onSourceError(
                 currentPosition: Double,
-                code: Int,
-                message: String?,
-                data: Any?,
+                error: NPOPlayerError,
             ) {
                 binding.btnPlayPause.isVisible = false
             }
@@ -130,11 +130,9 @@ class PlayerActivity : BaseActivity() {
 
             override fun onPlayerError(
                 currentPosition: Double,
-                code: Int,
-                message: String?,
-                data: Any?,
+                error: NPOPlayerError,
             ) {
-                Log.w("SampleAppTest", "Error: code: $code, message: $message")
+                Log.w("SampleAppTest", "Error: code: ${error.errorCode}: ${error.getMessage(this@PlayerActivity)}")
             }
         }
 
@@ -547,35 +545,24 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun handleError(
-        throwable: Throwable?,
+        error: NPOPlayerError,
         retry: () -> Unit,
     ) {
         Log.d(
             PlayerActivity::class.simpleName,
-            "Loading stream in player failed with result:$throwable",
+            "Loading stream in player failed with result:${error.getMessage(this@PlayerActivity)}",
         )
-        throwable?.printStackTrace()
-        player?.setPlayerError(0, throwable?.message)
-        when (throwable) {
-            is NPOPlayerException.StreamLinkException -> {
-                binding.apply {
-                    loadingIndicator.isVisible = false
-                    retryBtn.isVisible =
-                        throwable is NPOPlayerException.StreamLinkException.WillComeAvailableSoonException
-                    Toast.makeText(baseContext, throwable.message, Toast.LENGTH_LONG).show()
-                }
-            }
+        player?.setPlayerError(error)
+        binding.loadingIndicator.isVisible = false
 
-            else -> {
-                binding.apply {
-                    loadingIndicator.isVisible = false
-                    retryBtn.isVisible = true
-                    retryBtn.setOnClickListener {
-                        retry.invoke()
-                    }
-                }
+        with(binding.retryBtn) {
+            isVisible = error.allowRetry
+            setOnClickListener {
+                retry.invoke()
             }
         }
+
+        Toast.makeText(baseContext, error.getMessage(this@PlayerActivity), Toast.LENGTH_LONG).show()
     }
 
     private fun handleLoading() {
@@ -594,16 +581,11 @@ class PlayerActivity : BaseActivity() {
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
-            is StreamRetrievalState.Success ->
-                with(retrievalState) {
-                    loadStreamURL(npoSourceConfig)
-                }
+            is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
             is StreamRetrievalState.Error ->
-                with(retrievalState) {
-                    handleError(throwable) {
-                        playerViewModel.retrieveSource(sourceWrapper)
-                    }
+                handleError(retrievalState.error) {
+                    playerViewModel.retrieveSource(sourceWrapper)
                 }
 
             StreamRetrievalState.Loading -> {

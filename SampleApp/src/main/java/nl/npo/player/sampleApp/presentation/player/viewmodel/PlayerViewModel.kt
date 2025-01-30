@@ -10,11 +10,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.extensions.copy
+import nl.npo.player.library.data.extensions.toNPOPlayerError
 import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
+import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
@@ -86,11 +88,11 @@ class PlayerViewModel
                                 ),
                             )
                         } catch (throwable: NPOPlayerException) {
-                            postError(throwable, item)
+                            postError(throwable.toNPOPlayerError(), item)
                         }
                     } // Happy path
                     is StreamInfoResult.Error -> {
-                        postError(result.exception, item)
+                        postError(NPOPlayerError.StreamLink.AuthorisationFailed(NPOPlayerException.AUTHORISATION_FAILED), item)
                     }
                 }
             }
@@ -117,12 +119,12 @@ class PlayerViewModel
         }
 
         private fun postError(
-            throwable: Throwable,
+            error: NPOPlayerError,
             sourceWrapper: SourceWrapper,
         ) {
             mutableState.postValue(
                 StreamRetrievalState.Error(
-                    throwable,
+                    error,
                     sourceWrapper,
                 ),
             )
