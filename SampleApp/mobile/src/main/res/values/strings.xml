@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">NPO Player Library Android</string>
+    <string name="retry_btn_title">Retry</string>
+    <string name="use_npoplayer_toggle">Use NPOPlayer Directly</string>
+    <string name="use_npo_tag">Gebruik een interne NpoTag</string>
+    <string name="use_tag_configuration">Gebruik een tag configuratie object</string>
+    <string name="npo_tag_selection_explanation">"The player library can be utilized in two way:\n - It can be initialized with an NPOTag which the application implementing the library should supply. The app should then also supply the PageTracker's when creating a NPOPlayer.\n - Alternatively, if the app doesn't use NPOTag for it\'s own tracking, the app could supply the needed configuration parameters (brand, brandId, platformVersion, platform and optional debugging) and then the library will create the NPOTag.\n\nThis test library had the option to test with both different implementations. If you want to switch after the selection, kill the app and restart it for a different selection. The brandId for this test app is: %d"</string>
+    <string name="load_url_stream_directly">The list below this contains url streams that can be directly loaded in the Player without using a StreamLink:</string>
+    <string name="switch_streams">Start random stream</string>
+    <string name="select_audio_stream">Change Settings</string>
+    <string name="btn_offline_content">Go to Offline list</string>
+    <string name="manual_prid_hint">Manual PRID</string>
+    <!--    For testing S&A Audio Receiver-->
+<!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
+    <!--    NPO Player Receiver-->
+<!--    <string name="cast_receiver_id" translatable="false">CC38EB17</string>-->
+    <!--    For acceptance testing NPO Player Receiver-->
+<!--        <string name="cast_receiver_id" translatable="false">B2FD41AA</string>-->
+    <!--    For test testing NPO Player Receiver-->
+    <string name="cast_receiver_id_test" translatable="false">72990B99</string>
+    <string name="debug_casting">onScreenDebug=true</string>
+
+    <string name="setting_play_next">Play Next</string>
+    <string name="setting_styling">Styling</string>
+    <string name="setting_user_type">User type</string>
+    <string name="setting_custom_settings">Custom settings</string>
+    <string name="setting_show_ui">Show UI</string>
+    <string name="setting_autoplay_enabled">Autoplay enabled</string>
+    <string name="setting_only_streamlink_random_enabled">Only Random StreamLinks enabled</string>
+    <string name="setting_show_native_player_ui">Show Native Player UI</string>
+    <string name="setting_pause_when_noisy">Pause when becoming noisy</string>
+    <string name="setting_pause_on_cellular">Pause on switch to cellular</string>
+    <string name="menu_settings_title">Settings</string>
+    <string name="setting_ster_ui_enabled">STER UI enabled</string>
+    <string name="setting_enable_casting">Enable casting</string>
+    <string name="setting_environment">Environment</string>
+</resources>

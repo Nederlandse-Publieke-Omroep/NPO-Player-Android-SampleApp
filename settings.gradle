@@ -36,4 +36,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "NPO Player Android SampleApp"
-include ':SampleApp'
+include ':SampleApp:mobile'
+include ':SampleApp:shared'

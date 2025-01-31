@@ -103,35 +103,7 @@ jobs:
           gradleOptions: '-Xmx3072m'
           publishJUnitResults: false
           testResultsFiles: '**/TEST-*.xml'
-          tasks: 'clean SampleApp:assembleACCRelease'
-      - task: CopyFiles@2
-        inputs:
-          contents: '**/*.apk'
-          targetFolder: '$(build.artifactStagingDirectory)'
-
-      - task: AppCenterDistribute@3
-        name: ACC_Build
-        inputs:
-          serverEndpoint: 'NPO Player Android SampleApp ACC'
-          appSlug: 'NPO/Player-SKO-DEMO-ACC'
-          appFile: 'SampleApp/build/outputs/apk/ACC/release/SampleApp-ACC-release.apk'
-          symbolsOption: 'Android'
-          symbolsMappingTxtFile: 'SampleApp/build/outputs/mapping/ACCRelease/mapping.txt'
-          releaseNotesOption: 'input'
-          releaseNotesInput: |+
-            Automated CI Release build number $(build.buildNumber) for branch name $(branchName).
-          destinationType: 'groups'
-          isSilent: false
-
-      - task: Gradle@2
-        inputs:
-          workingDirectory: ''
-          gradleWrapperFile: 'gradlew'
-          options: '-PisSnapshot=true'
-          gradleOptions: '-Xmx3072m'
-          publishJUnitResults: false
-          testResultsFiles: '**/TEST-*.xml'
-          tasks: 'clean SampleApp:assemblePRODDebug'
+          tasks: 'clean SampleApp:mobile:assembleRelease'
       - task: CopyFiles@2
         inputs:
           contents: '**/*.apk'
@@ -142,10 +114,13 @@ jobs:
         inputs:
           serverEndpoint: 'NPO Player Android SampleApp PROD'
           appSlug: 'NPO/Player-SKO-DEMO-PROD'
-          appFile: 'SampleApp/build/outputs/apk/PROD/debug/SampleApp-PROD-debug.apk'
+          appFile: 'SampleApp/mobile/build/outputs/apk/release/mobile-release.apk'
+          symbolsOption: 'Android'
+          symbolsMappingTxtFile: 'SampleApp/mobile/build/outputs/mapping/Release/mapping.txt'
           releaseNotesOption: 'input'
           releaseNotesInput: |+
             Automated CI Release build number $(build.buildNumber) for branch name $(branchName).
           destinationType: 'groups'
           isSilent: false
+
       - task: PublishBuildArtifacts@1
