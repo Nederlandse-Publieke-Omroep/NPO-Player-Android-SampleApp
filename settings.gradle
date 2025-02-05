@@ -38,3 +38,4 @@ dependencyResolutionManagement {
 rootProject.name = "NPO Player Android SampleApp"
 include ':SampleApp:mobile'
 include ':SampleApp:shared'
+include ':SampleApp:tv'

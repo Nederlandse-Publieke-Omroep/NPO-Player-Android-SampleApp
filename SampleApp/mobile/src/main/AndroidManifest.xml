@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
-        android:name=".SampleApplication"
+        android:name=".presentation.SampleApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -72,7 +72,7 @@
         </activity>
 
         <service
-            android:name="nl.npo.player.sampleApp.data.offline.service.TestDownloadService"
+            android:name="nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService"
             android:foregroundServiceType="dataSync" />
 
         <meta-data

@@ -68,11 +68,17 @@ dependencies {
 
     implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
     implementation "nl.npo.player.library:sterAds:$libVersionName"
+    implementation "nl.npo.player.library:presentation:$libVersionName"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
 
     implementation "com.google.dagger:hilt-android:$androidHilt"
     kapt "com.google.dagger:hilt-compiler:$androidHilt"

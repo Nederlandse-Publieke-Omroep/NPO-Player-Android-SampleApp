@@ -18,6 +18,7 @@ data class SourceWrapper(
     val preferThisImageUrlOverStreamLink: Boolean = false,
     val overrideStreamLinkTitleAndDescription: Boolean = false,
     val overrideNicamContentDescription: MyNicamContentDescription? = null,
+    val overrideIsPlusUser: Boolean? = null,
     val npoSourceConfig: NPOSourceConfig? =
         if (!getStreamLink) {
             MyNPOSourceConfig(

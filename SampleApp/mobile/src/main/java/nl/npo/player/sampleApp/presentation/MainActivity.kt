@@ -16,18 +16,17 @@ import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
-import nl.npo.player.sampleApp.SampleApplication
 import nl.npo.player.sampleApp.databinding.ActivityMainBinding
 import nl.npo.player.sampleApp.presentation.list.MainListAdapter
 import nl.npo.player.sampleApp.presentation.offline.OfflineActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.settings.SettingsBottomSheetDialog
-import nl.npo.player.sampleApp.presentation.viewmodel.LibrarySetupViewModel
-import nl.npo.player.sampleApp.presentation.viewmodel.LinksViewModel
-import nl.npo.player.sampleApp.presentation.viewmodel.MainViewModel
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.MainViewModel
 import kotlin.system.exitProcess
 
 @AndroidEntryPoint

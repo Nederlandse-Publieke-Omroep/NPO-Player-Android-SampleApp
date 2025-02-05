@@ -43,17 +43,17 @@ import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sampleApp.R
-import nl.npo.player.sampleApp.SampleApplication
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
+import nl.npo.player.sampleApp.presentation.SampleApplication
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
-import nl.npo.player.sampleApp.presentation.player.viewmodel.PlayerViewModel
-import nl.npo.player.sampleApp.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.tag.sdk.tracker.PageTracker
 
 const val PLAYER_SOURCE = "PLAYER_SOURCE"
@@ -132,7 +132,10 @@ class PlayerActivity : BaseActivity() {
                 currentPosition: Double,
                 error: NPOPlayerError,
             ) {
-                Log.w("SampleAppTest", "Error: code: ${error.errorCode}: ${error.getMessage(this@PlayerActivity)}")
+                Log.w(
+                    "SampleAppTest",
+                    "Error: code: ${error.errorCode}: ${error.getMessage(this@PlayerActivity)}",
+                )
             }
         }
 
@@ -294,6 +297,7 @@ class PlayerActivity : BaseActivity() {
                 loadStreamURL(
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
+
             sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
             else -> finish()
@@ -346,7 +350,9 @@ class PlayerActivity : BaseActivity() {
         }
 
         npoNotificationManager?.setPlayer(null)
-        CastContext.getSharedInstance(this@PlayerActivity).removeCastStateListener(castStateListener)
+        CastContext
+            .getSharedInstance(this@PlayerActivity)
+            .removeCastStateListener(castStateListener)
         super.onDestroy()
     }
 

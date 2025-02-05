@@ -1,10 +1,10 @@
-package nl.npo.player.sampleApp.presentation
+package nl.npo.player.sampleApp.tv
 
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.tag.sdk.tracker.PageTracker
 
-abstract class BaseActivity : AppCompatActivity() {
+abstract class BaseActivity : FragmentActivity() {
     var pageTracker: PageTracker? = null
 
     fun logPageAnalytics(pageName: String) {

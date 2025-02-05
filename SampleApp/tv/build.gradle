@@ -3,12 +3,11 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.dagger.hilt.android'
 }
 
 android {
-    namespace 'nl.npo.player.sampleApp'
+    namespace 'nl.npo.player.sampleApp.tv'
     compileSdk 34
 
     Properties localProperties = new Properties()
@@ -18,12 +17,12 @@ android {
     }
 
     defaultConfig {
+        applicationId "nl.npo.player.sampleApp.tv"
         minSdk 24
         targetSdk 34
         versionCode 1
-        versionName "$libVersionName"
+        versionName "1.0"
 
-        applicationId "nl.npo.player.sampleApp"
         manifestPlaceholders = [
                 'YOUR-PLAYER-LICENSE-KEY'   : "${localProperties.your_player_license_key_here}",
                 'YOUR-ANALYTICS-LICENSE-KEY': "${localProperties.your_analytics_license_key_here}",
@@ -34,29 +33,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    signingConfigs {
-        release {
-            storeFile file("${localProperties.storeFile}")
-            storePassword "${localProperties.storePassword}"
-            keyAlias "${localProperties.keyAlias}"
-            keyPassword "${localProperties.keyPassword}"
-        }
-    }
-
     buildTypes {
-        debug {
-            debuggable true
-            minifyEnabled false
-            testCoverageEnabled true
-        }
         release {
-            debuggable false
-            minifyEnabled true
-            signingConfig signingConfigs.release
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
@@ -80,34 +62,33 @@ kapt {
     correctErrorTypes true
 }
 
+
 dependencies {
-    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
     api project(":SampleApp:shared")
 
+    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
     implementation "nl.npo.player.library:sterAds:$libVersionName"
-    implementation "nl.npo.player.library:presentationMobile:$libVersionName"
+    implementation "nl.npo.player.library:presentationTV:$libVersionName"
 
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.fragment:fragment-ktx:1.7.1"
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    kapt "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+
+
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation "androidx.fragment:fragment-ktx:1.7.1"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
+
     implementation "com.google.dagger:hilt-android:$androidHilt"
     kapt "com.google.dagger:hilt-compiler:$androidHilt"
 
-    //only needed if Chromecast is used
-    implementation "com.google.android.gms:play-services-cast-framework:21.4.0"
-    implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
+    implementation 'androidx.leanback:leanback:1.0.0'
 
-    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
 
     // Debug network
     debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"

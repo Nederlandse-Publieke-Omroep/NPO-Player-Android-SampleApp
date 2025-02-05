@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.presentation.player.viewmodel
+package nl.npo.player.sampleApp.shared.presentation.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -45,7 +45,7 @@ class PlayerViewModel
         fun retrieveSource(item: SourceWrapper) {
             mutableState.postValue(StreamRetrievalState.Loading)
             viewModelScope.launch(Dispatchers.IO) {
-                val isPlusUser = settingsRepository.userType.first() == UserType.Plus
+                val isPlusUser = item.overrideIsPlusUser ?: (settingsRepository.userType.first() == UserType.Plus)
                 when (val result = tokenProvider.createToken(item.uniqueId, isPlusUser)) {
                     is StreamInfoResult.Success -> {
                         try {

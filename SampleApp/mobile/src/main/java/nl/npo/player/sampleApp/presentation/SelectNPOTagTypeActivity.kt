@@ -4,10 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
-import nl.npo.player.sampleApp.SampleApplication
 import nl.npo.player.sampleApp.databinding.ActivitySelectNpotagTypeBinding
-import nl.npo.player.sampleApp.presentation.viewmodel.LibrarySetupViewModel
+import nl.npo.player.sampleApp.presentation.cast.CastOptionsProvider
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
 
 @AndroidEntryPoint
 class SelectNPOTagTypeActivity : BaseActivity() {
@@ -37,10 +38,12 @@ class SelectNPOTagTypeActivity : BaseActivity() {
                 )
             btnWithNPOTag.setOnClickListener {
                 libraryViewModel.setupLibrary(withNPOTag = true)
+                NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
                 navigateToMainActivity()
             }
             btnWithoutNPOTag.setOnClickListener {
                 libraryViewModel.setupLibrary(withNPOTag = false)
+                NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
                 navigateToMainActivity()
             }
         }

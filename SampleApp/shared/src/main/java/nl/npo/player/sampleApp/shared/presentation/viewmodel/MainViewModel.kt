@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.presentation.viewmodel
+package nl.npo.player.sampleApp.shared.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData

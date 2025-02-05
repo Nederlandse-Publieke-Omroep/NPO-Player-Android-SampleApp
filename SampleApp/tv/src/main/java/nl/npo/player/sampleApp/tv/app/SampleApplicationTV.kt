@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp
+package nl.npo.player.sampleApp.tv.app
 
 import android.app.Application
 import android.content.Context
@@ -7,26 +7,27 @@ import com.chuckerteam.chucker.api.ChuckerInterceptor
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.library.npotag.model.AnalyticsConfiguration
-import nl.npo.player.sampleApp.presentation.cast.CastOptionsProvider
+import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.data.extensions.toPlayerEnvironment
 import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
 import nl.npo.player.sampleApp.shared.domain.AnalyticsEnvironmentProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
+import nl.npo.player.sampleApp.tv.BuildConfig
 import nl.npo.tag.sdk.NpoTag
 import nl.npo.tag.sdk.atinternet.ATInternetPlugin
 import nl.npo.tag.sdk.govolteplugin.GovoltePlugin
 import javax.inject.Inject
 
 @HiltAndroidApp
-class SampleApplication : Application() {
-    val brandId = 634226
-    var npoTag: NpoTag? = null
+class SampleApplicationTV :
+    Application(),
+    PlayerApplication {
+    override var npoTag: NpoTag? = null
     private var isPlayerInitiatedYetInternal = false
 
     @Inject
@@ -37,10 +38,11 @@ class SampleApplication : Application() {
 
     fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
 
-    suspend fun initiatePlayerLibrary(withNPOTag: Boolean) {
+    override suspend fun initiatePlayerLibrary(withNPOTag: Boolean) {
         val list = listOf(ChuckerInterceptor.Builder(this).build())
         val enableCasting = runBlocking { settingsRepository.enableCasting.first() }
-        val environment = runBlocking { settingsRepository.environment.first().toPlayerEnvironment() }
+        val environment =
+            runBlocking { settingsRepository.environment.first().toPlayerEnvironment() }
         if (withNPOTag) {
             // Either create your own NpoTag implementation which can be used for app analytics:
             npoTag =
@@ -79,7 +81,6 @@ class SampleApplication : Application() {
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
 
-        NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
         isPlayerInitiatedYetInternal = true
     }
 

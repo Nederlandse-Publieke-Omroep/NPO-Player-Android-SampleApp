@@ -1,0 +1,122 @@
+package nl.npo.player.sampleApp.tv
+
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.leanback.app.VideoSupportFragment
+import androidx.leanback.app.VideoSupportFragmentGlueHost
+import androidx.leanback.media.PlaybackTransportControlGlue
+import androidx.leanback.widget.PlaybackControlsRow
+import dagger.hilt.android.AndroidEntryPoint
+import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.attachToLifecycle
+import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentationtv.adapter.NPOLeanbackPlayerAdapter
+import nl.npo.player.library.setAdViewGroup
+import nl.npo.player.sampleApp.shared.extension.observeNonNull
+import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
+import nl.npo.player.sampleApp.tv.PlayerActivity.Companion.getSourceWrapper
+
+/** Handles video playback with media controls. */
+@AndroidEntryPoint
+class PlaybackVideoFragment : VideoSupportFragment() {
+    private lateinit var mTransportControlGlue: PlaybackTransportControlGlue<NPOLeanbackPlayerAdapter>
+    private val playerViewModel by viewModels<PlayerViewModel>()
+    private lateinit var sourceWrapper: SourceWrapper
+    private lateinit var player: NPOPlayer
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (activity as? BaseActivity)?.logPageAnalytics(TAG)
+        setObservers()
+        loadSourceWrapperFromIntent(activity?.intent)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mTransportControlGlue.pause()
+    }
+
+    private fun loadSourceWrapperFromIntent(intent: Intent?) {
+        val context = context ?: return
+        val activity = activity as? BaseActivity ?: return
+        sourceWrapper = intent?.getSourceWrapper() ?: run {
+            Log.d(
+                TAG,
+                "loadSourceWrapperFromIntent - intent or source is null. Finishing activity.",
+            )
+            activity.finish()
+            return
+        }
+
+        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors ->
+            player =
+                NPOPlayerLibrary
+                    .getPlayer(
+                        context,
+                        PlayerTagProvider.getPageTracker(activity.pageTracker!!),
+                        playerConfig,
+                    ).apply {
+                        attachToLifecycle(lifecycle)
+                        setAdViewGroup(view as ViewGroup)
+                    }
+
+            val glueHost = VideoSupportFragmentGlueHost(this@PlaybackVideoFragment)
+            val playerAdapter = NPOLeanbackPlayerAdapter(player)
+            playerAdapter.setRepeatAction(PlaybackControlsRow.RepeatAction.INDEX_NONE)
+
+            mTransportControlGlue = PlaybackTransportControlGlue(activity, playerAdapter)
+            mTransportControlGlue.host = glueHost
+            when {
+                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
+                    loadStreamURL(
+                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                    )
+
+                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
+                sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
+                else -> {
+                    /** NO-OP **/
+                }
+            }
+        }
+    }
+
+    private fun setObservers() {
+        playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
+    }
+
+    private fun handleTokenState(retrievalState: StreamRetrievalState) {
+        when (retrievalState) {
+            is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
+
+            is StreamRetrievalState.Error -> player.setPlayerError(retrievalState.error)
+
+            StreamRetrievalState.Loading -> {
+//                handleLoading()
+            }
+
+            StreamRetrievalState.NotStarted -> {
+                // NO-OP
+            }
+        }
+    }
+
+    private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
+        mTransportControlGlue.title = npoSourceConfig.title
+        mTransportControlGlue.subtitle = npoSourceConfig.description
+        mTransportControlGlue.playWhenPrepared()
+        playerViewModel.loadStream(player, npoSourceConfig)
+    }
+
+    companion object {
+        private const val TAG = "PlaybackVideoFragment"
+    }
+}
