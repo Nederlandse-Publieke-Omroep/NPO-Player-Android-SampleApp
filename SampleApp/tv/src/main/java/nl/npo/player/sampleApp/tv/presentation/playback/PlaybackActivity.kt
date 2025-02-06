@@ -1,7 +1,8 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.playback
 
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
+import nl.npo.player.sampleApp.tv.BaseActivity
 
 /** Loads [PlaybackVideoFragment]. */
 @AndroidEntryPoint

@@ -1,10 +1,11 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.selection
 
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
+import nl.npo.player.sampleApp.tv.R
 
 /**
  * Loads [MainFragment].

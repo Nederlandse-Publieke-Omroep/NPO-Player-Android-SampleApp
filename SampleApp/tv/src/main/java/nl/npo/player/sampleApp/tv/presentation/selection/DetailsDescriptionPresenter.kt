@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.selection
 
 import androidx.leanback.widget.AbstractDetailsDescriptionPresenter
 import nl.npo.player.sampleApp.shared.model.SourceWrapper

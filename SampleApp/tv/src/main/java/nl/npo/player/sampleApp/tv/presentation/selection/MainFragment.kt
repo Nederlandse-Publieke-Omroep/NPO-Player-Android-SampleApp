@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.selection
 
 import android.content.Intent
 import android.graphics.Color
@@ -34,6 +34,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
+import nl.npo.player.sampleApp.tv.R
+import nl.npo.player.sampleApp.tv.presentation.error.BrowseErrorActivity
 import java.util.Timer
 import java.util.TimerTask
 
@@ -107,18 +109,24 @@ class MainFragment : BrowseSupportFragment() {
         val cardPresenter = CardPresenter()
 
         for (i in 0 until NUM_ROWS) {
+            var header: HeaderItem
             val list =
                 if (i == 0) {
+                    header =
+                        HeaderItem(
+                            i.toLong(),
+                            resources.getString(R.string.browse_category_stream_link),
+                        )
                     linksViewModel.streamLinkList.value
                 } else {
+                    header =
+                        HeaderItem(i.toLong(), resources.getString(R.string.browse_category_url))
                     linksViewModel.urlLinkList.value
                 }
             val listRowAdapter = ArrayObjectAdapter(cardPresenter)
             list?.forEach {
                 listRowAdapter.add(it)
             }
-
-            val header = HeaderItem(i.toLong(), MovieList.MOVIE_CATEGORY[i])
             rowsAdapter.add(ListRow(header, listRowAdapter))
         }
 
@@ -157,7 +165,8 @@ class MainFragment : BrowseSupportFragment() {
             val activity = activity ?: return
             if (item is SourceWrapper) {
                 Log.d(TAG, "Item: " + item.toString())
-                val intent = PlayerActivity.getStartIntent(context, item, PlayerActivity::class.java)
+                val intent =
+                    PlayerActivity.getStartIntent(context, item, PlayerActivity::class.java)
 
                 val bundle =
                     (itemViewHolder.view as ImageCardView).mainImageView?.let { imageView ->

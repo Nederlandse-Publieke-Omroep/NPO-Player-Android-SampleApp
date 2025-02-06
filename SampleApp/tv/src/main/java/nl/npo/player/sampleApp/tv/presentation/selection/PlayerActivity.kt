@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.selection
 
 import android.app.Activity
 import android.content.Context
@@ -9,6 +9,7 @@ import android.os.Parcelable
 import androidx.fragment.app.FragmentActivity
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import nl.npo.player.sampleApp.tv.R
 
 /**
  * Details activity class that loads [VideoDetailsFragment] class.

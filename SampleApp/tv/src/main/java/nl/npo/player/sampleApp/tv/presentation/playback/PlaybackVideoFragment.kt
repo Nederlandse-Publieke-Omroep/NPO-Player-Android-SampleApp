@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.playback
 
 import android.content.Intent
 import android.os.Bundle
@@ -22,7 +22,8 @@ import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
-import nl.npo.player.sampleApp.tv.PlayerActivity.Companion.getSourceWrapper
+import nl.npo.player.sampleApp.tv.BaseActivity
+import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
 
 /** Handles video playback with media controls. */
 @AndroidEntryPoint

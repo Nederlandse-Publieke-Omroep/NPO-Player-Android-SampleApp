@@ -1,13 +1,13 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.selection
 
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.Presenter
 import com.bumptech.glide.Glide
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import nl.npo.player.sampleApp.tv.R
 import kotlin.properties.Delegates
 
 /**
@@ -20,8 +20,6 @@ class CardPresenter : Presenter() {
     private var sDefaultBackgroundColor: Int by Delegates.notNull()
 
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
-        Log.d(TAG, "onCreateViewHolder")
-
         sDefaultBackgroundColor = ContextCompat.getColor(parent.context, R.color.default_background)
         sSelectedBackgroundColor =
             ContextCompat.getColor(parent.context, R.color.selected_background)
@@ -47,25 +45,20 @@ class CardPresenter : Presenter() {
     ) {
         val movie = item as SourceWrapper
         val cardView = viewHolder.view as ImageCardView
-
-        Log.d(TAG, "onBindViewHolder")
-        if (movie.imageUrl != null) {
-            cardView.titleText = movie.title
-            cardView.contentText = movie.testingDescription
-            cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
-            cardView.mainImageView?.let {
-                Glide
-                    .with(viewHolder.view.context)
-                    .load(movie.imageUrl)
-                    .centerCrop()
-                    .error(mDefaultCardImage)
-                    .into(it)
-            }
+        cardView.titleText = movie.title
+        cardView.contentText = movie.testingDescription
+        cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
+        cardView.mainImageView?.let {
+            Glide
+                .with(viewHolder.view.context)
+                .load(movie.imageUrl)
+                .centerCrop()
+                .error(mDefaultCardImage)
+                .into(it)
         }
     }
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder) {
-        Log.d(TAG, "onUnbindViewHolder")
         val cardView = viewHolder.view as ImageCardView
         // Remove references to images so that the garbage collector can free up memory
         cardView.badgeImage = null

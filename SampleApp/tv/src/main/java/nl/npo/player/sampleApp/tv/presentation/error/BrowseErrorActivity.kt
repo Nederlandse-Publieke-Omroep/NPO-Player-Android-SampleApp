@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.error
 
 import android.os.Bundle
 import android.os.Handler
@@ -9,11 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ProgressBar
-import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
-import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
+import nl.npo.player.sampleApp.tv.R
+import nl.npo.player.sampleApp.tv.presentation.selection.MainFragment
 
 /**
  * BrowseErrorActivity shows how to use ErrorFragment.
@@ -22,7 +22,6 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 class BrowseErrorActivity : FragmentActivity() {
     private lateinit var mErrorFragment: ErrorFragment
     private lateinit var mSpinnerFragment: SpinnerFragment
-    private val linksViewModel: LinksViewModel by viewModels<LinksViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

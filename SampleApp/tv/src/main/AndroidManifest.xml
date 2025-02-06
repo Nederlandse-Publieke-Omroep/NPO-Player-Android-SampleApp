@@ -27,7 +27,7 @@
             android:value="${YOUR-ANALYTICS-LICENSE-KEY}" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.selection.MainActivity"
             android:banner="@mipmap/ic_launcher"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_round"
@@ -40,13 +40,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PlayerActivity"
+            android:name=".presentation.selection.PlayerActivity"
             android:exported="false" />
         <activity
-            android:name=".PlaybackActivity"
+            android:name=".presentation.playback.PlaybackActivity"
             android:exported="false" />
         <activity
-            android:name=".BrowseErrorActivity"
+            android:name=".presentation.error.BrowseErrorActivity"
             android:exported="false" />
     </application>
 

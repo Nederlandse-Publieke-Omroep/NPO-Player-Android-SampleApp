@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.tv
+package nl.npo.player.sampleApp.tv.presentation.selection
 
 import android.content.Context
 import android.content.Intent
@@ -23,10 +23,12 @@ import androidx.leanback.widget.Presenter
 import androidx.leanback.widget.Row
 import androidx.leanback.widget.RowPresenter
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
-import nl.npo.player.sampleApp.tv.PlayerActivity.Companion.getSourceWrapper
+import nl.npo.player.sampleApp.tv.R
+import nl.npo.player.sampleApp.tv.presentation.playback.PlaybackActivity
+import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
 
 /**
  * A wrapper fragment for leanback details screens.
@@ -40,17 +42,14 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     private lateinit var mAdapter: ArrayObjectAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d(TAG, "onCreate DetailsFragment")
         super.onCreate(savedInstanceState)
 
         val activity = activity ?: return
         val context = context ?: return
-        Log.d(TAG, "onCreate DetailsFragment A&C not null")
 
         mDetailsBackground = DetailsSupportFragmentBackgroundController(this)
 
         mSelectedMovie = activity.intent.getSourceWrapper()
-        Log.d(TAG, "onCreate DetailsFragment mSelectedMovie = $mSelectedMovie")
         if (mSelectedMovie != null) {
             mPresenterSelector = ClassPresenterSelector()
             mAdapter = ArrayObjectAdapter(mPresenterSelector)
@@ -74,14 +73,18 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             .centerCrop()
             .error(R.drawable.default_background)
             .load(movie?.imageUrl)
-            .into<SimpleTarget<Bitmap>>(
-                object : SimpleTarget<Bitmap>() {
+            .into(
+                object : CustomTarget<Bitmap>() {
                     override fun onResourceReady(
                         bitmap: Bitmap,
                         transition: Transition<in Bitmap>?,
                     ) {
                         mDetailsBackground.coverBitmap = bitmap
                         mAdapter.notifyArrayItemRangeChanged(0, mAdapter.size())
+                    }
+
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        mDetailsBackground.coverBitmap = null
                     }
                 },
             )
@@ -90,7 +93,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     private fun setupDetailsOverviewRow() {
         val context = context ?: return
         val mSelectedMovie = mSelectedMovie ?: return
-        Log.d(TAG, "doInBackground: " + mSelectedMovie.toString())
+        Log.d(TAG, "setupDetailsOverviewRow: $mSelectedMovie")
         val row = DetailsOverviewRow(mSelectedMovie)
         row.imageDrawable = ContextCompat.getDrawable(context, R.drawable.default_background)
         val width = convertDpToPixel(context, DETAIL_THUMB_WIDTH)
@@ -100,8 +103,8 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             .load(mSelectedMovie.imageUrl)
             .centerCrop()
             .error(R.drawable.default_background)
-            .into<SimpleTarget<Drawable>>(
-                object : SimpleTarget<Drawable>(width, height) {
+            .into<CustomTarget<Drawable>>(
+                object : CustomTarget<Drawable>(width, height) {
                     override fun onResourceReady(
                         drawable: Drawable,
                         transition: Transition<in Drawable>?,
@@ -109,6 +112,10 @@ class VideoDetailsFragment : DetailsSupportFragment() {
                         Log.d(TAG, "details overview card image url ready: " + drawable)
                         row.imageDrawable = drawable
                         mAdapter.notifyArrayItemRangeChanged(0, mAdapter.size())
+                    }
+
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        row.imageDrawable = placeholder
                     }
                 },
             )
@@ -195,7 +202,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             val context = context ?: return
             val activity = activity ?: return
             if (item is SourceWrapper) {
-                Log.d(TAG, "Item: $item")
+                Log.d(TAG, "onItemClicked: $item")
 
                 val intent =
                     PlayerActivity.getStartIntent(context, item, PlayerActivity::class.java)
@@ -215,12 +222,12 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     }
 
     companion object {
-        private val TAG = "VideoDetailsFragment"
+        private const val TAG = "VideoDetailsFragment"
 
-        private val ACTION_WATCH_START = 1L
-        private val ACTION_WATCH_PLUS = 2L
+        private const val ACTION_WATCH_START = 1L
+        private const val ACTION_WATCH_PLUS = 2L
 
-        private val DETAIL_THUMB_WIDTH = 274
-        private val DETAIL_THUMB_HEIGHT = 274
+        private const val DETAIL_THUMB_WIDTH = 274
+        private const val DETAIL_THUMB_HEIGHT = 274
     }
 }

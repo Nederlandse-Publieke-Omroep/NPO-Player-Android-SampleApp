@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">SampleApp</string>
     <string name="browse_title">NPO Player SampleApp</string>
+    <string name="browse_category_stream_link">StreamLink items</string>
+    <string name="browse_category_url">Manual URL items</string>
     <string name="related_movies">Related Videos</string>
     <string name="grid_view">Grid View</string>
     <string name="error_fragment">Error Fragment</string>
