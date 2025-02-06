@@ -150,31 +150,53 @@ class MainFragment : BrowseSupportFragment() {
         val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
         val cardPresenter = CardPresenter()
 
-        rowsAdapter.add(setupStreamLinkRow(cardPresenter))
-        rowsAdapter.add(setupUrlLinkRow(cardPresenter))
-        rowsAdapter.add(setupSettingsGrid())
+        val headerId = setupStreamLinkRow(cardPresenter, rowsAdapter)
+        rowsAdapter.add(setupUrlLinkRow(cardPresenter, headerId + 1))
+        rowsAdapter.add(setupSettingsGrid(headerId + 2))
 
         adapter = rowsAdapter
     }
 
-    private fun setupStreamLinkRow(cardPresenter: CardPresenter): ListRow {
-        val header = HeaderItem(0, getString(R.string.browse_category_stream_link))
+    private fun setupStreamLinkRow(
+        cardPresenter: CardPresenter,
+        rowsAdapter: ArrayObjectAdapter,
+    ): Long {
         val list = linksViewModel.streamLinkList.value
-        val listRowAdapter = ArrayObjectAdapter(cardPresenter)
-        list?.forEach { listRowAdapter.add(it) }
-        return ListRow(header, listRowAdapter)
+        var listRowAdapter = ArrayObjectAdapter(cardPresenter)
+        var headerId = 0L
+        list?.forEachIndexed { index, item ->
+            listRowAdapter.add(item)
+            if ((index + 1) % 6 == 0) {
+                val header =
+                    if (headerId == 0L) {
+                        HeaderItem(headerId, getString(R.string.browse_category_stream_link))
+                    } else {
+                        HeaderItem(headerId, "")
+                    }
+                rowsAdapter.add(ListRow(header, listRowAdapter))
+                listRowAdapter = ArrayObjectAdapter(cardPresenter)
+                headerId++
+            }
+        }
+        if (listRowAdapter.size() > 0) {
+            rowsAdapter.add(ListRow(HeaderItem(headerId, ""), listRowAdapter))
+        }
+        return headerId
     }
 
-    private fun setupUrlLinkRow(cardPresenter: CardPresenter): ListRow {
-        val header = HeaderItem(1, getString(R.string.browse_category_url))
+    private fun setupUrlLinkRow(
+        cardPresenter: CardPresenter,
+        headerId: Long,
+    ): ListRow {
+        val header = HeaderItem(headerId, getString(R.string.browse_category_url))
         val list = linksViewModel.urlLinkList.value
         val listRowAdapter = ArrayObjectAdapter(cardPresenter)
         list?.forEach { listRowAdapter.add(it) }
         return ListRow(header, listRowAdapter)
     }
 
-    private fun setupSettingsGrid(): ListRow {
-        val gridHeader = HeaderItem(2, getString(R.string.browse_category_settings))
+    private fun setupSettingsGrid(headerId: Long): ListRow {
+        val gridHeader = HeaderItem(headerId, getString(R.string.browse_category_settings))
 
         val mGridPresenter = GridItemPresenter()
         val gridRowAdapter = ArrayObjectAdapter(mGridPresenter)
