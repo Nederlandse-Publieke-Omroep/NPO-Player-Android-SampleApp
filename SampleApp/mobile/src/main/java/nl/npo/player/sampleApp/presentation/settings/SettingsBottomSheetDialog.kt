@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.sampleApp.databinding.BottomSheetDialogSettingsBinding
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.SettingsViewModel
 
 @AndroidEntryPoint
 class SettingsBottomSheetDialog : BottomSheetDialogFragment() {

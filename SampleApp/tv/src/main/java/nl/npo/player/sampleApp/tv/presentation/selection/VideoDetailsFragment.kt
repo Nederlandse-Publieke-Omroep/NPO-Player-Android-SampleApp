@@ -51,12 +51,13 @@ class VideoDetailsFragment : DetailsSupportFragment() {
 
         mSelectedMovie = activity.intent.getSourceWrapper()
         if (mSelectedMovie != null) {
+            val selectedMovie = mSelectedMovie ?: return
             mPresenterSelector = ClassPresenterSelector()
             mAdapter = ArrayObjectAdapter(mPresenterSelector)
             setupDetailsOverviewRow()
             setupDetailsOverviewRowPresenter()
             adapter = mAdapter
-            initializeBackground(mSelectedMovie)
+            initializeBackground(selectedMovie)
             onItemViewClickedListener = ItemViewClickedListener()
         } else {
             val intent = Intent(context, MainActivity::class.java)
@@ -64,7 +65,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
         }
     }
 
-    private fun initializeBackground(movie: SourceWrapper?) {
+    private fun initializeBackground(movie: SourceWrapper) {
         val context = context ?: return
         mDetailsBackground.enableParallax()
         Glide
@@ -72,7 +73,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             .asBitmap()
             .centerCrop()
             .error(R.drawable.default_background)
-            .load(movie?.imageUrl)
+            .load(movie.imageUrl)
             .into(
                 object : CustomTarget<Bitmap>() {
                     override fun onResourceReady(
@@ -80,7 +81,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
                         transition: Transition<in Bitmap>?,
                     ) {
                         mDetailsBackground.coverBitmap = bitmap
-                        mAdapter.notifyArrayItemRangeChanged(0, mAdapter.size())
+                        mAdapter.notifyArrayItemRangeChanged(mAdapter.indexOf(movie), 1)
                     }
 
                     override fun onLoadCleared(placeholder: Drawable?) {
@@ -111,7 +112,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
                     ) {
                         Log.d(TAG, "details overview card image url ready: " + drawable)
                         row.imageDrawable = drawable
-                        mAdapter.notifyArrayItemRangeChanged(0, mAdapter.size())
+                        mAdapter.notifyArrayItemRangeChanged(mAdapter.indexOf(mSelectedMovie), 1)
                     }
 
                     override fun onLoadCleared(placeholder: Drawable?) {
