@@ -9,11 +9,16 @@ import nl.npo.player.sampleApp.tv.BaseActivity
 class PlaybackActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        logPageAnalytics(TAG)
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
                 .replace(android.R.id.content, PlaybackVideoFragment())
                 .commit()
         }
+    }
+
+    companion object {
+        private const val TAG = "PlaybackActivity"
     }
 }

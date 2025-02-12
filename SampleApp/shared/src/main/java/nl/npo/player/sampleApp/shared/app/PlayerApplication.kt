@@ -7,5 +7,7 @@ interface PlayerApplication {
         get() = 634226
     var npoTag: NpoTag?
 
+    fun isPlayerInitiatedYet(): Boolean
+
     suspend fun initiatePlayerLibrary(withNPOTag: Boolean)
 }
