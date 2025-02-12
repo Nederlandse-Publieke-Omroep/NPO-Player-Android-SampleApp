@@ -14,6 +14,7 @@ class PlaybackActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        logPageAnalytics(TAG)
         settingsViewModel.showNativeUI.observeNonNull(this, ::showUI)
     }
 
@@ -24,5 +25,9 @@ class PlaybackActivity : BaseActivity() {
                 android.R.id.content,
                 if (showNativeUI) NativePlaybackVideoFragment() else PlaybackVideoFragment(),
             ).commit()
+    }
+
+    companion object {
+        private const val TAG = "PlaybackActivity"
     }
 }

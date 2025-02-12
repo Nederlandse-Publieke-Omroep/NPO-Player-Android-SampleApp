@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
@@ -36,13 +35,13 @@ class SampleApplication :
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
-    fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
+    override fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
 
     override suspend fun initiatePlayerLibrary(withNPOTag: Boolean) {
+        isPlayerInitiatedYetInternal = true
         val list = listOf(ChuckerInterceptor.Builder(this).build())
-        val enableCasting = runBlocking { settingsRepository.enableCasting.first() }
-        val environment =
-            runBlocking { settingsRepository.environment.first().toPlayerEnvironment() }
+        val enableCasting = settingsRepository.enableCasting.first()
+        val environment = settingsRepository.environment.first().toPlayerEnvironment()
         if (withNPOTag) {
             // Either create your own NpoTag implementation which can be used for app analytics:
             npoTag =
@@ -80,8 +79,6 @@ class SampleApplication :
             }
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
-
-        isPlayerInitiatedYetInternal = true
     }
 
     private suspend fun setupAnalyticsConfiguration(): AnalyticsConfiguration.Standalone =

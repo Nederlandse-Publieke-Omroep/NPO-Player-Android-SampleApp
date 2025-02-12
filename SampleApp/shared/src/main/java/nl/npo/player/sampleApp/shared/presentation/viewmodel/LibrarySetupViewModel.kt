@@ -17,7 +17,10 @@ class LibrarySetupViewModel
     ) : ViewModel() {
         fun setupLibrary(withNPOTag: Boolean) {
             viewModelScope.launch {
-                (application.applicationContext as? PlayerApplication)?.initiatePlayerLibrary(withNPOTag)
+                val sampleApplication = application as? PlayerApplication ?: return@launch
+                if (!sampleApplication.isPlayerInitiatedYet()) {
+                    sampleApplication.initiatePlayerLibrary(withNPOTag)
+                }
             }
         }
     }

@@ -61,11 +61,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkLibraryInitialization() {
-        (application as? SampleApplication)?.apply {
-            if (!isPlayerInitiatedYet()) {
-                libraryViewModel.setupLibrary(withNPOTag = true)
-            }
-        }
+        libraryViewModel.setupLibrary(withNPOTag = true)
     }
 
     private fun setObservers() {
