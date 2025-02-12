@@ -1,0 +1,115 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'com.google.dagger.hilt.android'
+}
+
+android {
+    namespace 'nl.npo.player.sampleApp'
+    compileSdk 34
+
+    Properties localProperties = new Properties()
+    File propertiesFile = project.rootProject.file('local.properties')
+    if (propertiesFile.exists()) {
+        localProperties.load(propertiesFile.newDataInputStream())
+    }
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "$libVersionName"
+
+        applicationId "nl.npo.player.sampleApp"
+        manifestPlaceholders = [
+                'YOUR-PLAYER-LICENSE-KEY'   : "${localProperties.your_player_license_key_here}",
+                'YOUR-ANALYTICS-LICENSE-KEY': "${localProperties.your_analytics_license_key_here}",
+                'appFlavorName'             : "$appName",
+                'appFlavorNameShort'        : "$appNameShort"
+        ]
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("${localProperties.storeFile}")
+            storePassword "${localProperties.storePassword}"
+            keyAlias "${localProperties.keyAlias}"
+            keyPassword "${localProperties.keyPassword}"
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+            testCoverageEnabled true
+        }
+        release {
+            debuggable false
+            minifyEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    lintOptions {
+        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
+        disable "Instantiatable"
+    }
+}
+
+kapt {
+    correctErrorTypes true
+}
+
+dependencies {
+    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
+    api project(":SampleApp:shared")
+
+    implementation "nl.npo.player.library:sterAds:$libVersionName"
+    implementation "nl.npo.player.library:presentationMobile:$libVersionName"
+
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation "androidx.fragment:fragment-ktx:1.7.1"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    kapt "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
+    implementation "com.google.dagger:hilt-android:$androidHilt"
+    kapt "com.google.dagger:hilt-compiler:$androidHilt"
+
+    //only needed if Chromecast is used
+    implementation "com.google.android.gms:play-services-cast-framework:21.4.0"
+    implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
+
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+
+    // Debug network
+    debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
+}
