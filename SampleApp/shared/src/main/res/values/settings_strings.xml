@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setting_play_next">Play Next</string>
+    <string name="setting_styling">Styling</string>
+    <string name="setting_user_type">User type</string>
+    <string name="setting_custom_settings">Custom settings</string>
+    <string name="setting_show_ui">Show UI</string>
+    <string name="setting_autoplay_enabled">Autoplay enabled</string>
+    <string name="setting_only_streamlink_random_enabled">Only Random StreamLinks enabled</string>
+    <string name="setting_show_native_player_ui">Show Native Player UI</string>
+    <string name="setting_pause_when_noisy">Pause when becoming noisy</string>
+    <string name="setting_pause_on_cellular">Pause on switch to cellular</string>
+    <string name="menu_settings_title">Settings</string>
+    <string name="setting_ster_ui_enabled">STER UI enabled</string>
+    <string name="setting_enable_casting">Enable casting</string>
+    <string name="setting_environment">Environment</string>
+</resources>
