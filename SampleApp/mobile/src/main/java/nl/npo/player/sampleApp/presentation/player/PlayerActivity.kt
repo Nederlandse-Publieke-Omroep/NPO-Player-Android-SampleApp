@@ -110,6 +110,7 @@ class PlayerActivity : BaseActivity() {
             override fun onSourceError(
                 currentPosition: Double,
                 error: NPOPlayerError,
+                retryPossible: Boolean,
             ) {
                 binding.btnPlayPause.isVisible = false
             }
@@ -131,6 +132,7 @@ class PlayerActivity : BaseActivity() {
             override fun onPlayerError(
                 currentPosition: Double,
                 error: NPOPlayerError,
+                retryPossible: Boolean,
             ) {
                 Log.w(
                     "SampleAppTest",
