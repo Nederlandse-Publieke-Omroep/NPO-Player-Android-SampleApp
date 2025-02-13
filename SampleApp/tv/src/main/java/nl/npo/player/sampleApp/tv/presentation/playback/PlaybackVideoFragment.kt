@@ -92,7 +92,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
     }
 
     private fun setObservers() {
-        playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
+        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {

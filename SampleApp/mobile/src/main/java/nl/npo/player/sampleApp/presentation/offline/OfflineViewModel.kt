@@ -84,19 +84,19 @@ class OfflineViewModel
 
         private fun getStreamLinkListItems() =
             viewModelScope.launch {
-                mutableStreamLinkList.value = streamLinkRepository.getSourceList()!!
+                mutableStreamLinkList.value = streamLinkRepository.getSourceList()
                 updateMergedLinkList()
             }
 
         private fun getUrlLinkListItems() =
             viewModelScope.launch {
-                mutableURLLinkList.value = urlLinkRepository.getSourceList()!!
+                mutableURLLinkList.value = urlLinkRepository.getSourceList()
                 updateMergedLinkList()
             }
 
         private fun getOfflineLinkListItems() =
             viewModelScope.launch {
-                mutableOfflineLinkList.value = offlineLinkRepository.getSourceList()!!
+                mutableOfflineLinkList.value = offlineLinkRepository.getSourceList()
                 updateMergedLinkList()
             }
 

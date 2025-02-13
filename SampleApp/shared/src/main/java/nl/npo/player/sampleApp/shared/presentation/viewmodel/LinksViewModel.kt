@@ -31,11 +31,11 @@ class LinksViewModel
 
         private fun getStreamLinkListItems() =
             viewModelScope.launch {
-                mutableStreamLinkList.postValue(streamLinkRepository.getSourceList()!!)
+                mutableStreamLinkList.postValue(streamLinkRepository.getSourceList())
             }
 
         private fun getUrlLinkListItems() =
             viewModelScope.launch {
-                mutableURLLinkList.postValue(urlLinkRepository.getSourceList()!!)
+                mutableURLLinkList.postValue(urlLinkRepository.getSourceList())
             }
     }

@@ -62,7 +62,7 @@ class PlayerViewModel
         }
 
         private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper): NPOSourceConfig? {
-            val isPlusUser = item.overrideIsPlusUser ?: (settingsRepository.userType.first() == UserType.Plus)
+            val isPlusUser = sourceWrapper.overrideIsPlusUser ?: (settingsRepository.userType.first() == UserType.Plus)
             val token = createToken(sourceWrapper.uniqueId, isPlusUser) ?: return null
 
             return try {
