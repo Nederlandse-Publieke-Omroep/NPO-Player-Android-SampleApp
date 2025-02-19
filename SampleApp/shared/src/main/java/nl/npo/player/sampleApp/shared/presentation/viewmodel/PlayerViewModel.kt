@@ -207,10 +207,6 @@ class PlayerViewModel
             }
         }
 
-        suspend fun retrieveSourceTest(sourceWrapper: SourceWrapper): NPOSourceConfig? {
-            return fetchAndMergeSource(sourceWrapper)
-        }
-
         companion object {
             val remoteCallback: ((NPOSourceConfig) -> CastMediaType) = { source ->
                 if (source.avType == AVType.AUDIO || source.streamUrl.contains("mp3")) {
