@@ -41,6 +41,7 @@ import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
+import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
 import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
@@ -68,6 +69,7 @@ class PlayerActivity : BaseActivity() {
     private val linkViewModel by viewModels<LinksViewModel>()
     private var npoNotificationManager: NPONotificationManager? = null
     private var backstackLost = false
+    private var pipHandler: NPOPictureInPictureHandler? = null
 
     private val onPlayPauseListener: PlayerListener =
         object : PlayerListener {
@@ -145,6 +147,10 @@ class PlayerActivity : BaseActivity() {
         binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
     }
 
+    private val retryListener: (Double) -> Unit = {
+        playerViewModel.retrieveSource(sourceWrapper.copy(startOffset = it))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -207,6 +213,13 @@ class PlayerActivity : BaseActivity() {
                                 pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                                     ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
                         ).apply {
+                            val defaultPipHandler =
+                                DefaultNPOPictureInPictureHandler(
+                                    this@PlayerActivity,
+                                    this,
+                                ).also {
+                                    pipHandler = it
+                                }
                             remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
                             eventEmitter.addListener(onPlayPauseListener)
                             npoNotificationManager =
@@ -217,6 +230,7 @@ class PlayerActivity : BaseActivity() {
                                     NOTIFICATION_ID,
                                 )
                             attachToLifecycle(lifecycle)
+                            setTokenRefreshCallback(retryListener)
 
                             val player = this
                             if (showNativeUI) {
@@ -231,7 +245,7 @@ class PlayerActivity : BaseActivity() {
                                             is PlayNextListenerResult.Triggered -> playRandom()
                                         }
                                     }
-                                    enablePictureInPictureSupport(this@PlayerActivity)
+                                    enablePictureInPictureSupport(defaultPipHandler)
 
                                     playerViewModel.hasCustomSettings {
                                         setSettingsButtonOnClickListener {
@@ -244,12 +258,7 @@ class PlayerActivity : BaseActivity() {
                                 binding.npoVideoPlayerWeb.apply {
                                     attachPlayer(player, uiConfig)
                                     setFullScreenHandler(fullScreenHandler)
-                                    setPiPHandler(
-                                        DefaultNPOPictureInPictureHandler(
-                                            this@PlayerActivity,
-                                            player,
-                                        ),
-                                    )
+                                    setPiPHandler(defaultPipHandler)
                                     attachToLifecycle(lifecycle)
                                     playerViewModel.hasCustomSettings {
                                         setSettingsButtonOnClickListener {
@@ -310,10 +319,7 @@ class PlayerActivity : BaseActivity() {
         super.onUserLeaveHint()
         if (player?.isPlaying != true) return
 
-        with(binding) {
-            npoVideoPlayerWeb.pipHandler?.enterPictureInPicture()
-                ?: npoVideoPlayerNative.enterPictureInPicture()
-        }
+        pipHandler?.enterPictureInPicture()
     }
 
     override fun onPictureInPictureModeChanged(
@@ -351,6 +357,8 @@ class PlayerActivity : BaseActivity() {
         player?.apply {
             eventEmitter.removeListener(onPlayPauseListener)
         }
+        binding.npoVideoPlayerNative.onDestroy()
+        binding.npoVideoPlayerWeb.onDestroy()
 
         npoNotificationManager?.setPlayer(null)
         CastContext
@@ -585,7 +593,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        playerViewModel.retrievalState.observeNonNull(this, ::handleTokenState)
+        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
         // Initialize the link lists even though we don't do anything with the changes yet.
         linkViewModel.urlLinkList.observeNonNull(this) {}
         linkViewModel.streamLinkList.observeNonNull(this) {}
