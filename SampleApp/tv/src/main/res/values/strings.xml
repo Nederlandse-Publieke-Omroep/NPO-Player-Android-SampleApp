@@ -15,4 +15,8 @@
     <!-- Error messages -->
     <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>
+
+    <!-- Content Descriptions -->
+    <string name="content_description_tv_play">Afspelen</string>
+    <string name="content_description_tv_pause">Pauzeren</string>
 </resources>

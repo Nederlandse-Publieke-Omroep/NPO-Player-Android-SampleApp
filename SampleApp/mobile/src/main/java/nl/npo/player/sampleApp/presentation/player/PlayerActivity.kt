@@ -311,8 +311,9 @@ class PlayerActivity : BaseActivity() {
         if (player?.isPlaying != true) return
 
         with(binding) {
-            npoVideoPlayerNative.pipHandler ?: npoVideoPlayerWeb.pipHandler
-        }?.enterPictureInPicture()
+            npoVideoPlayerWeb.pipHandler?.enterPictureInPicture()
+                ?: npoVideoPlayerNative.enterPictureInPicture()
+        }
     }
 
     override fun onPictureInPictureModeChanged(
