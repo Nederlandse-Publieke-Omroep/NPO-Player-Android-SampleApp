@@ -38,7 +38,6 @@ import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.model.PlayNextListenerResult
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
-import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
@@ -176,18 +175,14 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors ->
-            loadSource(sourceWrapper, playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors)
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+            loadSource(sourceWrapper, playerConfig, npoPlayerColors)
         }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE && !fullScreenHandler.isFullscreen) {
-            if (binding.npoVideoPlayerNative.isVisible) {
-                binding.npoVideoPlayerNative.setFullScreen(true)
-            } else {
-                binding.npoVideoPlayerWeb.setFullScreen(true)
-            }
+            binding.npoVideoPlayerNative.setFullScreen(true)
         }
         super.onConfigurationChanged(newConfig)
     }
@@ -195,8 +190,6 @@ class PlayerActivity : BaseActivity() {
     private fun loadSource(
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
-        uiConfig: NPOUiConfig,
-        showNativeUI: Boolean,
         npoPlayerColors: NPOPlayerColors?,
     ) {
         val title = sourceWrapper.title
@@ -233,58 +226,27 @@ class PlayerActivity : BaseActivity() {
                             setTokenRefreshCallback(retryListener)
 
                             val player = this
-                            if (showNativeUI) {
-                                binding.npoVideoPlayerNative.apply {
-                                    attachPlayer(
-                                        npoPlayer = player,
-                                        npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
-                                    )
-                                    setFullScreenHandler(fullScreenHandler)
-                                    setPlayNextListener { action ->
-                                        when (action) {
-                                            is PlayNextListenerResult.Triggered -> playRandom()
-                                        }
-                                    }
-                                    enablePictureInPictureSupport(defaultPipHandler)
-
-                                    playerViewModel.hasCustomSettings {
-                                        setSettingsButtonOnClickListener {
-                                            showSettings()
-                                            setSettingsButtonState(true)
-                                        }
+                            binding.npoVideoPlayerNative.apply {
+                                attachPlayer(
+                                    npoPlayer = player,
+                                    npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
+                                )
+                                setFullScreenHandler(fullScreenHandler)
+                                setPlayNextListener { action ->
+                                    when (action) {
+                                        is PlayNextListenerResult.Triggered -> playRandom()
                                     }
                                 }
-                            } else {
-                                binding.npoVideoPlayerWeb.apply {
-                                    attachPlayer(player, uiConfig)
-                                    setFullScreenHandler(fullScreenHandler)
-                                    setPiPHandler(defaultPipHandler)
-                                    attachToLifecycle(lifecycle)
-                                    playerViewModel.hasCustomSettings {
-                                        setSettingsButtonOnClickListener {
-                                            runOnUiThread {
-                                                showSettings()
-                                            }
-                                            true
-                                        }
-                                    }
-                                    setOnPlayNextClickListener { _ ->
-                                        playRandom()
-                                    }
-                                    setPlayPauseButtonOnClickListener { isPlayPressed ->
-                                        runOnUiThread {
-                                            Toast
-                                                .makeText(
-                                                    context,
-                                                    "${if (isPlayPressed) "Play" else "Pause"} pressed.",
-                                                    Toast.LENGTH_SHORT,
-                                                ).show()
-                                        }
+                                enablePictureInPictureSupport(defaultPipHandler)
+
+                                playerViewModel.hasCustomSettings {
+                                    setSettingsButtonOnClickListener {
+                                        showSettings()
+                                        setSettingsButtonState(true)
                                     }
                                 }
                             }
-                            binding.npoVideoPlayerNative.isVisible = showNativeUI
-                            binding.npoVideoPlayerWeb.isVisible = !showNativeUI
+                            binding.npoVideoPlayerNative.isVisible
                         }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog
@@ -358,7 +320,6 @@ class PlayerActivity : BaseActivity() {
             eventEmitter.removeListener(onPlayPauseListener)
         }
         binding.npoVideoPlayerNative.onDestroy()
-        binding.npoVideoPlayerWeb.onDestroy()
 
         npoNotificationManager?.setPlayer(null)
         CastContext
@@ -406,8 +367,8 @@ class PlayerActivity : BaseActivity() {
             }?.filter { it.avType != player?.npoSourceConfig?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, uiConfig, showNativePlayerUI, npoPlayerColors ->
-                        loadSource(newSource, config, uiConfig, showNativePlayerUI, npoPlayerColors)
+                    playerViewModel.getConfiguration { config, npoPlayerColors ->
+                        loadSource(newSource, config, npoPlayerColors)
                     }
                 }
         }

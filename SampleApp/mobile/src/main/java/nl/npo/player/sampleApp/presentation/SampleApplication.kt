@@ -45,14 +45,13 @@ class SampleApplication :
         if (withNPOTag) {
             // Either create your own NpoTag implementation which can be used for app analytics:
             npoTag =
-                initializeNPOTag(setupAnalyticsConfiguration()).also {
+                initializeNPOTag(setupAnalyticsConfiguration()).also { tag ->
                     NPOPlayerLibrary.initialize(
                         context = this,
-                        analyticsConfig = AnalyticsConfiguration.Provided(it),
+                        analyticsConfig = AnalyticsConfiguration.Provided(tag),
                         adManager = AdManagerProvider.getAdManager(this),
                     ) {
                         this.environment = environment
-                        keepUIUpToDate = true
                         this.enableCasting = enableCasting
                         addInterceptors(list)
                     }
@@ -73,7 +72,6 @@ class SampleApplication :
                 adManager = AdManagerProvider.getAdManager(this),
             ) {
                 this.environment = environment
-                keepUIUpToDate = true
                 this.enableCasting = enableCasting
                 addInterceptors(list)
             }

@@ -3,7 +3,6 @@ package nl.npo.player.sampleApp.tv.presentation.playback
 import android.os.Bundle
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.SettingsViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
 
@@ -15,7 +14,8 @@ class PlaybackActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         logPageAnalytics(TAG)
-        settingsViewModel.showNativeUI.observeNonNull(this, ::showUI)
+        // TODO: Do we need a switch or should it always be native UI?
+        showUI(true)
     }
 
     private fun showUI(showNativeUI: Boolean) {

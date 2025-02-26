@@ -62,12 +62,6 @@ class SettingsRepositoryImpl
             prefs.setSterUiEnabled(enabled)
         }
 
-        override val showNativeUIPlayer: Flow<Boolean> = prefs.showNativeUIPlayer
-
-        override suspend fun setShowNativeUIPlayer(show: Boolean) {
-            prefs.setShowNativeUIPlayer(show)
-        }
-
         override val pauseWhenBecomingNoisy: Flow<Boolean> = prefs.pauseWhenBecomingNoisy
 
         override suspend fun setPauseWhenBecomingNoisy(pause: Boolean) {

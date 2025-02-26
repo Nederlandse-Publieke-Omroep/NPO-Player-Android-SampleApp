@@ -29,7 +29,6 @@ class SettingsViewModel
     ) : ViewModel() {
         private val _settingsList = MutableStateFlow(emptyList<SettingsItem>())
         val settingsList = _settingsList.asLiveData()
-        val showNativeUI = settingsRepository.showNativeUIPlayer.asLiveData()
 
         init {
             viewModelScope.launch {
@@ -60,7 +59,6 @@ class SettingsViewModel
                 SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
                 SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
                 SettingsKey.OnlyStreamLinkRandomEnabled -> settingsRepository.setOnlyStreamLinkRandomEnabled(value)
-                SettingsKey.ShowNativePlayerUI -> settingsRepository.setShowNativeUIPlayer(value)
                 SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
                 SettingsKey.PauseOnSwitchToCellularNetwork ->
@@ -150,14 +148,6 @@ class SettingsViewModel
                             SettingsKey.SterUiEnabled,
                             R.string.setting_ster_ui_enabled,
                             SettingsSwitchOption(settingsRepository.sterUiEnabled.first()),
-                        ),
-                    )
-
-                    add(
-                        SettingsItem.Switch(
-                            SettingsKey.ShowNativePlayerUI,
-                            R.string.setting_show_native_player_ui,
-                            SettingsSwitchOption(settingsRepository.showNativeUIPlayer.first()),
                         ),
                     )
 
