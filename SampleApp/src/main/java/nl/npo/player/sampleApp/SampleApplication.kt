@@ -68,6 +68,7 @@ class SampleApplication : Application() {
                         environment = this@SampleApplication.environment
                         keepUIUpToDate = true
                         this.enableCasting = enableCasting
+                        debugLogging = true
                         addInterceptors(list)
                     }
                 }
@@ -89,6 +90,7 @@ class SampleApplication : Application() {
                 environment = this@SampleApplication.environment
                 keepUIUpToDate = true
                 this.enableCasting = enableCasting
+                debugLogging = true
                 addInterceptors(list)
             }
         }
