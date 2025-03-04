@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.dagger.hilt.android'
@@ -76,10 +76,6 @@ android {
     }
 }
 
-kapt {
-    correctErrorTypes true
-}
-
 dependencies {
     implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
     api project(":SampleApp:shared")
@@ -87,24 +83,24 @@ dependencies {
     implementation "nl.npo.player.library:sterAds:$libVersionName"
     implementation "nl.npo.player.library:presentationMobile:$libVersionName"
 
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "androidx.core:core-ktx:$androidXCore"
+    implementation "androidx.appcompat:appcompat:$androidXAppCompat"
     implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.fragment:fragment-ktx:1.7.1"
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
+    implementation "androidx.fragment:fragment-ktx:$androidXFragment"
+    implementation "androidx.navigation:navigation-ui-ktx:2.8.7"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    kapt "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    ksp "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
     implementation "com.google.dagger:hilt-android:$androidHilt"
-    kapt "com.google.dagger:hilt-compiler:$androidHilt"
+    ksp "com.google.dagger:hilt-compiler:$androidHilt"
 
     //only needed if Chromecast is used
-    implementation "com.google.android.gms:play-services-cast-framework:21.4.0"
+    implementation "com.google.android.gms:play-services-cast-framework:22.0.0"
     implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'

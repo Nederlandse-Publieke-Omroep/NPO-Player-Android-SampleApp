@@ -1,14 +1,15 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.dagger.hilt.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
     namespace 'nl.npo.player.sampleApp.tv'
-    compileSdk 34
+    compileSdk 35
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
@@ -42,6 +43,7 @@ android {
     buildFeatures {
         buildConfig = true
         viewBinding = true
+        compose = true
     }
 
     compileOptions {
@@ -58,10 +60,11 @@ android {
     }
 }
 
-kapt {
-    correctErrorTypes true
+composeCompiler {
+    enableStrongSkippingMode = true
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    metricsDestination = layout.buildDirectory.dir("compose_compiler")
 }
-
 
 dependencies {
     api project(":SampleApp:shared")
@@ -70,25 +73,25 @@ dependencies {
     implementation "nl.npo.player.library:sterAds:$libVersionName"
     implementation "nl.npo.player.library:presentationTV:$libVersionName"
 
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "androidx.core:core-ktx:$androidXCore"
+    implementation "androidx.appcompat:appcompat:$androidXAppCompat"
+    implementation "androidx.fragment:fragment-ktx:$androidXFragment"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 
-
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.fragment:fragment-ktx:1.7.1"
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
+    // Compose
+    implementation 'androidx.compose.ui:ui-android:1.7.7'
+    implementation 'androidx.tv:tv-material:1.0.0'
 
     implementation "com.google.dagger:hilt-android:$androidHilt"
-    kapt "com.google.dagger:hilt-compiler:$androidHilt"
+    ksp "com.google.dagger:hilt-compiler:$androidHilt"
 
     implementation 'androidx.leanback:leanback:1.0.0'
 
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
 
     // Debug network
     debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"

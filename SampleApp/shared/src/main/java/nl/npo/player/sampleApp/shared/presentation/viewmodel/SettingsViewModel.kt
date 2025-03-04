@@ -29,6 +29,7 @@ class SettingsViewModel
     ) : ViewModel() {
         private val _settingsList = MutableStateFlow(emptyList<SettingsItem>())
         val settingsList = _settingsList.asLiveData()
+        val showNativeUI = settingsRepository.showNativeUIPlayer.asLiveData()
 
         init {
             viewModelScope.launch {
