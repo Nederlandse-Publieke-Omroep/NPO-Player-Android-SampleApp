@@ -177,7 +177,7 @@ class NativePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(

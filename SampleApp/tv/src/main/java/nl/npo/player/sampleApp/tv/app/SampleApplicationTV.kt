@@ -50,7 +50,6 @@ class SampleApplicationTV :
                         adManager = AdManagerProvider.getAdManager(this),
                     ) {
                         this.environment = environment
-                        keepUIUpToDate = true
                         this.enableCasting = false
                         addInterceptors(list)
                     }
@@ -71,7 +70,6 @@ class SampleApplicationTV :
                 adManager = AdManagerProvider.getAdManager(this),
             ) {
                 this.environment = environment
-                keepUIUpToDate = true
                 this.enableCasting = false
                 addInterceptors(list)
             }

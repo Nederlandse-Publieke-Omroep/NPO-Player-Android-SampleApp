@@ -57,7 +57,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, uiConfig, showNativePlayerUI, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
             val pageTracker = activity.pageTracker ?: return@getConfiguration
             player =
                 NPOPlayerLibrary

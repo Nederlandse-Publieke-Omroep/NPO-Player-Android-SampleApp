@@ -20,7 +20,6 @@ import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
-import nl.npo.player.library.presentation.model.NPOUiConfig
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
 import nl.npo.player.sampleApp.shared.domain.model.StreamInfoResult
@@ -52,14 +51,13 @@ class PlayerViewModel
         private suspend fun createToken(
             itemId: String,
             isPlusUser: Boolean,
-        ): String? {
-            return when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
+        ): String? =
+            when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
                 is StreamInfoResult.Success -> tokenResult.data.token
                 else -> {
                     null
                 }
             }
-        }
 
         private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper): NPOSourceConfig? {
             val isPlusUser = sourceWrapper.overrideIsPlusUser ?: (settingsRepository.userType.first() == UserType.Plus)
@@ -143,7 +141,7 @@ class PlayerViewModel
             )
         }
 
-        fun getConfiguration(callback: (NPOPlayerConfig, NPOUiConfig, Boolean, NPOPlayerColors?) -> Unit) {
+        fun getConfiguration(callback: (NPOPlayerConfig, NPOPlayerColors?) -> Unit) {
             viewModelScope.launch {
                 val playerConfig =
                     NPOPlayerConfig(
@@ -152,19 +150,6 @@ class PlayerViewModel
                         bufferConfig = NPOBufferConfig(),
                     )
 
-                val uiConfig =
-                    if (settingsRepository.showUi.first()) {
-                        NPOUiConfig.WebUi(
-                            supplementalCssLocation =
-                                if (settingsRepository.styling.first() == Styling.Custom) {
-                                    "file:///android_asset/player_supplemental_styling.css"
-                                } else {
-                                    null
-                                },
-                        )
-                    } else {
-                        NPOUiConfig.Disabled
-                    }
                 val npoPlayerColors =
                     if (settingsRepository.styling.first() == Styling.Custom) {
                         NPOPlayerColors(
@@ -178,8 +163,6 @@ class PlayerViewModel
 
                 callback(
                     playerConfig,
-                    uiConfig,
-                    settingsRepository.showNativeUIPlayer.first(),
                     npoPlayerColors,
                 )
             }

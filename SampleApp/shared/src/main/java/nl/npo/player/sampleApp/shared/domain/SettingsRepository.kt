@@ -35,10 +35,6 @@ interface SettingsRepository {
 
     suspend fun setSterUiEnabled(enabled: Boolean)
 
-    val showNativeUIPlayer: Flow<Boolean>
-
-    suspend fun setShowNativeUIPlayer(show: Boolean)
-
     val pauseWhenBecomingNoisy: Flow<Boolean>
 
     suspend fun setPauseWhenBecomingNoisy(pause: Boolean)
