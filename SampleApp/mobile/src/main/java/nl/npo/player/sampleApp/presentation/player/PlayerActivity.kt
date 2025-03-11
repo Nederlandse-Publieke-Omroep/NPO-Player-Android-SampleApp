@@ -47,6 +47,7 @@ import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
 import nl.npo.player.sampleApp.presentation.SampleApplication
+import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
@@ -322,14 +323,17 @@ class PlayerActivity : BaseActivity() {
         binding.npoVideoPlayerNative.onDestroy()
 
         npoNotificationManager?.setPlayer(null)
-        CastContext
-            .getSharedInstance(this@PlayerActivity)
-            .removeCastStateListener(castStateListener)
+        if (isGooglePlayServicesAvailable()) {
+            CastContext
+                .getSharedInstance(this@PlayerActivity)
+                .removeCastStateListener(castStateListener)
+        }
         super.onDestroy()
     }
 
     private fun ActivityPlayerBinding.setupViews() {
         setupCastButton()
+
         btnSwitchStreams.setOnClickListener {
             playRandom()
         }
@@ -345,7 +349,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupCastButton() {
-        if (!NPOCasting.isCastingEnabled) {
+        if (!NPOCasting.isCastingEnabled || !isGooglePlayServicesAvailable()) {
             mediaRouteButton.isVisible = false
             return
         }

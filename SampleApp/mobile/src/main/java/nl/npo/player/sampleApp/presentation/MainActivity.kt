@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityMainBinding
+import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.list.MainListAdapter
 import nl.npo.player.sampleApp.presentation.offline.OfflineActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
@@ -65,11 +66,13 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        viewModel.enableCasting.observe(this) {
-            if (it != NPOCasting.isCastingEnabled) {
-                NPOCasting.setCastingEnabled(it)
-                startActivity(Intent(this, MainActivity::class.java))
-                finishAffinity()
+        if (isGooglePlayServicesAvailable()) {
+            viewModel.enableCasting.observe(this) {
+                if (it != NPOCasting.isCastingEnabled) {
+                    NPOCasting.setCastingEnabled(it)
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finishAffinity()
+                }
             }
         }
 

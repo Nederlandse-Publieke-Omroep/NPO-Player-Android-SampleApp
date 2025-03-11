@@ -27,12 +27,15 @@ class SettingsViewModel
     constructor(
         private val settingsRepository: SettingsRepository,
     ) : ViewModel() {
+        private var hasPlayServices = false
+
         private val _settingsList = MutableStateFlow(emptyList<SettingsItem>())
         val settingsList = _settingsList.asLiveData()
 
-        init {
+        fun initSettingsList(hasPlayServices: Boolean) {
+            this.hasPlayServices = hasPlayServices
             viewModelScope.launch {
-                generateSettingsList()
+                generateSettingsList(hasPlayServices)
             }
         }
 
@@ -46,7 +49,7 @@ class SettingsViewModel
                     is SettingsPickerOption -> handlePicker(value)
                 }
 
-                generateSettingsList()
+                generateSettingsList(hasPlayServices)
             }
         }
 
@@ -81,7 +84,7 @@ class SettingsViewModel
             }
         }
 
-        private suspend fun generateSettingsList() {
+        private suspend fun generateSettingsList(hasPlayServices: Boolean) {
             _settingsList.value =
                 buildList {
                     add(
@@ -167,13 +170,15 @@ class SettingsViewModel
                         ),
                     )
 
-                    add(
-                        SettingsItem.Switch(
-                            SettingsKey.EnableCasting,
-                            R.string.setting_enable_casting,
-                            SettingsSwitchOption(settingsRepository.enableCasting.first()),
-                        ),
-                    )
+                    if (hasPlayServices) {
+                        add(
+                            SettingsItem.Switch(
+                                SettingsKey.EnableCasting,
+                                R.string.setting_enable_casting,
+                                SettingsSwitchOption(settingsRepository.enableCasting.first()),
+                            ),
+                        )
+                    }
 
                     add(
                         SettingsItem.Picker(
