@@ -55,15 +55,7 @@ class PlayerViewModel
                                         overrideStartOffset = item.startOffset,
                                         overrideImageUrl = item.getImageUrl(source),
                                         overrideAutoPlay = autoPlay,
-                                        overrideMetadata =
-                                            source.metadata
-                                                ?.toMutableMap()
-                                                ?.apply {
-                                                    set(
-                                                        "appletest",
-                                                        "true",
-                                                    )
-                                                },
+                                        overrideMetadata = mapOf("appletest" to "true"),
                                         // We add this so the Cast Receiver shows the debug log when casting.
                                         overrideTitle =
                                             if (item.overrideStreamLinkTitleAndDescription) {
