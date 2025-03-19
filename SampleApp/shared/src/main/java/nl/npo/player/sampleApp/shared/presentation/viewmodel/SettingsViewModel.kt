@@ -32,10 +32,10 @@ class SettingsViewModel
         private val _settingsList = MutableStateFlow(emptyList<SettingsItem>())
         val settingsList = _settingsList.asLiveData()
 
-        fun initSettingsList(hasPlayServices: Boolean) {
-            this.hasPlayServices = hasPlayServices
+        fun initSettingsList(supportsCasting: Boolean) {
+            this.hasPlayServices = supportsCasting
             viewModelScope.launch {
-                generateSettingsList(hasPlayServices)
+                generateSettingsList(supportsCasting)
             }
         }
 
@@ -84,7 +84,7 @@ class SettingsViewModel
             }
         }
 
-        private suspend fun generateSettingsList(hasPlayServices: Boolean) {
+        private suspend fun generateSettingsList(supportsCasting: Boolean) {
             _settingsList.value =
                 buildList {
                     add(
@@ -170,7 +170,7 @@ class SettingsViewModel
                         ),
                     )
 
-                    if (hasPlayServices) {
+                    if (supportsCasting) {
                         add(
                             SettingsItem.Switch(
                                 SettingsKey.EnableCasting,

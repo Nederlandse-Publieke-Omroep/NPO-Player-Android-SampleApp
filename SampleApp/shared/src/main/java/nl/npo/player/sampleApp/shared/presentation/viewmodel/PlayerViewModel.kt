@@ -147,6 +147,7 @@ class PlayerViewModel
                     NPOPlayerConfig(
                         shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                         shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
+                        applyLivestreamCastWorkAround = false,
                         bufferConfig = NPOBufferConfig(),
                     )
 

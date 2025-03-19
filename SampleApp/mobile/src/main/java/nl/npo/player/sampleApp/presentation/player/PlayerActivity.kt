@@ -46,10 +46,10 @@ import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
-import nl.npo.player.sampleApp.presentation.SampleApplication
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
+import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -502,7 +502,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun changePageTracker(title: String) {
         val pageTracker =
-            (application as SampleApplication)
+            (application as PlayerApplication)
                 .npoTag
                 ?.pageTrackerBuilder()
                 ?.withPageName(title)
