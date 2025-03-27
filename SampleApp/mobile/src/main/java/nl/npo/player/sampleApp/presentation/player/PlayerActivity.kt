@@ -33,6 +33,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
+import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.extension.getMessage
@@ -79,6 +80,7 @@ class PlayerActivity : BaseActivity() {
             override fun onPaused(
                 currentPosition: Double,
                 isAd: Boolean,
+                stoppedPlayingReason: StoppedPlayingReason,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -204,7 +206,11 @@ class PlayerActivity : BaseActivity() {
                             npoPlayerConfig = playerConfig,
                             pageTracker =
                                 pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
+                                    ?: PlayerTagProvider.getPageTracker(
+                                        PageConfiguration(
+                                            title ?: ""
+                                        )
+                                    ),
                         ).apply {
                             val defaultPipHandler =
                                 DefaultNPOPictureInPictureHandler(
@@ -232,11 +238,6 @@ class PlayerActivity : BaseActivity() {
                                     npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
                                 )
                                 setFullScreenHandler(fullScreenHandler)
-                                setPlayNextListener { action ->
-                                    when (action) {
-                                        is PlayNextListenerResult.Triggered -> playRandom()
-                                    }
-                                }
                                 enablePictureInPictureSupport(defaultPipHandler)
 
                                 playerViewModel.hasCustomSettings {
@@ -413,7 +414,8 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.getAudioQualities()?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.getVideoQualities()?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null
@@ -520,6 +522,17 @@ class PlayerActivity : BaseActivity() {
             )
         }
         binding.apply {
+            npoVideoPlayerNative.setPlayNextListener(
+                if (npoSourceConfig.isLiveStream == true) {
+                    null
+                } else {
+                    { action ->
+                        when (action) {
+                            is PlayNextListenerResult.Triggered -> playRandom()
+                        }
+                    }
+                }
+            )
             loadingIndicator.isVisible = false
             retryBtn.isVisible = false
         }
