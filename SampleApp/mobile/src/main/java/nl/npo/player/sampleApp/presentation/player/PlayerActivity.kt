@@ -19,6 +19,7 @@ import androidx.core.view.isVisible
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
+import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
@@ -122,7 +123,7 @@ class PlayerActivity : BaseActivity() {
                 source: NPOSourceConfig,
             ) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
-                player?.seekOrTimeShift(10000.0)
+                if(!NPOCasting.isCastingConnected()) player?.seekOrTimeShift(10000.0)
 
                 binding.btnPlayPause.isVisible = false
             }
@@ -143,7 +144,7 @@ class PlayerActivity : BaseActivity() {
             }
         }
 
-    private val castStateListener: (Int) -> Unit = { state ->
+    private val castStateListener: CastStateListener = CastStateListener { state ->
         binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
     }
 
@@ -205,7 +206,11 @@ class PlayerActivity : BaseActivity() {
                             npoPlayerConfig = playerConfig,
                             pageTracker =
                                 pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
+                                    ?: PlayerTagProvider.getPageTracker(
+                                        PageConfiguration(
+                                            title ?: ""
+                                        )
+                                    ),
                         ).apply {
                             val defaultPipHandler =
                                 DefaultNPOPictureInPictureHandler(
@@ -417,7 +422,8 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.getVideoQualities()?.size ?: 0) > 0) PlayerSettings.VIDEO_QUALITIES else null

@@ -2,8 +2,10 @@ package nl.npo.player.sampleApp.presentation.cast
 
 import android.content.Context
 import androidx.annotation.StringRes
-import com.bitmovin.player.casting.BitmovinCastOptionsProvider
+import com.google.android.gms.cast.LaunchOptions
 import com.google.android.gms.cast.framework.CastOptions
+import com.google.android.gms.cast.framework.OptionsProvider
+import com.google.android.gms.cast.framework.SessionProvider
 
 /**
  * This is currently a wrapper around the BitMovin cast provider. In the future we will either move
@@ -11,12 +13,16 @@ import com.google.android.gms.cast.framework.CastOptions
  * implementation, or move back to our own Chromecast implementation which is initialized in the
  * commented out code.
  */
-class CastOptionsProvider : BitmovinCastOptionsProvider() {
+class CastOptionsProvider : OptionsProvider {
     override fun getCastOptions(context: Context): CastOptions {
-        val options = super.getCastOptions(context)
         return CastOptions.Builder()
-            .with(options)
+            .setLaunchOptions(LaunchOptions.Builder().setRelaunchIfRunning(true).build())
+            .setReceiverApplicationId(context.getString(getReceiverID()))
             .build()
+    }
+
+    override fun getAdditionalSessionProviders(p0: Context): MutableList<SessionProvider>? {
+        return null
     }
 
     private fun CastOptions.Builder.with(castOptions: CastOptions): CastOptions.Builder {
