@@ -34,6 +34,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
+import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.extension.getMessage
@@ -81,6 +82,7 @@ class PlayerActivity : BaseActivity() {
             override fun onPaused(
                 currentPosition: Double,
                 isAd: Boolean,
+                stoppedPlayingReason: StoppedPlayingReason,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -123,7 +125,7 @@ class PlayerActivity : BaseActivity() {
                 source: NPOSourceConfig,
             ) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
-                if(!NPOCasting.isCastingConnected()) player?.seekOrTimeShift(10000.0)
+                if (!NPOCasting.isCastingConnected()) player?.seekOrTimeShift(10000.0)
 
                 binding.btnPlayPause.isVisible = false
             }

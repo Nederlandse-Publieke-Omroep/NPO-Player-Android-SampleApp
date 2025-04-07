@@ -8,7 +8,7 @@ import com.google.android.gms.cast.framework.OptionsProvider
 import com.google.android.gms.cast.framework.SessionProvider
 
 /**
- * This is currently a wrapper around the BitMovin cast provider. In the future we will either move
+ * This is currently a wrapper around Google's cast provider. In the future we will either move
  * this wrapper to a new Cast module in the Player library if the Player team does the Chromecast
  * implementation, or move back to our own Chromecast implementation which is initialized in the
  * commented out code.
@@ -24,20 +24,7 @@ class CastOptionsProvider : OptionsProvider {
     override fun getAdditionalSessionProviders(p0: Context): MutableList<SessionProvider>? {
         return null
     }
-
-    private fun CastOptions.Builder.with(castOptions: CastOptions): CastOptions.Builder {
-        return this
-            .setSupportedNamespaces(castOptions.supportedNamespaces)
-            .setLaunchOptions(castOptions.launchOptions)
-            .setReceiverApplicationId(castOptions.receiverApplicationId)
-            .setEnableReconnectionService(castOptions.enableReconnectionService)
-            .setResumeSavedSession(castOptions.resumeSavedSession)
-            .setStopReceiverApplicationWhenEndingSession(castOptions.stopReceiverApplicationWhenEndingSession)
-            .apply {
-                castOptions.castMediaOptions.let(this::setCastMediaOptions)
-            }
-    }
-
+    
     companion object {
         @StringRes
         fun getReceiverID(): Int {
