@@ -67,7 +67,7 @@ class NativePlaybackVideoFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as? BaseActivity)?.logPageAnalytics(TAG)
-        setObservers()
+
         loadSourceWrapperFromIntent(activity?.intent)
     }
 
@@ -221,10 +221,6 @@ class NativePlaybackVideoFragment : Fragment() {
                 }
             }
         }
-    }
-
-    private fun setObservers() {
-//        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {

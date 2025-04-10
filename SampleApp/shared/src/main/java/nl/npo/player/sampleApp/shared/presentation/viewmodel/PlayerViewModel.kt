@@ -28,166 +28,162 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel
-@Inject
-constructor(
-    private val tokenProvider: TokenProvider,
-    private val settingsRepository: SettingsRepository,
-) : ViewModel() {
-//    private val _streamRetrievalState =
-//        MutableLiveData<StreamRetrievalState>(StreamRetrievalState.NotStarted)
-//    val streamRetrievalState: LiveData<StreamRetrievalState> = _streamRetrievalState
-
-    fun retrieveSource(
-        item: SourceWrapper,
-        callback: (StreamRetrievalState) -> Unit,
-    ) {
-        viewModelScope.launch {
-            callback(StreamRetrievalState.Loading)
-            val mergedSource = fetchAndMergeSource(item, callback) ?: return@launch
-            callback(StreamRetrievalState.Success(mergedSource, item))
-        }
-    }
-
-    private suspend fun createToken(
-        itemId: String,
-        isPlusUser: Boolean,
-    ): String? =
-        when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
-            is StreamInfoResult.Success -> tokenResult.data.token
-            else -> {
-                null
+    @Inject
+    constructor(
+        private val tokenProvider: TokenProvider,
+        private val settingsRepository: SettingsRepository,
+    ) : ViewModel() {
+        fun retrieveSource(
+            item: SourceWrapper,
+            callback: (StreamRetrievalState) -> Unit,
+        ) {
+            viewModelScope.launch {
+                callback(StreamRetrievalState.Loading)
+                fetchAndMergeSource(item)?.let(callback)
             }
         }
 
-    private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper, onError: (StreamRetrievalState.Error) -> Unit): NPOSourceConfig? {
-        val isPlusUser = sourceWrapper.overrideIsPlusUser
-            ?: (settingsRepository.userType.first() == UserType.Plus)
-        val token = createToken(sourceWrapper.uniqueId, isPlusUser) ?: return null
-
-        return try {
-            val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
-            mergeSourceWrapperWithSource(sourceWrapper, source)
-        } catch (e: NPOPlayerException) {
-            onError(StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper))
-            null
-        }
-    }
-
-    private suspend fun mergeSourceWrapperWithSource(
-        sourceWrapper: SourceWrapper,
-        source: NPOSourceConfig,
-    ): NPOSourceConfig {
-        val autoPlay = settingsRepository.autoPlayEnabled.first()
-        return source.copy(
-            overrideStartOffset = sourceWrapper.startOffset,
-            overrideImageUrl = sourceWrapper.getImageUrl(source),
-            overrideAutoPlay = autoPlay,
-            overrideMetadata =
-                source.metadata
-                    ?.toMutableMap()
-                    ?.apply {
-                        set(
-                            "appletest",
-                            "true",
-                        )
-                    },
-            // We add this so the Cast Receiver shows the debug log when casting.
-            overrideTitle =
-                if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
-                    sourceWrapper.title
-                } else {
-                    source.title
-                },
-            overrideDescription =
-                if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
-                    "SampleApp override description: ${sourceWrapper.testingDescription}"
-                } else {
-                    source.description
-                },
-            overrideNicamContentDescription =
-                sourceWrapper.overrideNicamContentDescription
-                    ?: source.nicamContentDescription,
-        )
-    }
-
-    private fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? =
-        if (preferThisImageUrlOverStreamLink) {
-            imageUrl ?: npoSourceConfig.imageUrl
-        } else {
-            npoSourceConfig.imageUrl ?: imageUrl
-        }
-
-    fun loadStream(
-        npoPlayer: NPOPlayer,
-        npoSourceConfig: NPOSourceConfig,
-    ) {
-        viewModelScope.launch {
-            val autoPlay = settingsRepository.autoPlayEnabled.first()
-            npoPlayer.loadStream(
-                npoSourceConfig.copy(overrideAutoPlay = autoPlay),
-                settingsRepository.shouldShowPlayNext.first(),
-            )
-        }
-    }
-
-    fun getConfiguration(callback: (NPOPlayerConfig, NPOPlayerColors?) -> Unit) {
-        viewModelScope.launch {
-            val playerConfig =
-                NPOPlayerConfig(
-                    shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
-                    shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
-                    bufferConfig = NPOBufferConfig(),
-                )
-
-            val npoPlayerColors =
-                if (settingsRepository.styling.first() == Styling.Custom) {
-                    NPOPlayerColors(
-                        textColor = 0xFFFF0000,
-                        iconColor = 0xFF00FF00,
-                        primaryColor = 0xFF00FF00,
-                    )
-                } else {
+        private suspend fun createToken(
+            itemId: String,
+            isPlusUser: Boolean,
+        ): String? =
+            when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
+                is StreamInfoResult.Success -> tokenResult.data.token
+                else -> {
                     null
                 }
+            }
 
-            callback(
-                playerConfig,
-                npoPlayerColors,
+        private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper): StreamRetrievalState? {
+            val isPlusUser =
+                sourceWrapper.overrideIsPlusUser
+                    ?: (settingsRepository.userType.first() == UserType.Plus)
+            val token = createToken(sourceWrapper.uniqueId, isPlusUser) ?: return null
+
+            return try {
+                val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
+                val mergedSource = mergeSourceWrapperWithSource(sourceWrapper, source)
+                StreamRetrievalState.Success(mergedSource, sourceWrapper)
+            } catch (e: NPOPlayerException) {
+                StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper)
+            }
+        }
+
+        private suspend fun mergeSourceWrapperWithSource(
+            sourceWrapper: SourceWrapper,
+            source: NPOSourceConfig,
+        ): NPOSourceConfig {
+            val autoPlay = settingsRepository.autoPlayEnabled.first()
+            return source.copy(
+                overrideStartOffset = sourceWrapper.startOffset,
+                overrideImageUrl = sourceWrapper.getImageUrl(source),
+                overrideAutoPlay = autoPlay,
+                overrideMetadata =
+                    source.metadata
+                        ?.toMutableMap()
+                        ?.apply {
+                            set(
+                                "appletest",
+                                "true",
+                            )
+                        },
+                // We add this so the Cast Receiver shows the debug log when casting.
+                overrideTitle =
+                    if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
+                        sourceWrapper.title
+                    } else {
+                        source.title
+                    },
+                overrideDescription =
+                    if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
+                        "SampleApp override description: ${sourceWrapper.testingDescription}"
+                    } else {
+                        source.description
+                    },
+                overrideNicamContentDescription =
+                    sourceWrapper.overrideNicamContentDescription
+                        ?: source.nicamContentDescription,
             )
         }
-    }
 
-    fun hasCustomSettings(callback: () -> Unit) {
-        viewModelScope.launch {
-            if (settingsRepository.showCustomSettings.first()) {
-                callback()
-            }
-        }
-    }
-
-    fun onlyStreamLinkRandomEnabled(callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            callback(settingsRepository.onlyStreamLinkRandomEnabled.first())
-        }
-    }
-
-    fun shouldAddSterOverlay(callback: () -> Unit) {
-        viewModelScope.launch {
-            if (settingsRepository.sterUiEnabled.first()) {
-                callback()
-            }
-        }
-    }
-
-    companion object {
-        val remoteCallback: ((NPOSourceConfig) -> CastMediaType) = { source ->
-            if (source.avType == AVType.AUDIO || source.streamUrl.contains("mp3")) {
-                CastMediaType.MusicTrack
-            } else if (source.avType == AVType.VIDEO) {
-                CastMediaType.Movie
+        private fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? =
+            if (preferThisImageUrlOverStreamLink) {
+                imageUrl ?: npoSourceConfig.imageUrl
             } else {
-                CastMediaType.Generic
+                npoSourceConfig.imageUrl ?: imageUrl
+            }
+
+        fun loadStream(
+            npoPlayer: NPOPlayer,
+            npoSourceConfig: NPOSourceConfig,
+        ) {
+            viewModelScope.launch {
+                val autoPlay = settingsRepository.autoPlayEnabled.first()
+                npoPlayer.loadStream(
+                    npoSourceConfig.copy(overrideAutoPlay = autoPlay),
+                    settingsRepository.shouldShowPlayNext.first(),
+                )
+            }
+        }
+
+        fun getConfiguration(callback: (NPOPlayerConfig, NPOPlayerColors?) -> Unit) {
+            viewModelScope.launch {
+                val playerConfig =
+                    NPOPlayerConfig(
+                        shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
+                        shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
+                        bufferConfig = NPOBufferConfig(),
+                    )
+
+                val npoPlayerColors =
+                    if (settingsRepository.styling.first() == Styling.Custom) {
+                        NPOPlayerColors(
+                            textColor = 0xFFFF0000,
+                            iconColor = 0xFF00FF00,
+                            primaryColor = 0xFF00FF00,
+                        )
+                    } else {
+                        null
+                    }
+
+                callback(
+                    playerConfig,
+                    npoPlayerColors,
+                )
+            }
+        }
+
+        fun hasCustomSettings(callback: () -> Unit) {
+            viewModelScope.launch {
+                if (settingsRepository.showCustomSettings.first()) {
+                    callback()
+                }
+            }
+        }
+
+        fun onlyStreamLinkRandomEnabled(callback: (Boolean) -> Unit) {
+            viewModelScope.launch {
+                callback(settingsRepository.onlyStreamLinkRandomEnabled.first())
+            }
+        }
+
+        fun shouldAddSterOverlay(callback: () -> Unit) {
+            viewModelScope.launch {
+                if (settingsRepository.sterUiEnabled.first()) {
+                    callback()
+                }
+            }
+        }
+
+        companion object {
+            val remoteCallback: ((NPOSourceConfig) -> CastMediaType) = { source ->
+                if (source.avType == AVType.AUDIO || source.streamUrl.contains("mp3")) {
+                    CastMediaType.MusicTrack
+                } else if (source.avType == AVType.VIDEO) {
+                    CastMediaType.Movie
+                } else {
+                    CastMediaType.Generic
+                }
             }
         }
     }
-}
