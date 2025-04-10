@@ -49,7 +49,6 @@ import nl.npo.player.library.presentation.compose.PlayerSurface
 import nl.npo.player.library.presentation.compose.theme.Dimens
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
-import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -215,7 +214,7 @@ class NativePlaybackVideoFragment : Fragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
+                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
                     /** NO-OP **/
@@ -225,7 +224,7 @@ class NativePlaybackVideoFragment : Fragment() {
     }
 
     private fun setObservers() {
-        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
+//        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {

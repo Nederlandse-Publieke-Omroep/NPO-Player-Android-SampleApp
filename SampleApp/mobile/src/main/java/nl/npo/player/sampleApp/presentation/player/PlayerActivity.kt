@@ -151,7 +151,10 @@ class PlayerActivity : BaseActivity() {
     }
 
     private val retryListener: (Double) -> Unit = {
-        playerViewModel.retrieveSource(sourceWrapper.copy(startOffset = it))
+        playerViewModel.retrieveSource(
+            sourceWrapper.copy(startOffset = it),
+            ::handleTokenState
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -279,7 +282,7 @@ class PlayerActivity : BaseActivity() {
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
 
-            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
+            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
             else -> finish()
         }
@@ -566,7 +569,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
+//        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
         // Initialize the link lists even though we don't do anything with the changes yet.
         linkViewModel.urlLinkList.observeNonNull(this) {}
         linkViewModel.streamLinkList.observeNonNull(this) {}
@@ -578,7 +581,7 @@ class PlayerActivity : BaseActivity() {
 
             is StreamRetrievalState.Error ->
                 handleError(retrievalState.error) {
-                    playerViewModel.retrieveSource(sourceWrapper)
+                    playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 }
 
             StreamRetrievalState.Loading -> {

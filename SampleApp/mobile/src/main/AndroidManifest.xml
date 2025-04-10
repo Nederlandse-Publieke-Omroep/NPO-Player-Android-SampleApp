@@ -23,6 +23,8 @@
         tools:replace="android:label"
         tools:targetApi="32">
 
+        <profileable android:shell="true" />
+
         <meta-data
             android:name="BITMOVIN_PLAYER_LICENSE_KEY"
             android:value="${YOUR-PLAYER-LICENSE-KEY}" />

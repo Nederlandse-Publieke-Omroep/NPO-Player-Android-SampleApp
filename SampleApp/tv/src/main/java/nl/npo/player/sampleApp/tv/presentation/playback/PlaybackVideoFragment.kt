@@ -18,7 +18,6 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentationtv.adapter.NPOLeanbackPlayerAdapter
 import nl.npo.player.library.setAdViewGroup
-import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -82,7 +81,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
+                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
                     /** NO-OP **/
@@ -92,7 +91,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
     }
 
     private fun setObservers() {
-        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
+//        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
