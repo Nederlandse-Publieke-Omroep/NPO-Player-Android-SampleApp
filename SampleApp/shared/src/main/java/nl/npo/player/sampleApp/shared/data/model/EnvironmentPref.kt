@@ -19,7 +19,7 @@ enum class EnvironmentPref(
         }
 
     companion object {
-        fun getByKey(key: String): EnvironmentPref = entries.firstOrNull { it.key == key } ?: Production
+        fun getByKey(key: String): EnvironmentPref? = entries.firstOrNull { it.key == key }
     }
 }
 

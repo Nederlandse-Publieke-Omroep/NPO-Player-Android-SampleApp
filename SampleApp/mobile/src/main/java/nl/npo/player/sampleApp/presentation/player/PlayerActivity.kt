@@ -19,6 +19,7 @@ import androidx.core.view.isVisible
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
+import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
@@ -33,6 +34,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
+import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.extension.getMessage
@@ -46,9 +48,10 @@ import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
-import nl.npo.player.sampleApp.presentation.SampleApplication
+import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
+import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -79,6 +82,7 @@ class PlayerActivity : BaseActivity() {
             override fun onPaused(
                 currentPosition: Double,
                 isAd: Boolean,
+                stoppedPlayingReason: StoppedPlayingReason,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -121,7 +125,7 @@ class PlayerActivity : BaseActivity() {
                 source: NPOSourceConfig,
             ) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
-                player?.seekOrTimeShift(10000.0)
+                if (!NPOCasting.isCastingConnected()) player?.seekOrTimeShift(10000.0)
 
                 binding.btnPlayPause.isVisible = false
             }
@@ -142,12 +146,16 @@ class PlayerActivity : BaseActivity() {
             }
         }
 
-    private val castStateListener: (Int) -> Unit = { state ->
-        binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
-    }
+    private val castStateListener: CastStateListener =
+        CastStateListener { state ->
+            binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+        }
 
     private val retryListener: (Double) -> Unit = {
-        playerViewModel.retrieveSource(sourceWrapper.copy(startOffset = it))
+        playerViewModel.retrieveSource(
+            sourceWrapper.copy(startOffset = it),
+            ::handleTokenState,
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -204,7 +212,11 @@ class PlayerActivity : BaseActivity() {
                             npoPlayerConfig = playerConfig,
                             pageTracker =
                                 pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(PageConfiguration(title ?: "")),
+                                    ?: PlayerTagProvider.getPageTracker(
+                                        PageConfiguration(
+                                            title ?: "",
+                                        ),
+                                    ),
                         ).apply {
                             val defaultPipHandler =
                                 DefaultNPOPictureInPictureHandler(
@@ -271,7 +283,7 @@ class PlayerActivity : BaseActivity() {
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
 
-            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
+            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
             else -> finish()
         }
@@ -322,14 +334,17 @@ class PlayerActivity : BaseActivity() {
         binding.npoVideoPlayerNative.onDestroy()
 
         npoNotificationManager?.setPlayer(null)
-        CastContext
-            .getSharedInstance(this@PlayerActivity)
-            .removeCastStateListener(castStateListener)
+        if (isGooglePlayServicesAvailable()) {
+            CastContext
+                .getSharedInstance(this@PlayerActivity)
+                .removeCastStateListener(castStateListener)
+        }
         super.onDestroy()
     }
 
     private fun ActivityPlayerBinding.setupViews() {
         setupCastButton()
+
         btnSwitchStreams.setOnClickListener {
             playRandom()
         }
@@ -345,7 +360,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupCastButton() {
-        if (!NPOCasting.isCastingEnabled) {
+        if (!NPOCasting.isCastingEnabled || !isGooglePlayServicesAvailable()) {
             mediaRouteButton.isVisible = false
             return
         }
@@ -498,7 +513,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun changePageTracker(title: String) {
         val pageTracker =
-            (application as SampleApplication)
+            (application as PlayerApplication)
                 .npoTag
                 ?.pageTrackerBuilder()
                 ?.withPageName(title)
@@ -554,7 +569,6 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
         // Initialize the link lists even though we don't do anything with the changes yet.
         linkViewModel.urlLinkList.observeNonNull(this) {}
         linkViewModel.streamLinkList.observeNonNull(this) {}
@@ -566,7 +580,7 @@ class PlayerActivity : BaseActivity() {
 
             is StreamRetrievalState.Error ->
                 handleError(retrievalState.error) {
-                    playerViewModel.retrieveSource(sourceWrapper)
+                    playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 }
 
             StreamRetrievalState.Loading -> {

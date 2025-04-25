@@ -95,4 +95,8 @@ dependencies {
 
     // Preferences
     implementation "androidx.datastore:datastore-preferences:1.1.1"
+
+    // Debug network
+    debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
 }

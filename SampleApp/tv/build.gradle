@@ -92,8 +92,4 @@ dependencies {
     implementation 'androidx.leanback:leanback:1.0.0'
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'
-
-    // Debug network
-    debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
-    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
 }

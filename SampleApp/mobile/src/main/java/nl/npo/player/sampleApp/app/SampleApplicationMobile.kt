@@ -1,7 +1,7 @@
-package nl.npo.player.sampleApp.tv.app
+package nl.npo.player.sampleApp.app
 
 import dagger.hilt.android.HiltAndroidApp
 import nl.npo.player.sampleApp.shared.app.SampleApplication
 
 @HiltAndroidApp
-class SampleApplicationTV : SampleApplication()
+class SampleApplicationMobile : SampleApplication()
