@@ -17,7 +17,7 @@ enum class StylingPref(
         }
 
     companion object {
-        fun getByKey(key: String): StylingPref = values().firstOrNull { it.key == key } ?: Default
+        fun getByKey(key: String): StylingPref? = entries.firstOrNull { it.key == key }
     }
 }
 

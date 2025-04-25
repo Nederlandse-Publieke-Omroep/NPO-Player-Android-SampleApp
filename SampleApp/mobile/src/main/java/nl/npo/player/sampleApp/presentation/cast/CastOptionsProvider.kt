@@ -2,34 +2,27 @@ package nl.npo.player.sampleApp.presentation.cast
 
 import android.content.Context
 import androidx.annotation.StringRes
-import com.bitmovin.player.casting.BitmovinCastOptionsProvider
+import com.google.android.gms.cast.LaunchOptions
 import com.google.android.gms.cast.framework.CastOptions
+import com.google.android.gms.cast.framework.OptionsProvider
+import com.google.android.gms.cast.framework.SessionProvider
 
 /**
- * This is currently a wrapper around the BitMovin cast provider. In the future we will either move
+ * This is currently a wrapper around Google's cast provider. In the future we will either move
  * this wrapper to a new Cast module in the Player library if the Player team does the Chromecast
  * implementation, or move back to our own Chromecast implementation which is initialized in the
  * commented out code.
  */
-class CastOptionsProvider : BitmovinCastOptionsProvider() {
+class CastOptionsProvider : OptionsProvider {
     override fun getCastOptions(context: Context): CastOptions {
-        val options = super.getCastOptions(context)
         return CastOptions.Builder()
-            .with(options)
+            .setLaunchOptions(LaunchOptions.Builder().setRelaunchIfRunning(true).build())
+            .setReceiverApplicationId(context.getString(getReceiverID()))
             .build()
     }
 
-    private fun CastOptions.Builder.with(castOptions: CastOptions): CastOptions.Builder {
-        return this
-            .setSupportedNamespaces(castOptions.supportedNamespaces)
-            .setLaunchOptions(castOptions.launchOptions)
-            .setReceiverApplicationId(castOptions.receiverApplicationId)
-            .setEnableReconnectionService(castOptions.enableReconnectionService)
-            .setResumeSavedSession(castOptions.resumeSavedSession)
-            .setStopReceiverApplicationWhenEndingSession(castOptions.stopReceiverApplicationWhenEndingSession)
-            .apply {
-                castOptions.castMediaOptions.let(this::setCastMediaOptions)
-            }
+    override fun getAdditionalSessionProviders(p0: Context): MutableList<SessionProvider>? {
+        return null
     }
 
     companion object {

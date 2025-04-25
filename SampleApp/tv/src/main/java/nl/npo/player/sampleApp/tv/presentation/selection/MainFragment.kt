@@ -85,6 +85,8 @@ class MainFragment : BrowseSupportFragment() {
 
     private fun setupObservers() {
         val activity = activity ?: return
+        settingsViewModel.initSettingsList(false)
+
         linksViewModel.streamLinkList.observeNonNull(this) {
             if (isDataReady()) loadRows()
         }

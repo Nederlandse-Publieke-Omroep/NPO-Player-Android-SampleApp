@@ -8,7 +8,7 @@ import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivitySelectNpotagTypeBinding
 import nl.npo.player.sampleApp.presentation.cast.CastOptionsProvider
-import nl.npo.player.sampleApp.shared.extension.observeNonNull
+import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
 
 @AndroidEntryPoint
@@ -21,11 +21,10 @@ class SelectNPOTagTypeActivity : BaseActivity() {
         binding = ActivitySelectNpotagTypeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         // There shouldn't be an NPOTag yet, as it should have not been initiated yet. If there is we skip this activity
-        if ((application as? SampleApplication)?.isPlayerInitiatedYet() == true) {
-            navigateToMainActivity(readyToGo = true)
+        if ((application as PlayerApplication).isPlayerInitiatedYet()) {
+            navigateToMainActivity()
             return
         }
-        libraryViewModel.libSetupState.observeNonNull(this, ::navigateToMainActivity)
         // Normally you would log your page views here, but as we want to use this page to select
         // and initiate the NPOTag we can't do that yet...
         setupViews()
@@ -36,23 +35,26 @@ class SelectNPOTagTypeActivity : BaseActivity() {
             tvExplanation.text =
                 getString(
                     R.string.npo_tag_selection_explanation,
-                    (application as? SampleApplication)?.brandId,
+                    (application as? PlayerApplication)?.brandId,
                 )
             btnWithNPOTag.setOnClickListener {
-                libraryViewModel.setupLibrary(withNPOTag = true)
-                NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
+                setupLibrary(true)
             }
             btnWithoutNPOTag.setOnClickListener {
-                libraryViewModel.setupLibrary(withNPOTag = false)
-                NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
+                setupLibrary(false)
             }
         }
     }
 
-    private fun navigateToMainActivity(readyToGo: Boolean) {
-        if (readyToGo) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+    private fun setupLibrary(witNPOTag: Boolean) {
+        libraryViewModel.setupLibrary(withNPOTag = witNPOTag) {
+            NPOCasting.initializeCasting(getString(CastOptionsProvider.getReceiverID()))
+            navigateToMainActivity()
         }
+    }
+
+    private fun navigateToMainActivity() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }

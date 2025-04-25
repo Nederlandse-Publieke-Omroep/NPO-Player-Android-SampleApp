@@ -17,7 +17,7 @@ enum class UserTypePref(
         }
 
     companion object {
-        fun getByKey(key: String): UserTypePref = values().firstOrNull { it.key == key } ?: Start
+        fun getByKey(key: String): UserTypePref? = entries.firstOrNull { it.key == key }
     }
 }
 

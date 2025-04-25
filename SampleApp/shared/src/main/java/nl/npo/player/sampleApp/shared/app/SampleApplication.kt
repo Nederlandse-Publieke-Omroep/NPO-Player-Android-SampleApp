@@ -1,17 +1,15 @@
-package nl.npo.player.sampleApp.presentation
+package nl.npo.player.sampleApp.shared.app
 
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import com.chuckerteam.chucker.api.ChuckerInterceptor
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.library.npotag.model.AnalyticsConfiguration
-import nl.npo.player.sampleApp.BuildConfig
-import nl.npo.player.sampleApp.shared.app.PlayerApplication
+import nl.npo.player.sampleApp.shared.BuildConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.data.extensions.toPlayerEnvironment
 import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
@@ -22,8 +20,7 @@ import nl.npo.tag.sdk.atinternet.ATInternetPlugin
 import nl.npo.tag.sdk.govolteplugin.GovoltePlugin
 import javax.inject.Inject
 
-@HiltAndroidApp
-class SampleApplication :
+open class SampleApplication :
     Application(),
     PlayerApplication {
     override var npoTag: NpoTag? = null
@@ -109,7 +106,8 @@ class SampleApplication :
                     ),
                     ATInternetPlugin(pluginContext),
                 )
-            }.withEnvironment(AnalyticsEnvironmentMapper.map(analyticsEnvironmentProvider.getAnalyticsEnvironment()))
+            }
+            .withEnvironment(AnalyticsEnvironmentMapper.map(analyticsEnvironmentProvider.getAnalyticsEnvironment()))
             .withDebug(analyticsConfiguration.withDebug)
             .build()
 
