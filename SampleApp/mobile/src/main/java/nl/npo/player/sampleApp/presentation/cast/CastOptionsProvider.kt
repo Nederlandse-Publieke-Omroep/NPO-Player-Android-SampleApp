@@ -24,7 +24,7 @@ class CastOptionsProvider : OptionsProvider {
     override fun getAdditionalSessionProviders(p0: Context): MutableList<SessionProvider>? {
         return null
     }
-    
+
     companion object {
         @StringRes
         fun getReceiverID(): Int {

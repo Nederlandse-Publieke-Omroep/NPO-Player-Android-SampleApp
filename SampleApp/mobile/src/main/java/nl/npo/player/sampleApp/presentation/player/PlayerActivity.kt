@@ -146,12 +146,16 @@ class PlayerActivity : BaseActivity() {
             }
         }
 
-    private val castStateListener: CastStateListener = CastStateListener { state ->
-        binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
-    }
+    private val castStateListener: CastStateListener =
+        CastStateListener { state ->
+            binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+        }
 
     private val retryListener: (Double) -> Unit = {
-        playerViewModel.retrieveSource(sourceWrapper.copy(startOffset = it))
+        playerViewModel.retrieveSource(
+            sourceWrapper.copy(startOffset = it),
+            ::handleTokenState,
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -210,8 +214,8 @@ class PlayerActivity : BaseActivity() {
                                 pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
                                     ?: PlayerTagProvider.getPageTracker(
                                         PageConfiguration(
-                                            title ?: ""
-                                        )
+                                            title ?: "",
+                                        ),
                                     ),
                         ).apply {
                             val defaultPipHandler =
@@ -279,7 +283,7 @@ class PlayerActivity : BaseActivity() {
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
 
-            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper)
+            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
             else -> finish()
         }
@@ -424,8 +428,7 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.getAudioQualities()?.size ?: 0) > 0) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? =
-        if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.getVideoQualities()?.size ?: 0) > 0) PlayerSettings.VIDEO_QUALITIES else null
@@ -566,7 +569,6 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun setObservers() {
-        playerViewModel.streamRetrievalState.observeNonNull(this, ::handleTokenState)
         // Initialize the link lists even though we don't do anything with the changes yet.
         linkViewModel.urlLinkList.observeNonNull(this) {}
         linkViewModel.streamLinkList.observeNonNull(this) {}
@@ -578,7 +580,7 @@ class PlayerActivity : BaseActivity() {
 
             is StreamRetrievalState.Error ->
                 handleError(retrievalState.error) {
-                    playerViewModel.retrieveSource(sourceWrapper)
+                    playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 }
 
             StreamRetrievalState.Loading -> {

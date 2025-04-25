@@ -1,10 +1,8 @@
 package nl.npo.player.sampleApp.shared.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOPlayerLibrary
@@ -15,7 +13,6 @@ import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
-import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
@@ -36,15 +33,13 @@ class PlayerViewModel
         private val tokenProvider: TokenProvider,
         private val settingsRepository: SettingsRepository,
     ) : ViewModel() {
-        private val _streamRetrievalState =
-            MutableStateFlow<StreamRetrievalState>(StreamRetrievalState.NotStarted)
-        val streamRetrievalState = _streamRetrievalState.asLiveData()
-
-        fun retrieveSource(item: SourceWrapper) {
+        fun retrieveSource(
+            item: SourceWrapper,
+            callback: (StreamRetrievalState) -> Unit,
+        ) {
             viewModelScope.launch {
-                _streamRetrievalState.emit(StreamRetrievalState.Loading)
-                val mergedSource = fetchAndMergeSource(item) ?: return@launch
-                _streamRetrievalState.emit(StreamRetrievalState.Success(mergedSource, item))
+                callback(StreamRetrievalState.Loading)
+                fetchAndMergeSource(item)?.let(callback)
             }
         }
 
@@ -59,16 +54,18 @@ class PlayerViewModel
                 }
             }
 
-        private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper): NPOSourceConfig? {
-            val isPlusUser = sourceWrapper.overrideIsPlusUser ?: (settingsRepository.userType.first() == UserType.Plus)
+        private suspend fun fetchAndMergeSource(sourceWrapper: SourceWrapper): StreamRetrievalState? {
+            val isPlusUser =
+                sourceWrapper.overrideIsPlusUser
+                    ?: (settingsRepository.userType.first() == UserType.Plus)
             val token = createToken(sourceWrapper.uniqueId, isPlusUser) ?: return null
 
             return try {
                 val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
-                mergeSourceWrapperWithSource(sourceWrapper, source)
+                val mergedSource = mergeSourceWrapperWithSource(sourceWrapper, source)
+                StreamRetrievalState.Success(mergedSource, sourceWrapper)
             } catch (e: NPOPlayerException) {
-                handleError(e.toNPOPlayerError(), sourceWrapper)
-                null
+                StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper)
             }
         }
 
@@ -127,18 +124,6 @@ class PlayerViewModel
                     settingsRepository.shouldShowPlayNext.first(),
                 )
             }
-        }
-
-        private suspend fun handleError(
-            error: NPOPlayerError,
-            sourceWrapper: SourceWrapper,
-        ) {
-            _streamRetrievalState.emit(
-                StreamRetrievalState.Error(
-                    error,
-                    sourceWrapper,
-                ),
-            )
         }
 
         fun getConfiguration(callback: (NPOPlayerConfig, NPOPlayerColors?) -> Unit) {
