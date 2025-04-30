@@ -23,7 +23,7 @@ inputs:
     required: true
   TOKEN_SIGNATURE_PLUS_PROD:
     required: true
-  STORE_FILE_PATH_NAME:
+  STORE_FILE_NAME:
     required: true
   STORE_FILE_PASSWORD:
     required: true
