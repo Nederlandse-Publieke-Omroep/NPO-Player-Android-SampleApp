@@ -1,0 +1,63 @@
+name: setup
+
+inputs:
+  NPOTAG_PACKAGE_CLOUD_KEY:
+    required: true
+  NPO_PLAYER_BITMOVIN_LICENCE_KEY:
+    required: true
+  NPO_PLAYER_BITMOVIN_ANALYTICS_KEY:
+    required: true
+  TOKEN_ISSUER_START:
+    required: true
+  TOKEN_ISSUER_PLUS:
+    required: true
+  TOKEN_SIGNATURE_START_DEV:
+    required: true
+  TOKEN_SIGNATURE_PLUS_DEV:
+    required: true
+  TOKEN_SIGNATURE_START_ACC:
+    required: true
+  TOKEN_SIGNATURE_PLUS_ACC:
+    required: true
+  TOKEN_SIGNATURE_START_PROD:
+    required: true
+  TOKEN_SIGNATURE_PLUS_PROD:
+    required: true
+  STORE_FILE_PATH_NAME:
+    required: true
+  STORE_FILE_PASSWORD:
+    required: true
+  STORE_FILE_ALIAS:
+    required: true
+  STORE_FILE_ALIAS_PASSWORD:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Java
+      uses: actions/setup-java@v4.0.0
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - run: |
+        echo "npotag_package_cloud_key=$(NPOTAG_PACKAGE_CLOUD_KEY)" >> local.properties
+        echo "your_player_license_key_here=$(NPO_PLAYER_BITMOVIN_LICENCE_KEY)" >> local.properties
+        echo "your_analytics_license_key_here=$(NPO_PLAYER_BITMOVIN_ANALYTICS_KEY)" >> local.properties
+        echo "token_issuer_start=$(TOKEN_ISSUER_START)" >> local.properties
+        echo "token_issuer_plus=$(TOKEN_ISSUER_PLUS)" >> local.properties
+        echo "token_signature_start_dev=$(TOKEN_SIGNATURE_START_DEV)" >> local.properties
+        echo "token_signature_plus_dev=$(TOKEN_SIGNATURE_PLUS_DEV)" >> local.properties
+        echo "token_signature_start_acc=$(TOKEN_SIGNATURE_START_ACC)" >> local.properties
+        echo "token_signature_plus_acc=$(TOKEN_SIGNATURE_PLUS_ACC)" >> local.properties
+        echo "token_signature_start_prod=$(TOKEN_SIGNATURE_START_PROD)" >> local.properties
+        echo "token_signature_plus_prod=$(TOKEN_SIGNATURE_PLUS_PROD)" >> local.properties
+        echo "storeFile=$(STORE_FILE_PATH_NAME)" >> local.properties
+        echo "storePassword=$(STORE_FILE_PASSWORD)" >> local.properties
+        echo "keyAlias=$(STORE_FILE_ALIAS)" >> local.properties
+        echo "keyPassword=$(STORE_FILE_ALIAS_PASSWORD)" >> local.properties
+      shell: bash

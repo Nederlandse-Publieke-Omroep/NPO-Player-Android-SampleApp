@@ -1,0 +1,22 @@
+name: Publish packages to GitHub Packages when release is created
+on:
+  release:
+    types: [ created ]
+jobs:
+  publish:
+    name: Publish to Github Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+        with:
+          npotag_package_cloud_key: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
+          npo_player_web_ui_base_url: ${{ vars.NPO_PLAYER_WEB_UI_BASE_URL }}
+      - run: ./gradlew publishToGithub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
