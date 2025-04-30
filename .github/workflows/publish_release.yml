@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ env.main_project_module }}/build/outputs/apk/PROD/debug/
+          asset_path: ${{ env.main_project_module }}/build/outputs/apk/PROD/debug/SampleApp-PROD-debug.apk
           asset_name: SampleApp-PROD-debug.apk
           asset_content_type: application/zip
 #      - name: Upload APK Debug - ${{ env.repository_name }}
