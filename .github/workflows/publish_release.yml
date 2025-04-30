@@ -42,7 +42,7 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ${{ env.main_project_module }}/build/outputs/apk/PROD/debug/
           asset_name: SampleApp-PROD-debug.apk
-#          asset_content_type: application/zip
+          asset_content_type: application/zip
 #      - name: Upload APK Debug - ${{ env.repository_name }}
 #        uses: actions/upload-artifact@v4
 #        with:
