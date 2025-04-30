@@ -45,19 +45,19 @@ runs:
       uses: gradle/actions/setup-gradle@v4
 
     - run: |
-        echo "npotag_package_cloud_key=${{ NPOTAG_PACKAGE_CLOUD_KEY }}" >> local.properties
-        echo "your_player_license_key_here=${{ NPO_PLAYER_BITMOVIN_LICENCE_KEY }}" >> local.properties
-        echo "your_analytics_license_key_here=${{ NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}" >> local.properties
-        echo "token_issuer_start=${{ TOKEN_ISSUER_START }}" >> local.properties
-        echo "token_issuer_plus=${{ TOKEN_ISSUER_PLUS }}" >> local.properties
-        echo "token_signature_start_dev=${{ TOKEN_SIGNATURE_START_DEV }}" >> local.properties
-        echo "token_signature_plus_dev=${{ TOKEN_SIGNATURE_PLUS_DEV }}" >> local.properties
-        echo "token_signature_start_acc=${{ TOKEN_SIGNATURE_START_ACC }}" >> local.properties
-        echo "token_signature_plus_acc=${{ TOKEN_SIGNATURE_PLUS_ACC }}" >> local.properties
-        echo "token_signature_start_prod=${{ TOKEN_SIGNATURE_START_PROD }}" >> local.properties
-        echo "token_signature_plus_prod=${{ TOKEN_SIGNATURE_PLUS_PROD }}" >> local.properties
-        echo "storeFile=${{ STORE_FILE_PATH_NAME }}" >> local.properties
-        echo "storePassword=${{ STORE_FILE_PASSWORD }}" >> local.properties
-        echo "keyAlias=${{ STORE_FILE_ALIAS }}" >> local.properties
-        echo "keyPassword=${{ STORE_FILE_ALIAS_PASSWORD }}" >> local.properties
+        echo "npotag_package_cloud_key=${{ inputs.NPOTAG_PACKAGE_CLOUD_KEY }}" >> local.properties
+        echo "your_player_license_key_here=${{ inputs.NPO_PLAYER_BITMOVIN_LICENCE_KEY }}" >> local.properties
+        echo "your_analytics_license_key_here=${{ inputs.NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}" >> local.properties
+        echo "token_issuer_start=${{ inputs.TOKEN_ISSUER_START }}" >> local.properties
+        echo "token_issuer_plus=${{ inputs.TOKEN_ISSUER_PLUS }}" >> local.properties
+        echo "token_signature_start_dev=${{ inputs.TOKEN_SIGNATURE_START_DEV }}" >> local.properties
+        echo "token_signature_plus_dev=${{ inputs.TOKEN_SIGNATURE_PLUS_DEV }}" >> local.properties
+        echo "token_signature_start_acc=${{ inputs.TOKEN_SIGNATURE_START_ACC }}" >> local.properties
+        echo "token_signature_plus_acc=${{ inputs.TOKEN_SIGNATURE_PLUS_ACC }}" >> local.properties
+        echo "token_signature_start_prod=${{ inputs.TOKEN_SIGNATURE_START_PROD }}" >> local.properties
+        echo "token_signature_plus_prod=${{ inputs.TOKEN_SIGNATURE_PLUS_PROD }}" >> local.properties
+        echo "storeFile=${{ inputs.STORE_FILE_PATH_NAME }}" >> local.properties
+        echo "storePassword=${{ inputs.STORE_FILE_PASSWORD }}" >> local.properties
+        echo "keyAlias=${{ inputs.STORE_FILE_ALIAS }}" >> local.properties
+        echo "keyPassword=${{ inputs.STORE_FILE_ALIAS_PASSWORD }}" >> local.properties
       shell: bash
