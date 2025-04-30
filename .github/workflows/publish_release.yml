@@ -1,4 +1,9 @@
 name: Publish packages to GitHub Packages when release is created
+
+env:
+  # The name of the main module repository
+  main_project_module: SampleApp
+
 on:
   release:
     types: [ created ]
@@ -6,17 +11,31 @@ jobs:
   publish:
     name: Publish to Github Packages
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
       - uses: ./.github/actions/setup
         with:
-          npotag_package_cloud_key: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
-          npo_player_web_ui_base_url: ${{ vars.NPO_PLAYER_WEB_UI_BASE_URL }}
-      - run: ./gradlew publishToGithub
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
+          NPO_PLAYER_BITMOVIN_ANALYTICS_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}
+          NPO_PLAYER_BITMOVIN_LICENCE_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_LICENCE_KEY }}
+          NPOTAG_PACKAGE_CLOUD_KEY: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
+          STORE_FILE_ALIAS: ${{ vars.STORE_FILE_ALIAS }}
+          STORE_FILE_ALIAS_PASSWORD: ${{ secrets.STORE_FILE_ALIAS_PASSWORD }}
+          STORE_FILE_NAME: ${{ vars.STORE_FILE_NAME }}
+          STORE_FILE_PASSWORD: ${{ secrets.STORE_FILE_PASSWORD }}
+          TOKEN_ISSUER_PLUS: ${{ vars.TOKEN_ISSUER_PLUS }}
+          TOKEN_ISSUER_START: ${{ vars.TOKEN_ISSUER_START }}
+          TOKEN_SIGNATURE_PLUS_ACC: ${{ secrets.TOKEN_SIGNATURE_PLUS_ACC }}
+          TOKEN_SIGNATURE_PLUS_DEV: ${{ secrets.TOKEN_SIGNATURE_PLUS_DEV }}
+          TOKEN_SIGNATURE_PLUS_PROD: ${{ secrets.TOKEN_SIGNATURE_PLUS_PROD }}
+          TOKEN_SIGNATURE_START_ACC: ${{ secrets.TOKEN_SIGNATURE_START_ACC }}
+          TOKEN_SIGNATURE_START_DEV: ${{ secrets.TOKEN_SIGNATURE_START_DEV }}
+          TOKEN_SIGNATURE_START_PROD: ${{ secrets.TOKEN_SIGNATURE_START_PROD }}
+      - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
+        run: ./gradlew assembleDebug
+      - name: Upload APK Debug - ${{ env.repository_name }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.date_today }} - ${{ env.repository_name }} - APK(s) debug generated
+          path: ${{ env.main_project_module }}/build/outputs/apk/debug/
+
