@@ -64,6 +64,7 @@ runs:
         echo "keyPassword=${{ inputs.STORE_FILE_ALIAS_PASSWORD }}" >> local.properties
       shell: bash
     - run: |
-        echo ${{ inputs.STORE_FILE_BASE64 }} >> signing/sample_app_keystore.txt
+        mkdir signing
+        echo "${{ inputs.STORE_FILE_BASE64 }}" >> signing/sample_app_keystore.txt
         base64 --decode signing/sample_app_keystore.txt > signing/sample_app_keystore.jks
       shell: bash
