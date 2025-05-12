@@ -23,13 +23,15 @@ inputs:
     required: true
   TOKEN_SIGNATURE_PLUS_PROD:
     required: true
-  STORE_FILE_NAME:
+  STORE_FILE_PATH:
     required: true
   STORE_FILE_PASSWORD:
     required: true
   STORE_FILE_ALIAS:
     required: true
   STORE_FILE_ALIAS_PASSWORD:
+    required: true
+  STORE_FILE_BASE64:
     required: true
 
 runs:
@@ -56,8 +58,12 @@ runs:
         echo "token_signature_plus_acc=${{ inputs.TOKEN_SIGNATURE_PLUS_ACC }}" >> local.properties
         echo "token_signature_start_prod=${{ inputs.TOKEN_SIGNATURE_START_PROD }}" >> local.properties
         echo "token_signature_plus_prod=${{ inputs.TOKEN_SIGNATURE_PLUS_PROD }}" >> local.properties
-        echo "storeFile=${{ inputs.STORE_FILE_PATH_NAME }}" >> local.properties
+        echo "storeFile=${{ inputs.STORE_FILE_PATH }}" >> local.properties
         echo "storePassword=${{ inputs.STORE_FILE_PASSWORD }}" >> local.properties
         echo "keyAlias=${{ inputs.STORE_FILE_ALIAS }}" >> local.properties
         echo "keyPassword=${{ inputs.STORE_FILE_ALIAS_PASSWORD }}" >> local.properties
+      shell: bash
+    - run: |
+        echo ${{ inputs.STORE_FILE_BASE64 }} > signing/sample_app_keystore.txt
+        base64 --decode signing/sample_app_keystore.txt > signing/sample_app_keystore.jks
       shell: bash
