@@ -1,4 +1,4 @@
-name: Publish packages to GitHub Packages when release is created
+name: Build APKs and add to release
 
 env:
   # The name of the main module repository
@@ -8,8 +8,8 @@ on:
   release:
     types: [ created ]
 jobs:
-  publish:
-    name: Add APK to release
+  build:
+    name: Add APKs to release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
           TOKEN_SIGNATURE_START_ACC: ${{ secrets.TOKEN_SIGNATURE_START_ACC }}
           TOKEN_SIGNATURE_START_DEV: ${{ secrets.TOKEN_SIGNATURE_START_DEV }}
           TOKEN_SIGNATURE_START_PROD: ${{ secrets.TOKEN_SIGNATURE_START_PROD }}
-      - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
+      - name: Build APKs - ${{ env.main_project_module }} module
         run: ./gradlew assemblePRODDebug assemblePRODRelease
       - name: Upload Debug APK
         uses: actions/upload-release-asset@v1
