@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -23,11 +25,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.tv.material3.Icon
@@ -44,11 +48,11 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.PlaybackState
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.compose.NativeSubtitleView
-import nl.npo.player.library.presentation.compose.PlayerSurface
-import nl.npo.player.library.presentation.compose.theme.Dimens
+import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
+import nl.npo.player.library.presentation.tv.compose.view.NPOVideoPlayerView
+import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -100,33 +104,26 @@ class NativePlaybackVideoFragment : Fragment() {
         }
 
         MaterialTheme {
-            Box(Modifier.fillMaxSize()) {
-                PlayerSurface(
-                    player = player,
-                    canShowAds = true,
-                    modifier = Modifier.align(Alignment.Center),
+            val isPreview = LocalInspectionMode.current
+            Box(modifier = Modifier.fillMaxSize()) {
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black),
+                    factory = { context ->
+                        NPOVideoPlayerView(
+                            context = context,
+                        ).apply {
+                            if (!isPreview) {
+                                attachPlayer(
+                                    player, npoPlayerColors = PlayerColors(),
+                                    adsOverlay = TvSterOverlayRenderer(
+                                        toolbar = {}
+                                    ))
+                            }
+                        }
+                    },
                 )
-
-                NativeSubtitleView(
-                    subtitleCues = subtitleCues,
-                    modifier = Modifier.padding(bottom = Dimens.PaddingMedium),
-                    visible = true,
-                    textDefaultColor = playerColors.toPlayerColors().textColor,
-                )
-
-                (playbackState as? PlaybackState.Error)?.let { playbackStateError ->
-                    Text(
-                        text = playbackStateError.error.getMessage(LocalContext.current),
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier =
-                            Modifier
-                                .align(
-                                    Alignment.Center,
-                                ).padding(60.dp),
-                    )
-                }
-
                 IconButton(
                     onClick = {
                         if (isPlaying) {
@@ -137,6 +134,13 @@ class NativePlaybackVideoFragment : Fragment() {
                     },
                     modifier =
                         Modifier
+                            .clickable {
+                                if (isPlaying) {
+                                    player.pause()
+                                } else {
+                                    player.play()
+                                }
+                            }
                             .align(Alignment.BottomStart)
                             .padding(24.dp)
                             .focusRequester(focusRequester),
@@ -158,6 +162,19 @@ class NativePlaybackVideoFragment : Fragment() {
                                     R.string.content_description_tv_pause
                                 },
                             ),
+                    )
+                }
+                (playbackState as? PlaybackState.Error)?.let { playbackStateError ->
+                    Text(
+                        text = playbackStateError.error.getMessage(LocalContext.current),
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        modifier =
+                            Modifier
+                                .align(
+                                    Alignment.Center,
+                                )
+                                .padding(60.dp),
                     )
                 }
             }
@@ -187,7 +204,7 @@ class NativePlaybackVideoFragment : Fragment() {
                         attachToLifecycle(lifecycle)
                         playbackViewModel.setPlayer(this)
                         if (npoPlayerColors != null) {
-                            playbackViewModel.setPlayerColors(npoPlayerColors)
+                            playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
                         eventEmitter.addListener(
                             object : PlayerListener {
@@ -214,7 +231,11 @@ class NativePlaybackVideoFragment : Fragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
+                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(
+                    sourceWrapper,
+                    ::handleTokenState
+                )
+
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
                     /** NO-OP **/

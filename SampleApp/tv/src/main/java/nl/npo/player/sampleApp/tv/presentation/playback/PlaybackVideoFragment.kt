@@ -16,7 +16,7 @@ import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentationtv.adapter.NPOLeanbackPlayerAdapter
+import nl.npo.player.library.presentation.tv.adapter.NPOLeanbackPlayerAdapter
 import nl.npo.player.library.setAdViewGroup
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState

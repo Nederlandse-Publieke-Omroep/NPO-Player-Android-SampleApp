@@ -4,7 +4,10 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.extensions.copy
@@ -34,6 +37,13 @@ class PlayerViewModel
         private val tokenProvider: TokenProvider,
         private val settingsRepository: SettingsRepository,
     ) : ViewModel() {
+        val isSterUIEnabled: StateFlow<Boolean> =
+            settingsRepository.sterUiEnabled.stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly,
+                initialValue = false,
+            )
+
         fun retrieveSource(
             item: SourceWrapper,
             callback: (StreamRetrievalState) -> Unit,
@@ -141,7 +151,7 @@ class PlayerViewModel
                         NativePlayerColors(
                             textColor = "#FFFF0000".toColorInt(),
                             onOverlay = "#FF00FF00".toColorInt(),
-                            primary = "#FF00FF00".toColorInt()
+                            primary = "#FF00FF00".toColorInt(),
                         )
                     } else {
                         null

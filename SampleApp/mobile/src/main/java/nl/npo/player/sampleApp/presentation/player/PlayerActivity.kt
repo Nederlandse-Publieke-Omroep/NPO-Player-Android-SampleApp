@@ -237,10 +237,19 @@ class PlayerActivity : BaseActivity() {
 
                             val player = this
                             binding.npoVideoPlayerNative.apply {
+                                val adOverlay =
+                                    if (playerViewModel.isSterUIEnabled.value) {
+                                        player.adManager.supplyDefaultAdsOverlayViewClass()
+                                    } else {
+                                        null
+                                    }
+
                                 attachPlayer(
                                     npoPlayer = player,
                                     npoPlayerColors = npoPlayerColors ?: NativePlayerColors(),
+                                    adsOverlayClazz = adOverlay,
                                 )
+
                                 setFullScreenHandler(fullScreenHandler)
                                 enablePictureInPictureSupport(defaultPipHandler)
 
@@ -276,7 +285,12 @@ class PlayerActivity : BaseActivity() {
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
 
-            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
+            sourceWrapper.getStreamLink ->
+                playerViewModel.retrieveSource(
+                    sourceWrapper,
+                    ::handleTokenState,
+                )
+
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
             else -> finish()
         }
