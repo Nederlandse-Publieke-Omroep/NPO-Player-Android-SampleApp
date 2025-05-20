@@ -18,7 +18,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -33,12 +32,11 @@ import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
-import nl.npo.player.library.presentation.mobile.model.PlayNextListenerResult
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
@@ -148,7 +146,7 @@ class PlayerActivity : BaseActivity() {
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
-            binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+            binding.mediaRouteButton.isVisible = true
         }
 
     private val retryListener: (Double) -> Unit = {
@@ -198,7 +196,7 @@ class PlayerActivity : BaseActivity() {
     private fun loadSource(
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
-        npoPlayerColors: NPOPlayerColors?,
+        npoPlayerColors: NativePlayerColors?,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
@@ -241,14 +239,9 @@ class PlayerActivity : BaseActivity() {
                             binding.npoVideoPlayerNative.apply {
                                 attachPlayer(
                                     npoPlayer = player,
-                                    npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
+                                    npoPlayerColors = npoPlayerColors ?: NativePlayerColors(),
                                 )
                                 setFullScreenHandler(fullScreenHandler)
-                                setPlayNextListener { action ->
-                                    when (action) {
-                                        is PlayNextListenerResult.Triggered -> playRandom()
-                                    }
-                                }
                                 enablePictureInPictureSupport(defaultPipHandler)
 
                                 playerViewModel.hasCustomSettings {
@@ -306,8 +299,7 @@ class PlayerActivity : BaseActivity() {
         } else {
             backstackLost = true
             val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-            binding.mediaRouteButton.isVisible =
-                castContext.castState != CastState.NO_DEVICES_AVAILABLE
+            binding.mediaRouteButton.isVisible = true
         }
     }
 
@@ -367,7 +359,7 @@ class PlayerActivity : BaseActivity() {
 
         val castContext = CastContext.getSharedInstance(this@PlayerActivity)
         castContext.addCastStateListener(castStateListener)
-        mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
+        mediaRouteButton.isVisible = true
         CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
     }
 

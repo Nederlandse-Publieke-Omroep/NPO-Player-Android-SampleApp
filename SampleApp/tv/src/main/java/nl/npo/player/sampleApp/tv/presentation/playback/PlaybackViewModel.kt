@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.ui.model.Cue
-import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
+import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,7 +18,7 @@ class PlaybackViewModel
         private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
 
-        private val _playerColors = MutableStateFlow(NPOPlayerColors())
+        private val _playerColors = MutableStateFlow(PlayerColors())
         val playerColors = _playerColors.asStateFlow()
         private val _subtitles = MutableStateFlow<List<Cue>>(emptyList())
         val subtitles = _subtitles.asStateFlow()
@@ -27,7 +27,7 @@ class PlaybackViewModel
             _player.value = player.also(::collectPlayerStates)
         }
 
-        fun setPlayerColors(colors: NPOPlayerColors) {
+        fun setPlayerColors(colors: PlayerColors) {
             _playerColors.value = colors
         }
 
