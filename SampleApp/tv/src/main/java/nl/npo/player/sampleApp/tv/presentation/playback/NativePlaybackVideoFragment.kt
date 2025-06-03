@@ -6,38 +6,29 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Text
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.attachToLifecycle
@@ -47,17 +38,24 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.PlaybackState
+import nl.npo.player.library.domain.state.ProgressState
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.components.PlayerButton
+import nl.npo.player.library.presentation.compose.components.PlayerText
 import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
-import nl.npo.player.library.presentation.extension.getMessage
+import nl.npo.player.library.presentation.model.ControlsVisibilityState
+import nl.npo.player.library.presentation.model.NPOPlayerUIAction
+import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
+import nl.npo.player.library.presentation.tv.compose.scenes.v2.TvPlayerComponents
+import nl.npo.player.library.presentation.tv.compose.scenes.v2.TvSceneOverlays
+import nl.npo.player.library.presentation.tv.compose.shareable.NPOPlayerUIState
 import nl.npo.player.library.presentation.tv.compose.view.NPOVideoPlayerView
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
-import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
 
 /** Handles video playback with media controls. */
@@ -98,85 +96,39 @@ class NativePlaybackVideoFragment : Fragment() {
 
         val playbackState by remember { derivedStateOf { playerState.playbackState } }
         val isPlaying by remember(playbackState) { mutableStateOf(playbackState is PlaybackState.Playing) }
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(isPlaying) {
-            focusRequester.requestFocus()
-        }
 
         MaterialTheme {
             val isPreview = LocalInspectionMode.current
             Box(modifier = Modifier.fillMaxSize()) {
                 AndroidView(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black),
                     factory = { context ->
                         NPOVideoPlayerView(
                             context = context,
                         ).apply {
                             if (!isPreview) {
                                 attachPlayer(
-                                    player, npoPlayerColors = PlayerColors(),
-                                    adsOverlay = TvSterOverlayRenderer(
-                                        toolbar = {}
-                                    ))
+                                    npoPlayer = player,
+                                    npoPlayerColors = PlayerColors(),
+                                    sceneOverlays =
+                                        TvSceneOverlays(
+                                            adsOverlayRenderer =
+                                                TvSterOverlayRenderer(
+                                                    toolbar = {},
+                                                ),
+                                        ),
+                                    components =
+                                        CustomPlayerComponents(
+                                            onBackPressed = { activity?.onBackPressed() },
+                                        ),
+                                )
                             }
                         }
                     },
                 )
-                IconButton(
-                    onClick = {
-                        if (isPlaying) {
-                            player.pause()
-                        } else {
-                            player.play()
-                        }
-                    },
-                    modifier =
-                        Modifier
-                            .clickable {
-                                if (isPlaying) {
-                                    player.pause()
-                                } else {
-                                    player.play()
-                                }
-                            }
-                            .align(Alignment.BottomStart)
-                            .padding(24.dp)
-                            .focusRequester(focusRequester),
-                ) {
-                    Icon(
-                        painter =
-                            painterResource(
-                                if (isPlaying) {
-                                    nl.npo.player.library.presentation.R.drawable.npo_player_ic_pause
-                                } else {
-                                    nl.npo.player.library.presentation.R.drawable.npo_player_ic_play
-                                },
-                            ),
-                        contentDescription =
-                            stringResource(
-                                if (isPlaying) {
-                                    R.string.content_description_tv_play
-                                } else {
-                                    R.string.content_description_tv_pause
-                                },
-                            ),
-                    )
-                }
-                (playbackState as? PlaybackState.Error)?.let { playbackStateError ->
-                    Text(
-                        text = playbackStateError.error.getMessage(LocalContext.current),
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier =
-                            Modifier
-                                .align(
-                                    Alignment.Center,
-                                )
-                                .padding(60.dp),
-                    )
-                }
             }
         }
     }
@@ -231,10 +183,11 @@ class NativePlaybackVideoFragment : Fragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(
-                    sourceWrapper,
-                    ::handleTokenState
-                )
+                sourceWrapper.getStreamLink ->
+                    playerViewModel.retrieveSource(
+                        sourceWrapper,
+                        ::handleTokenState,
+                    )
 
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
@@ -266,5 +219,48 @@ class NativePlaybackVideoFragment : Fragment() {
 
     companion object {
         private const val TAG = "NativePlaybackVideoFragment"
+    }
+}
+
+class CustomPlayerComponents(
+    val onBackPressed: () -> Unit,
+) : TvPlayerComponents() {
+    @Composable
+    override fun BelowPlayerContainer(
+        modifier: Modifier,
+        controlsVisibility: ControlsVisibilityState,
+    ) {
+        val height by animateDpAsState(if (controlsVisibility.visible) 200.dp else 0.dp)
+        Box(
+            modifier
+                .height(height)
+                .padding(16.dp)
+                .background(Color.Gray, RoundedCornerShape(32.dp)),
+        ) {
+        }
+    }
+
+    @Composable
+    override fun TopControlsBar(
+        modifier: Modifier,
+        controlsVisibility: ControlsVisibilityState,
+        uiState: NPOPlayerUIState,
+        progress: () -> ProgressState,
+        onPlayerAction: (NPOPlayerUIAction) -> Unit,
+    ) {
+        TvPlayerTopBar(
+            modifier = Modifier,
+            title = uiState.title,
+            description = uiState.description,
+            backButton = {
+                PlayerButton(
+                    onClick = {
+                        onBackPressed()
+                    },
+                ) {
+                    PlayerText("Sluiten")
+                }
+            },
+        )
     }
 }
