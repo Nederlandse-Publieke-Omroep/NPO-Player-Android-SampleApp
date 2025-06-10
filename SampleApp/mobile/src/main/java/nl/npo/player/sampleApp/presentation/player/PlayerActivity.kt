@@ -34,11 +34,11 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
+import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.extension.getMessage
-import nl.npo.player.library.presentation.mobile.model.PlayNextListenerResult
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
@@ -236,6 +236,11 @@ class PlayerActivity : BaseActivity() {
                                 )
                             attachToLifecycle(lifecycle)
                             setTokenRefreshCallback(retryListener)
+                            playNextListener = { action ->
+                                when (action) {
+                                    is PlayNextListenerResult.Triggered -> playRandom()
+                                }
+                            }
 
                             val player = this
                             binding.npoVideoPlayerNative.apply {
@@ -244,11 +249,6 @@ class PlayerActivity : BaseActivity() {
                                     npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
                                 )
                                 setFullScreenHandler(fullScreenHandler)
-                                setPlayNextListener { action ->
-                                    when (action) {
-                                        is PlayNextListenerResult.Triggered -> playRandom()
-                                    }
-                                }
                                 enablePictureInPictureSupport(defaultPipHandler)
 
                                 playerViewModel.hasCustomSettings {
@@ -283,7 +283,12 @@ class PlayerActivity : BaseActivity() {
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
 
-            sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
+            sourceWrapper.getStreamLink ->
+                playerViewModel.retrieveSource(
+                    sourceWrapper,
+                    ::handleTokenState,
+                )
+
             sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
             else -> finish()
         }
