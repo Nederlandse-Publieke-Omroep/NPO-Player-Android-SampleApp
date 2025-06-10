@@ -141,6 +141,8 @@ class PlayerViewModel
                             textColor = 0xFFFF0000,
                             iconColor = 0xFF00FF00,
                             primaryColor = 0xFF00FF00,
+                            settingsTextColor = 0xFFFFEB3B,
+                            settingsSurfaceColor = 0xFF770099,
                         )
                     } else {
                         null

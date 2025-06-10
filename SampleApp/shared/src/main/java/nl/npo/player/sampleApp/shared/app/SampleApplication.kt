@@ -50,6 +50,7 @@ open class SampleApplication :
                     ) {
                         this.environment = environment
                         this.enableCasting = enableCasting
+                        debugLogging = true
                         addInterceptors(list)
                     }
                 }
@@ -70,6 +71,7 @@ open class SampleApplication :
             ) {
                 this.environment = environment
                 this.enableCasting = enableCasting
+                debugLogging = true
                 addInterceptors(list)
             }
         }
