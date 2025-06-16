@@ -1,0 +1,23 @@
+name: Execute quality checks when commit is pushed
+on:
+  push:
+    tags-ignore:
+      - '**'
+    branches:
+      - 'feature/*'
+      - 'develop'
+      - 'main'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality_gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+        with:
+          npotag_package_cloud_key: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
+          npo_player_web_ui_base_url: ${{ secrets.NPO_PLAYER_WEB_UI_BASE_URL }}
+      - uses: ./.github/actions/run_tests
