@@ -1,0 +1,17 @@
+name: run_tests
+runs:
+  using: composite
+  steps:
+    - name: Spotless
+      run: "./gradlew clean spotlessCheck"
+      shell: bash
+    - name: Gradle Unit Tests
+      run: "./gradlew test"
+      shell: bash
+    - name: Archive results
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: Test reports
+        path: |
+          */build/reports/tests/testDebug/
