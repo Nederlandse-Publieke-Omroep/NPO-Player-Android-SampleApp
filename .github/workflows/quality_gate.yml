@@ -17,7 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
       - uses: ./.github/actions/setup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          npotag_package_cloud_key: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
-          npo_player_web_ui_base_url: ${{ secrets.NPO_PLAYER_WEB_UI_BASE_URL }}
+          NPO_PLAYER_BITMOVIN_ANALYTICS_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}
+          NPO_PLAYER_BITMOVIN_LICENCE_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_LICENCE_KEY }}
+          NPOTAG_PACKAGE_CLOUD_KEY: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
+          STORE_FILE_ALIAS: ${{ vars.STORE_FILE_ALIAS }}
+          STORE_FILE_ALIAS_PASSWORD: ${{ secrets.STORE_FILE_ALIAS_PASSWORD }}
+          STORE_FILE_PATH: ${{ vars.STORE_FILE_PATH }}
+          STORE_FILE_PASSWORD: ${{ secrets.STORE_FILE_PASSWORD }}
+          STORE_FILE_BASE64: ${{ secrets.STORE_FILE_BASE64 }}
+          TOKEN_ISSUER_PLUS: ${{ vars.TOKEN_ISSUER_PLUS }}
+          TOKEN_ISSUER_START: ${{ vars.TOKEN_ISSUER_START }}
+          TOKEN_SIGNATURE_PLUS_ACC: ${{ secrets.TOKEN_SIGNATURE_PLUS_ACC }}
+          TOKEN_SIGNATURE_PLUS_DEV: ${{ secrets.TOKEN_SIGNATURE_PLUS_DEV }}
+          TOKEN_SIGNATURE_PLUS_PROD: ${{ secrets.TOKEN_SIGNATURE_PLUS_PROD }}
+          TOKEN_SIGNATURE_START_ACC: ${{ secrets.TOKEN_SIGNATURE_START_ACC }}
+          TOKEN_SIGNATURE_START_DEV: ${{ secrets.TOKEN_SIGNATURE_START_DEV }}
+          TOKEN_SIGNATURE_START_PROD: ${{ secrets.TOKEN_SIGNATURE_START_PROD }}
       - uses: ./.github/actions/run_tests
