@@ -66,8 +66,8 @@ android {
 
 dependencies {
 
-    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
-    implementation "nl.npo.player.library:sterAds:$libVersionName"
+    implementation "nl.npo.player.library:npo-player-android:$libVersionName"
+    implementation "nl.npo.player.library:ster-ads:$libVersionName"
     implementation "nl.npo.player.library:presentation:$libVersionName"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"

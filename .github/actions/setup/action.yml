@@ -33,6 +33,10 @@ inputs:
     required: true
   STORE_FILE_BASE64:
     required: true
+  PACKAGES_USER:
+    required: true
+  PACKAGES_TOKEN:
+    required: true
 
 runs:
   using: composite
@@ -41,7 +45,7 @@ runs:
       uses: actions/setup-java@v4.0.0
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
@@ -62,6 +66,8 @@ runs:
         echo "storePassword=${{ inputs.STORE_FILE_PASSWORD }}" >> local.properties
         echo "keyAlias=${{ inputs.STORE_FILE_ALIAS }}" >> local.properties
         echo "keyPassword=${{ inputs.STORE_FILE_ALIAS_PASSWORD }}" >> local.properties
+        echo "github_packages_user=${{ inputs.PACKAGES_USER }}" >> local.properties
+        echo "github_packages_token=${{ inputs.PACKAGES_TOKEN }}" >> local.properties
       shell: bash
     - run: |
         mkdir signing
