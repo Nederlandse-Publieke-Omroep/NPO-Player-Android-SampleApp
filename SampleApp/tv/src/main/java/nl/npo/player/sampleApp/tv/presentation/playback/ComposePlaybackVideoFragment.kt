@@ -6,24 +6,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,11 +26,15 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.components.PlayerButton
+import nl.npo.player.library.presentation.compose.components.PlayerText
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
+import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.compose.shareable.experimental.NoFullScreenHandler
 import nl.npo.player.library.presentation.tv.compose.shareable.experimental.PlayerUI
 import nl.npo.player.library.presentation.tv.compose.shareable.experimental.TVSceneRenderer
+import nl.npo.player.library.presentation.tv.compose.shareable.experimental.collectStreamInfoAsState
 import nl.npo.player.library.presentation.tv.compose.shareable.experimental.rememberNPOPlayerUIState
 import nl.npo.player.library.presentation.tv.compose.theme.tv
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
@@ -67,33 +62,62 @@ class ComposePlaybackVideoFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = ComposeView(requireContext()).apply {
-        // Dispose of the Composition when the view's LifecycleOwner is destroyed
-        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        setContent {
-            ContentRoot(playbackViewModel)
+    ): View =
+        ComposeView(requireContext()).apply {
+            // Dispose of the Composition when the view's LifecycleOwner is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                ContentRoot(playbackViewModel)
+            }
         }
-    }
 
     @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
-        val playerState = rememberNPOPlayerUIState(player, NoFullScreenHandler)
+        val playerState =
+            rememberNPOPlayerUIState(player, NoFullScreenHandler).also {
+//            it.actions.nextEpisodeAction = {
+//                Toast.makeText(requireContext(), "Go to next episode", Toast.LENGTH_SHORT).show()
+//            }
+            }
 
         Row {
-            Box(modifier = Modifier
-                .weight(1f)) {
+            val topbarInfo by playerState.collectStreamInfoAsState()
+            Box(
+                modifier =
+                    Modifier
+                        .weight(1f),
+            ) {
                 PlayerUI.Surface(modifier = Modifier, playerState)
                 PlayerUI.Overlay(
                     modifier = Modifier,
                     state = playerState,
-                    sceneOverlays = TVSceneRenderer(
-                        adsOverlayRenderer = TvSterOverlayRenderer(
-                            toolbar = {},
+                    components =
+                        CustomPlayerComponents(
+                            { activity?.onBackPressed() },
                         ),
-                    ),
-                    typography = PlayerTypography.tv()
+                    sceneOverlays =
+                        TVSceneRenderer(
+                            adsOverlayRenderer =
+                                TvSterOverlayRenderer(
+                                    toolbar = {
+                                        TvPlayerTopBar(
+                                            modifier = Modifier,
+                                            title = topbarInfo.title,
+                                            description = topbarInfo.description,
+                                            backButton = {
+                                                PlayerButton(
+                                                    onClick = { activity?.onBackPressed() },
+                                                ) {
+                                                    PlayerText("Sluiten")
+                                                }
+                                            },
+                                        )
+                                    },
+                                ),
+                        ),
+                    typography = PlayerTypography.tv(),
                 )
             }
         }

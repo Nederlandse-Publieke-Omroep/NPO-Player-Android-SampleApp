@@ -23,7 +23,7 @@ class PlaybackActivity : BaseActivity() {
             .beginTransaction()
             .replace(
                 android.R.id.content,
-                if (showNativeUI) NativePlaybackVideoFragment() else PlaybackVideoFragment(),
+                if (showNativeUI) ComposePlaybackVideoFragment() else PlaybackVideoFragment(),
             ).commit()
     }
 

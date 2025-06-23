@@ -92,6 +92,7 @@ class NativePlaybackVideoFragment : Fragment() {
 
         MaterialTheme {
             val isPreview = LocalInspectionMode.current
+            var view: NPOVideoPlayerView? = null
             Box(modifier = Modifier.fillMaxSize()) {
                 AndroidView(
                     modifier =
@@ -106,17 +107,20 @@ class NativePlaybackVideoFragment : Fragment() {
                                 attachPlayer(
                                     npoPlayer = player,
                                     npoPlayerColors = PlayerColors(),
-                                    sceneOverlays = TVSceneRenderer(
-                                        adsOverlayRenderer = TvSterOverlayRenderer(
-                                            toolbar = {},
+                                    sceneOverlays =
+                                        TVSceneRenderer(
+                                            adsOverlayRenderer =
+                                                TvSterOverlayRenderer(
+                                                    toolbar = {},
+                                                ),
                                         ),
-                                    ),
-                                    components = CustomPlayerComponents(
-                                        onBackPressed = { activity?.onBackPressed() },
-                                    ),
+                                    components =
+                                        CustomPlayerComponents(
+                                            onBackPressed = { activity?.onBackPressed() },
+                                        ),
                                 )
                             }
-                        }
+                        }.also { view = it }
                     },
                 )
             }
@@ -218,9 +222,9 @@ class CustomPlayerComponents(
     @Composable
     override fun TopControlsBar(
         modifier: Modifier,
-        npoPlayerUIState: NPOPlayerUIState
+        playerState: NPOPlayerUIState,
     ) {
-        val info by npoPlayerUIState.collectStreamInfoAsState()
+        val info by playerState.collectStreamInfoAsState()
         TvPlayerTopBar(
             modifier = Modifier,
             title = info.title,
