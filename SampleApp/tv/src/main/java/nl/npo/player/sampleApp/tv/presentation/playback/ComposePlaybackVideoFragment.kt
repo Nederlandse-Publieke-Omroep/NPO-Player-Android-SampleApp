@@ -15,8 +15,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.tv.material3.Icon
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.attachToLifecycle
@@ -26,8 +29,7 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.compose.components.PlayerButton
-import nl.npo.player.library.presentation.compose.components.PlayerText
+import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
@@ -42,6 +44,7 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
+import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
 
 /** Handles video playback with media controls. */
@@ -76,7 +79,8 @@ class ComposePlaybackVideoFragment : Fragment() {
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
         val playerState =
-            rememberNPOPlayerUIState(player, NoFullScreenHandler).also {
+            rememberNPOPlayerUIState(player).also {
+                it.setFullScreenHandler(NoFullScreenHandler)
 //            it.actions.nextEpisodeAction = {
 //                Toast.makeText(requireContext(), "Go to next episode", Toast.LENGTH_SHORT).show()
 //            }
@@ -93,10 +97,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                 PlayerUI.Overlay(
                     modifier = Modifier,
                     state = playerState,
-                    components =
-                        CustomPlayerComponents(
-                            { activity?.onBackPressed() },
-                        ),
+                    components = CustomPlayerComponents { activity?.onBackPressed() },
                     sceneOverlays =
                         TVSceneRenderer(
                             adsOverlayRenderer =
@@ -107,10 +108,13 @@ class ComposePlaybackVideoFragment : Fragment() {
                                             title = topbarInfo.title,
                                             description = topbarInfo.description,
                                             backButton = {
-                                                PlayerButton(
+                                                PlayerIconButton(
                                                     onClick = { activity?.onBackPressed() },
                                                 ) {
-                                                    PlayerText("Sluiten")
+                                                    Icon(
+                                                        painterResource(R.drawable.npo_player_ic_arrow_left),
+                                                        stringResource(R.string.player_close),
+                                                    )
                                                 }
                                             },
                                         )

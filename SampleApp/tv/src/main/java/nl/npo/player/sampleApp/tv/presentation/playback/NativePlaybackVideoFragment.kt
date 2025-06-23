@@ -1,6 +1,7 @@
 package nl.npo.player.sampleApp.tv.presentation.playback
 
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,9 +21,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
@@ -34,8 +38,7 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.PlaybackState
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.compose.components.PlayerButton
-import nl.npo.player.library.presentation.compose.components.PlayerText
+import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
@@ -49,6 +52,7 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
+import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
 
 /** Handles video playback with media controls. */
@@ -230,12 +234,15 @@ class CustomPlayerComponents(
             title = info.title,
             description = info.description,
             backButton = {
-                PlayerButton(
+                PlayerIconButton(
                     onClick = {
                         onBackPressed()
                     },
                 ) {
-                    PlayerText("Sluiten")
+                    Icon(
+                        painterResource(R.drawable.npo_player_ic_arrow_left),
+                        stringResource(R.string.player_close),
+                    )
                 }
             },
         )

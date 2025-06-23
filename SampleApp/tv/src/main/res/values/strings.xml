@@ -11,6 +11,7 @@
     <string name="watch">Afspelen</string>
     <string name="watch_as_start">Als START gebruiker</string>
     <string name="watch_as_plus">Als PLUS gebruiker</string>
+    <string name="player_close">Terug naar vorige scherm</string>
 
     <!-- Error messages -->
     <string name="error_fragment_message">An error occurred</string>
