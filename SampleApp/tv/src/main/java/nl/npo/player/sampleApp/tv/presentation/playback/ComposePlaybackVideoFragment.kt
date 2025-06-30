@@ -6,11 +6,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -24,24 +24,24 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
-import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.NoFullScreenHandler
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.PlayerUI
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.TVSceneRenderer
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.collectStreamInfoAsState
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.rememberNPOPlayerUIState
+import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
+import nl.npo.player.library.presentation.tv.compose.shareable.PlayerUI
+import nl.npo.player.library.presentation.tv.compose.shareable.state.collectStreamInfoAsState
+import nl.npo.player.library.presentation.tv.compose.shareable.state.rememberNPOPlayerUIState
 import nl.npo.player.library.presentation.tv.compose.theme.tv
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
+import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
 import nl.npo.player.sampleApp.tv.R
@@ -51,6 +51,7 @@ import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companio
 @AndroidEntryPoint
 class ComposePlaybackVideoFragment : Fragment() {
     private val playerViewModel by viewModels<PlayerViewModel>()
+    private val linkViewModel by viewModels<LinksViewModel>()
     private val playbackViewModel by viewModels<PlaybackViewModel>()
     private lateinit var sourceWrapper: SourceWrapper
     private lateinit var player: NPOPlayer
@@ -59,6 +60,7 @@ class ComposePlaybackVideoFragment : Fragment() {
         super.onCreate(savedInstanceState)
         (activity as? BaseActivity)?.logPageAnalytics(TAG)
         loadSourceWrapperFromIntent(activity?.intent)
+        setObservers()
     }
 
     override fun onCreateView(
@@ -74,20 +76,44 @@ class ComposePlaybackVideoFragment : Fragment() {
             }
         }
 
+    private fun setObservers() {
+        // Initialize the link lists even though we don't do anything with the changes yet.
+        linkViewModel.urlLinkList.observeNonNull(this) {}
+        linkViewModel.streamLinkList.observeNonNull(this) {}
+    }
+
+    private fun playRandom() {
+        Toast
+            .makeText(requireContext(), "Loading next episode!", Toast.LENGTH_SHORT)
+            .show()
+        playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
+            if (enabled) {
+                linkViewModel.streamLinkList.value
+            } else {
+                linkViewModel.streamLinkList.value?.union(
+                    linkViewModel.urlLinkList.value ?: emptyList(),
+                )
+            }?.filter { it.avType != player.npoSourceConfig?.avType }
+                ?.random()
+                ?.let { newSource ->
+                    loadSource(newSource.copy(overrideIsPlusUser = sourceWrapper.overrideIsPlusUser))
+                }
+        }
+    }
+
     @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
         val playerState =
             rememberNPOPlayerUIState(player).also {
-                it.setFullScreenHandler(NoFullScreenHandler)
-//            it.actions.nextEpisodeAction = {
-//                Toast.makeText(requireContext(), "Go to next episode", Toast.LENGTH_SHORT).show()
-//            }
+                it.actions.nextEpisodeAction = {
+                    playRandom()
+                }
             }
 
         Row {
-            val topbarInfo by playerState.collectStreamInfoAsState()
+            val topbarInfo = playerState.collectStreamInfoAsState()
             Box(
                 modifier =
                     Modifier
@@ -152,41 +178,33 @@ class ComposePlaybackVideoFragment : Fragment() {
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
-                        eventEmitter.addListener(
-                            object : PlayerListener {
-                                override fun onPlaying(
-                                    currentPosition: Double,
-                                    isAd: Boolean,
-                                ) {
-                                    if (player.getSelectedSubtitleTrack() == NPOSubtitleTrack.OFF) {
-                                        player
-                                            .getSubtitleTracks()
-                                            ?.firstOrNull { it != NPOSubtitleTrack.OFF }
-                                            ?.let {
-                                                player.selectSubtitleTrack(it)
-                                            }
-                                    }
-                                }
-                            },
-                        )
+                        playNextListener = { action ->
+                            when (action) {
+                                is PlayNextListenerResult.Triggered -> playRandom()
+                            }
+                        }
                     }
 
-            when {
-                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
-                    loadStreamURL(
-                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
-                    )
+            loadSource(sourceWrapper)
+        }
+    }
 
-                sourceWrapper.getStreamLink ->
-                    playerViewModel.retrieveSource(
-                        sourceWrapper,
-                        ::handleTokenState,
-                    )
+    private fun loadSource(sourceWrapper: SourceWrapper) {
+        when {
+            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
+                loadStreamURL(
+                    sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                )
 
-                sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
-                else -> {
-                    /** NO-OP **/
-                }
+            sourceWrapper.getStreamLink ->
+                playerViewModel.retrieveSource(
+                    sourceWrapper,
+                    ::handleTokenState,
+                )
+
+            sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
+            else -> {
+                /** NO-OP **/
             }
         }
     }

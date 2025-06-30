@@ -130,9 +130,10 @@ class PlayerViewModel
         ) {
             viewModelScope.launch {
                 val autoPlay = settingsRepository.autoPlayEnabled.first()
+                val playNextType = settingsRepository.shouldShowPlayNext.first()
                 npoPlayer.loadStream(
                     npoSourceConfig.copy(overrideAutoPlay = autoPlay),
-                    settingsRepository.shouldShowPlayNext.first(),
+                    playNextType,
                 )
             }
         }

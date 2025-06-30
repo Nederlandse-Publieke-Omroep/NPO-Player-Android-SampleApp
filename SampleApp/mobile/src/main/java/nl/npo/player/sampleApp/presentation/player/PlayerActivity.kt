@@ -32,6 +32,7 @@ import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
@@ -234,6 +235,11 @@ class PlayerActivity : BaseActivity() {
                                 )
                             attachToLifecycle(lifecycle)
                             setTokenRefreshCallback(retryListener)
+                            playNextListener = { action ->
+                                when (action) {
+                                    is PlayNextListenerResult.Triggered -> playRandom()
+                                }
+                            }
 
                             val player = this
                             binding.npoVideoPlayerNative.apply {

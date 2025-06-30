@@ -1,7 +1,6 @@
 package nl.npo.player.sampleApp.tv.presentation.playback
 
 import android.content.Intent
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -32,21 +31,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
-import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.PlaybackState
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
+import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
-import nl.npo.player.library.presentation.tv.compose.scenes.v2.TvPlayerComponents
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.NPOPlayerUIState
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.TVSceneRenderer
-import nl.npo.player.library.presentation.tv.compose.shareable.experimental.collectStreamInfoAsState
-import nl.npo.player.library.presentation.tv.compose.view.NPOVideoPlayerView
+import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
+import nl.npo.player.library.presentation.tv.compose.shareable.state.NPOPlayerUIState
+import nl.npo.player.library.presentation.tv.compose.shareable.state.collectStreamInfoAsState
+import nl.npo.player.library.presentation.tv.view.NPOVideoPlayerView
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -156,23 +153,6 @@ class NativePlaybackVideoFragment : Fragment() {
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
-                        eventEmitter.addListener(
-                            object : PlayerListener {
-                                override fun onPlaying(
-                                    currentPosition: Double,
-                                    isAd: Boolean,
-                                ) {
-                                    if (player.getSelectedSubtitleTrack() == NPOSubtitleTrack.OFF) {
-                                        player
-                                            .getSubtitleTracks()
-                                            ?.firstOrNull { it != NPOSubtitleTrack.OFF }
-                                            ?.let {
-                                                player.selectSubtitleTrack(it)
-                                            }
-                                    }
-                                }
-                            },
-                        )
                     }
 
             when {
@@ -222,13 +202,13 @@ class NativePlaybackVideoFragment : Fragment() {
 
 class CustomPlayerComponents(
     val onBackPressed: () -> Unit,
-) : TvPlayerComponents() {
+) : DefaultTvPlayerComponents() {
     @Composable
     override fun TopControlsBar(
         modifier: Modifier,
         playerState: NPOPlayerUIState,
     ) {
-        val info by playerState.collectStreamInfoAsState()
+        val info = playerState.collectStreamInfoAsState()
         TvPlayerTopBar(
             modifier = Modifier,
             title = info.title,
