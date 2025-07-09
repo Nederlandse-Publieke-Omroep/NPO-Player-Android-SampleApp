@@ -23,13 +23,13 @@ import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
-import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.error.NPOPlayerError
+import nl.npo.player.library.domain.player.media.NPOPlaybackSpeed
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
@@ -37,13 +37,14 @@ import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
+import nl.npo.player.library.experimental.attachToLifecycle
+import nl.npo.player.library.experimental.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.experimental.DefaultNPOPictureInPictureHandlerNew
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
-import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
-import nl.npo.player.library.setupPlayerNotificationManager
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
@@ -58,13 +59,16 @@ import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.tag.sdk.tracker.PageTracker
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 const val PLAYER_SOURCE = "PLAYER_SOURCE"
 const val PLAYER_OFFLINE_SOURCE = "PLAYER_OFFLINE_SOURCE"
 
 @AndroidEntryPoint
 class PlayerActivity : BaseActivity() {
-    private var player: NPOPlayer? = null
+    private var player: PlayerWrapper? = null
     private lateinit var binding: ActivityPlayerBinding
     private lateinit var sourceWrapper: SourceWrapper
     private val playerViewModel by viewModels<PlayerViewModel>()
@@ -75,25 +79,18 @@ class PlayerActivity : BaseActivity() {
 
     private val onPlayPauseListener: PlayerListener =
         object : PlayerListener {
-            override fun onPlaybackFinished(currentPosition: Double) {
+            override fun onPlaybackFinished() {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onPaused(
-                currentPosition: Double,
-                isAd: Boolean,
-                stoppedPlayingReason: StoppedPlayingReason,
-            ) {
+            override fun onPaused(stoppedPlayingReason: StoppedPlayingReason, ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
                 }
             }
 
-            override fun onPlaying(
-                currentPosition: Double,
-                isAd: Boolean,
-            ) {
+            override fun onPlaying() {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_pause)
@@ -101,7 +98,6 @@ class PlayerActivity : BaseActivity() {
             }
 
             override fun onSourceLoaded(
-                currentPosition: Double,
                 source: NPOSourceConfig,
                 streamOptions: StreamOptions,
                 maxTimeShift: Double,
@@ -113,7 +109,6 @@ class PlayerActivity : BaseActivity() {
             }
 
             override fun onSourceError(
-                currentPosition: Double,
                 error: NPOPlayerError,
                 retryPossible: Boolean,
             ) {
@@ -121,11 +116,10 @@ class PlayerActivity : BaseActivity() {
             }
 
             override fun onSourceLoad(
-                currentPosition: Double,
                 source: NPOSourceConfig,
             ) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
-                if (!NPOCasting.isCastingConnected()) player?.seekOrTimeShift(10000.0)
+                if (!NPOCasting.isCastingConnected()) player?.seek(10000.0.seconds)
 
                 binding.btnPlayPause.isVisible = false
             }
@@ -135,7 +129,6 @@ class PlayerActivity : BaseActivity() {
             }
 
             override fun onPlayerError(
-                currentPosition: Double,
                 error: NPOPlayerError,
                 retryPossible: Boolean,
             ) {
@@ -151,9 +144,9 @@ class PlayerActivity : BaseActivity() {
             binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
         }
 
-    private val retryListener: (Double) -> Unit = {
+    private val retryListener: (Duration) -> Unit = {
         playerViewModel.retrieveSource(
-            sourceWrapper.copy(startOffset = it),
+            sourceWrapper.copy(startOffset = it.toDouble(DurationUnit.SECONDS)),
             ::handleTokenState,
         )
     }
@@ -207,28 +200,22 @@ class PlayerActivity : BaseActivity() {
             try {
                 player =
                     NPOPlayerLibrary
-                        .getPlayer(
+                        .getPlayerWrapper(
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
-                            pageTracker =
-                                pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
-                                    ?: PlayerTagProvider.getPageTracker(
-                                        PageConfiguration(
-                                            title ?: "",
-                                        ),
-                                    ),
                         ).apply {
+                            val player = this
+
                             val defaultPipHandler =
-                                DefaultNPOPictureInPictureHandler(
+                                DefaultNPOPictureInPictureHandlerNew(
                                     this@PlayerActivity,
-                                    this,
+                                    player,
                                 ).also {
                                     pipHandler = it
                                 }
-                            remoteControlMediaInfoCallback = PlayerViewModel.remoteCallback
+
                             eventEmitter.addListener(onPlayPauseListener)
-                            npoNotificationManager =
-                                setupPlayerNotificationManager(
+                            setupPlayerNotification(
                                     NOTIFICATION_CHANNEL_ID,
                                     R.string.app_name,
                                     R.drawable.ic_launcher_foreground,
@@ -236,13 +223,12 @@ class PlayerActivity : BaseActivity() {
                                 )
                             attachToLifecycle(lifecycle)
                             setTokenRefreshCallback(retryListener)
-                            playNextListener = { action ->
+                            setPlayNextListener { action ->
                                 when (action) {
                                     is PlayNextListenerResult.Triggered -> playRandom()
                                 }
                             }
 
-                            val player = this
                             binding.npoVideoPlayerNative.apply {
                                 attachPlayer(
                                     npoPlayer = player,
@@ -258,7 +244,6 @@ class PlayerActivity : BaseActivity() {
                                     }
                                 }
                             }
-                            binding.npoVideoPlayerNative.isVisible
                         }
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog
@@ -334,6 +319,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player?.apply {
+            destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
         binding.npoVideoPlayerNative.onDestroy()
@@ -384,7 +370,7 @@ class PlayerActivity : BaseActivity() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.filter { it.avType != player?.npoSourceConfig?.avType }
+            }?.filter { it.avType != player?.lastLoadedStream?.avType }
                 ?.random()
                 ?.let { newSource ->
                     playerViewModel.getConfiguration { config, npoPlayerColors ->
@@ -426,27 +412,27 @@ class PlayerActivity : BaseActivity() {
         )
 
     private fun subtitleSettings(): PlayerSettings? {
-        val tracks = player?.getSubtitleTracks() ?: return null
+        val tracks = player?.availableSubtitleTracks ?: return null
         return if (tracks.isNotEmpty() && !(tracks.size == 1 && tracks.contains(NPOSubtitleTrack.OFF))) PlayerSettings.SUBTITLES else null
     }
 
     private fun audioQualitiesSettings(): PlayerSettings? =
-        if ((player?.getAudioQualities()?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
+        if ((player?.availableAudioQualities?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.getAudioTracks()?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? = if ((player?.availableAudioTracks?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
 
     private fun videoQualitiesSettings(): PlayerSettings? =
-        if ((player?.getVideoQualities()?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null
+        if ((player?.availableVideoQualities?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null
 
     private fun showSubtitleDialog() {
-        player?.getSubtitleTracks()?.let { npoSubtitleTracks ->
+        player?.availableSubtitleTracks?.let { npoSubtitleTracks ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
-                    npoSubtitleTracks.indexOf(player?.getSelectedSubtitleTrack()),
+                    npoSubtitleTracks.indexOf(player?.selectedSubtitleTrack),
                 ) { dialog, which ->
-                    player?.selectSubtitleTrack(npoSubtitleTracks[which])
+                    player?.selectedSubtitleTrack = npoSubtitleTracks[which]
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -454,14 +440,14 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showAudioTracksDialog() {
-        player?.getAudioTracks()?.let { audioTracks ->
+        player?.availableAudioTracks?.let { audioTracks ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     audioTracks.map { it.label ?: it.id }.toTypedArray(),
-                    audioTracks.indexOf(player?.getSelectedAudioTrack()),
+                    audioTracks.indexOf(player?.selectedAudioTrack),
                 ) { dialog, which ->
-                    player?.selectAudioTrack(audioTracks[which])
+                    player?.selectedAudioTrack = audioTracks[which]
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -469,14 +455,14 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showAudioQualityDialog() {
-        player?.getAudioQualities()?.let { npoAudioQualities ->
+        player?.availableAudioQualities?.let { npoAudioQualities ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
-                    npoAudioQualities.indexOf(player?.getSelectedAudioQuality()),
+                    npoAudioQualities.indexOf(player?.selectedAudioQuality),
                 ) { dialog, which ->
-                    player?.selectAudioQuality(npoAudioQualities[which])
+                    player?.selectedAudioQuality = npoAudioQualities[which]
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -484,14 +470,14 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showVideoQualityDialog() {
-        player?.getVideoQualities()?.let { videoQualities ->
+        player?.availableVideoQualities?.let { videoQualities ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     videoQualities.map { it.label ?: it.id }.toTypedArray(),
-                    videoQualities.indexOf(player?.getSelectedVideoQuality()),
+                    videoQualities.indexOf(player?.selectedVideoQuality),
                 ) { dialog, which ->
-                    player?.selectVideoQuality(videoQualities[which])
+                    player?.selectedVideoQuality = videoQualities[which]
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -505,11 +491,11 @@ class PlayerActivity : BaseActivity() {
                 .setSingleChoiceItems(
                     speeds.map { "${it.name} (${it.value}x)" }.toTypedArray(),
                     speeds.indexOf(
-                        speeds.firstOrNull { it.value == player?.playbackSpeed }
+                        speeds.firstOrNull { it.value == player?.playbackSpeed?.speed }
                             ?: PlaybackSpeeds.NORMAL,
                     ),
                 ) { dialog, which ->
-                    player?.playbackSpeed = speeds[which].value
+                    player?.playbackSpeed = NPOPlaybackSpeed(speeds[which].value)
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -524,7 +510,7 @@ class PlayerActivity : BaseActivity() {
                 ?.withPageName(title)
                 ?.build()
 
-        player?.changePageTracker(
+        player?.updatePageTracker(
             when (pageTracker) {
                 is PageTracker -> PlayerTagProvider.getPageTracker(pageTracker)
                 else -> PlayerTagProvider.getPageTracker(PageConfiguration(title))
@@ -553,7 +539,7 @@ class PlayerActivity : BaseActivity() {
             PlayerActivity::class.simpleName,
             "Loading stream in player failed with result:${error.getMessage(this@PlayerActivity)}",
         )
-        player?.setPlayerError(error)
+//        player?.setPlayerError(error)
         binding.loadingIndicator.isVisible = false
 
         with(binding.retryBtn) {

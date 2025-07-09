@@ -11,7 +11,7 @@ import nl.npo.player.library.data.extensions.toNPOPlayerError
 import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
-import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
@@ -114,12 +114,12 @@ class PlayerViewModel
             }
 
         fun loadStream(
-            npoPlayer: NPOPlayer,
+            npoPlayer: PlayerWrapper,
             npoSourceConfig: NPOSourceConfig,
         ) {
             viewModelScope.launch {
                 val autoPlay = settingsRepository.autoPlayEnabled.first()
-                npoPlayer.loadStream(
+                npoPlayer.load(
                     npoSourceConfig.copy(overrideAutoPlay = autoPlay),
                     settingsRepository.shouldShowPlayNext.first(),
                 )

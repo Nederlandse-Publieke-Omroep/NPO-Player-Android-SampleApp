@@ -21,6 +21,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
         // NPO Player library
         maven {
             url 'https://pkgs.dev.azure.com/NPOTech/NPO-Player-Public/_packaging/NPOPlayerLibrary-Android/maven/v1'

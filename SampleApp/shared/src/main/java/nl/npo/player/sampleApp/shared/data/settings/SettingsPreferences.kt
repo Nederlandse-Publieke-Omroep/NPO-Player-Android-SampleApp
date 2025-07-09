@@ -16,6 +16,8 @@ import nl.npo.player.sampleApp.shared.data.settings.module.SettingsDataStore
 import nl.npo.player.sampleApp.shared.domain.model.DefaultSettings
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 @Singleton
 class SettingsPreferences
@@ -156,8 +158,8 @@ class SettingsPreferences
                     val default = defaultSettings.playNext
                     PlayNext(
                         showPlayNext = prefs[Keys.shouldPlayNext] ?: default.showPlayNext,
-                        duration = prefs[Keys.playNextDuration] ?: default.duration,
-                        offset = prefs[Keys.playNextOffset] ?: default.offset,
+                        duration = prefs[Keys.playNextDuration]?.seconds ?: default.duration,
+                        offset = prefs[Keys.playNextOffset]?.seconds ?: default.offset,
                         autoPlayNextEnabled = prefs[Keys.shouldAutoPlayNext] ?: default.autoPlayNextEnabled,
                     )
                 }
@@ -166,8 +168,8 @@ class SettingsPreferences
             dataStore.edit { prefs ->
                 prefs[Keys.shouldPlayNext] = playNext.showPlayNext
                 prefs[Keys.shouldAutoPlayNext] = playNext.autoPlayNextEnabled
-                prefs[Keys.playNextDuration] = playNext.duration
-                prefs[Keys.playNextOffset] = playNext.offset
+                prefs[Keys.playNextDuration] = playNext.duration.toInt(DurationUnit.SECONDS)
+                prefs[Keys.playNextOffset] = playNext.offset.toInt(DurationUnit.SECONDS)
             }
         }
 

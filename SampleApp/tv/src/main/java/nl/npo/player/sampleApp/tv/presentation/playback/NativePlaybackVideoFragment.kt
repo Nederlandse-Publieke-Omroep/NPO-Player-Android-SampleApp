@@ -36,14 +36,15 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.common.model.PlayerListener
-import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.events.NPOPlayerEvent
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.PlaybackState
-import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.experimental.SurfacePlayer
+import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.presentation.compose.NativeSubtitleView
 import nl.npo.player.library.presentation.compose.PlayerSurface
 import nl.npo.player.library.presentation.compose.theme.Dimens
@@ -62,7 +63,7 @@ class NativePlaybackVideoFragment : Fragment() {
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val playbackViewModel by viewModels<PlaybackViewModel>()
     private lateinit var sourceWrapper: SourceWrapper
-    private lateinit var player: NPOPlayer
+    private lateinit var player: PlayerWrapper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +89,7 @@ class NativePlaybackVideoFragment : Fragment() {
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
 
-        val playerState by player.playerStateManager.playerState.collectAsState()
+        val playerState by player.playerState.collectAsState()
         val playerColors by viewModel.playerColors.collectAsState()
         val subtitleCues by viewModel.subtitles.collectAsState()
 
@@ -102,7 +103,7 @@ class NativePlaybackVideoFragment : Fragment() {
         MaterialTheme {
             Box(Modifier.fillMaxSize()) {
                 PlayerSurface(
-                    player = player,
+                    player = player as? SurfacePlayer,
                     canShowAds = true,
                     modifier = Modifier.align(Alignment.Center),
                 )
@@ -123,7 +124,8 @@ class NativePlaybackVideoFragment : Fragment() {
                             Modifier
                                 .align(
                                     Alignment.Center,
-                                ).padding(60.dp),
+                                )
+                                .padding(60.dp),
                     )
                 }
 
@@ -179,9 +181,8 @@ class NativePlaybackVideoFragment : Fragment() {
         playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
             player =
                 NPOPlayerLibrary
-                    .getPlayer(
+                    .getPlayerWrapper(
                         context,
-                        PlayerTagProvider.getPageTracker(activity.pageTracker!!),
                         playerConfig,
                     ).apply {
                         attachToLifecycle(lifecycle)
@@ -191,16 +192,12 @@ class NativePlaybackVideoFragment : Fragment() {
                         }
                         eventEmitter.addListener(
                             object : PlayerListener {
-                                override fun onPlaying(
-                                    currentPosition: Double,
-                                    isAd: Boolean,
-                                ) {
-                                    if (player.getSelectedSubtitleTrack() == NPOSubtitleTrack.OFF) {
+                                override fun onPlaying() {
+                                    if (player.selectedSubtitleTrack == NPOSubtitleTrack.OFF) {
                                         player
-                                            .getSubtitleTracks()
-                                            ?.firstOrNull { it != NPOSubtitleTrack.OFF }
+                                            .availableSubtitleTracks.firstOrNull { it != NPOSubtitleTrack.OFF }
                                             ?.let {
-                                                player.selectSubtitleTrack(it)
+                                                player.selectedSubtitleTrack = it
                                             }
                                     }
                                 }
@@ -214,7 +211,11 @@ class NativePlaybackVideoFragment : Fragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
+                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(
+                    sourceWrapper,
+                    ::handleTokenState
+                )
+
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
                     /** NO-OP **/
@@ -227,7 +228,14 @@ class NativePlaybackVideoFragment : Fragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.setPlayerError(retrievalState.error)
+            is StreamRetrievalState.Error -> {
+                player.eventBus.publish(
+                    NPOPlayerEvent.Player.Error(
+                        retrievalState.error,
+                        player.isRetryPossible
+                    )
+                )
+            }
 
             StreamRetrievalState.Loading -> {
                 // NO-OP

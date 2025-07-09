@@ -69,9 +69,9 @@ composeCompiler {
 dependencies {
     api project(":SampleApp:shared")
 
-    implementation "nl.npo.player.library:npoPlayerAndroid:$libVersionName"
-    implementation "nl.npo.player.library:sterAds:$libVersionName"
-    implementation "nl.npo.player.library:presentationTV:$libVersionName"
+    implementation "nl.npo.player.library:npo-player-android:$libVersionName"
+    implementation "nl.npo.player.library:ster-ads:$libVersionName"
+    implementation "nl.npo.player.library:presentation-tv:$libVersionName"
 
     implementation "androidx.core:core-ktx:$androidXCore"
     implementation "androidx.appcompat:appcompat:$androidXAppCompat"
