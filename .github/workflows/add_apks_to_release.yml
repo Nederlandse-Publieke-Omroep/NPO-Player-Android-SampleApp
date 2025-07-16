@@ -1,0 +1,75 @@
+name: Build APKs and add to release
+
+env:
+  # The name of the main module repository
+  main_project_module: SampleApp
+
+on:
+  release:
+    types: [ created ]
+jobs:
+  build:
+    name: Add APKs to release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+      - uses: ./.github/actions/setup
+        with:
+          NPO_PLAYER_BITMOVIN_ANALYTICS_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}
+          NPO_PLAYER_BITMOVIN_LICENCE_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_LICENCE_KEY }}
+          NPOTAG_PACKAGE_CLOUD_KEY: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
+          STORE_FILE_ALIAS: ${{ vars.STORE_FILE_ALIAS }}
+          STORE_FILE_ALIAS_PASSWORD: ${{ secrets.STORE_FILE_ALIAS_PASSWORD }}
+          STORE_FILE_PATH: ${{ vars.STORE_FILE_PATH }}
+          STORE_FILE_PASSWORD: ${{ secrets.STORE_FILE_PASSWORD }}
+          STORE_FILE_BASE64: ${{ secrets.STORE_FILE_BASE64 }}
+          TOKEN_ISSUER_PLUS: ${{ vars.TOKEN_ISSUER_PLUS }}
+          TOKEN_ISSUER_START: ${{ vars.TOKEN_ISSUER_START }}
+          TOKEN_SIGNATURE_PLUS_ACC: ${{ secrets.TOKEN_SIGNATURE_PLUS_ACC }}
+          TOKEN_SIGNATURE_PLUS_DEV: ${{ secrets.TOKEN_SIGNATURE_PLUS_DEV }}
+          TOKEN_SIGNATURE_PLUS_PROD: ${{ secrets.TOKEN_SIGNATURE_PLUS_PROD }}
+          TOKEN_SIGNATURE_START_ACC: ${{ secrets.TOKEN_SIGNATURE_START_ACC }}
+          TOKEN_SIGNATURE_START_DEV: ${{ secrets.TOKEN_SIGNATURE_START_DEV }}
+          TOKEN_SIGNATURE_START_PROD: ${{ secrets.TOKEN_SIGNATURE_START_PROD }}
+          PACKAGES_USER: ${{ secrets.PACKAGES_USER }}
+          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+      - name: Build APKs - ${{ env.main_project_module }} module
+        run: ./gradlew assembleDebug assembleRelease
+      - name: Upload Debug APK Mobile
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.main_project_module }}/mobile/build/outputs/apk/debug/mobile-debug.apk
+          asset_name: SampleApp-Mobile-Debug.apk
+          asset_content_type: application/zip
+      - name: Upload Release APK Mobile
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.main_project_module }}/mobile/build/outputs/apk/release/mobile-release.apk
+          asset_name: SampleApp-Mobile-Release.apk
+          asset_content_type: application/zip
+      - name: Upload Debug APK TV
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.main_project_module }}/tv/build/outputs/apk/debug/tv-debug.apk
+          asset_name: SampleApp-TV-Debug.apk
+          asset_content_type: application/zip
+      - name: Upload Release APK TV
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.main_project_module }}/tv/build/outputs/apk/release/tv-release.apk
+          asset_name: SampleApp-TV-Release.apk
+          asset_content_type: application/zip
+
