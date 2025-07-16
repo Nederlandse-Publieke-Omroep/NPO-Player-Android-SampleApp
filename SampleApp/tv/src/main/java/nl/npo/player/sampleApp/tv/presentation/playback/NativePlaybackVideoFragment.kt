@@ -208,7 +208,7 @@ class CustomPlayerComponents(
         modifier: Modifier,
         playerState: NPOPlayerUIState,
     ) {
-        val info = playerState.collectStreamInfoAsState()
+        val info by playerState.collectStreamInfoAsState()
         TvPlayerTopBar(
             modifier = Modifier,
             title = info.title,

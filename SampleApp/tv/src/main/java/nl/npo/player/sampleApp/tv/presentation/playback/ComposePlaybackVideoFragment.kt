@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -113,7 +114,7 @@ class ComposePlaybackVideoFragment : Fragment() {
             }
 
         Row {
-            val topbarInfo = playerState.collectStreamInfoAsState()
+            val topbarInfo by playerState.collectStreamInfoAsState()
             Box(
                 modifier =
                     Modifier
