@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">SampleApp</string>
+    <string name="browse_title">NPO Player SampleApp</string>
+    <string name="browse_category_stream_link">StreamLink items</string>
+    <string name="browse_category_url">Manual URL items</string>
+    <string name="browse_category_settings">Settings</string>
+    <string name="related_movies">Related Videos</string>
+    <string name="grid_view">Grid View</string>
+    <string name="error_fragment">Error Fragment</string>
+    <string name="personal_settings">Personal Settings</string>
+    <string name="watch">Afspelen</string>
+    <string name="watch_as_start">Als START gebruiker</string>
+    <string name="watch_as_plus">Als PLUS gebruiker</string>
+    <string name="player_close">Terug naar vorige scherm</string>
+
+    <!-- Error messages -->
+    <string name="error_fragment_message">An error occurred</string>
+    <string name="dismiss_error">Dismiss</string>
+
+    <!-- Content Descriptions -->
+    <string name="content_description_tv_play">Afspelen</string>
+    <string name="content_description_tv_pause">Pauzeren</string>
+</resources>

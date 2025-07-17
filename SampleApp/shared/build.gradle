@@ -1,0 +1,102 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'com.google.dagger.hilt.android'
+}
+
+android {
+    namespace 'nl.npo.player.sampleApp.shared'
+    compileSdk 34
+
+    Properties localProperties = new Properties()
+    File propertiesFile = project.rootProject.file('local.properties')
+    if (propertiesFile.exists()) {
+        localProperties.load(propertiesFile.newDataInputStream())
+    }
+
+    defaultConfig {
+        minSdk 24
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        buildConfigField 'String', 'VERSION_NAME', "\"$libVersionName\""
+
+        buildConfigField "String", "TOKEN_ISSUER_START", "\"${localProperties.token_issuer_start}\""
+        buildConfigField "String", "TOKEN_ISSUER_PLUS", "\"${localProperties.token_issuer_plus}\""
+
+
+        buildConfigField "String", "TOKEN_SIGNATURE_START_TEST", "\"${localProperties.token_signature_start_dev}\""
+        buildConfigField "String", "TOKEN_SIGNATURE_PLUS_TEST", "\"${localProperties.token_signature_plus_dev}\""
+
+        buildConfigField "String", "TOKEN_SIGNATURE_START_ACC", "\"${localProperties.token_signature_start_acc}\""
+        buildConfigField "String", "TOKEN_SIGNATURE_PLUS_ACC", "\"${localProperties.token_signature_plus_acc}\""
+
+        buildConfigField "String", "TOKEN_SIGNATURE_START_PROD", "\"${localProperties.token_signature_start_prod}\""
+        buildConfigField "String", "TOKEN_SIGNATURE_PLUS_PROD", "\"${localProperties.token_signature_plus_prod}\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    lintOptions {
+        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
+        disable "Instantiatable"
+    }
+}
+
+dependencies {
+
+    implementation "nl.npo.player.library:npo-player-android:$libVersionName"
+    implementation "nl.npo.player.library:ster-ads:$libVersionName"
+    implementation "nl.npo.player.library:presentation:$libVersionName"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
+
+    implementation "com.google.dagger:hilt-android:$androidHilt"
+    kapt "com.google.dagger:hilt-compiler:$androidHilt"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
+
+    //only needed if Chromecast is used
+    implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
+
+    // Token generation
+    def jsonWebTokenVersion = "0.11.5"
+    api "io.jsonwebtoken:jjwt-api:$jsonWebTokenVersion"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:$jsonWebTokenVersion"
+    runtimeOnly("io.jsonwebtoken:jjwt-orgjson:$jsonWebTokenVersion")
+
+    // Preferences
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+
+    // Debug network
+    debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
+}

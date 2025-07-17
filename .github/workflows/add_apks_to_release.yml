@@ -32,24 +32,44 @@ jobs:
           TOKEN_SIGNATURE_START_ACC: ${{ secrets.TOKEN_SIGNATURE_START_ACC }}
           TOKEN_SIGNATURE_START_DEV: ${{ secrets.TOKEN_SIGNATURE_START_DEV }}
           TOKEN_SIGNATURE_START_PROD: ${{ secrets.TOKEN_SIGNATURE_START_PROD }}
+          PACKAGES_USER: ${{ secrets.PACKAGES_USER }}
+          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
       - name: Build APKs - ${{ env.main_project_module }} module
-        run: ./gradlew assemblePRODDebug assemblePRODRelease
-      - name: Upload Debug APK
+        run: ./gradlew assembleDebug assembleRelease
+      - name: Upload Debug APK Mobile
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ env.main_project_module }}/build/outputs/apk/PROD/debug/SampleApp-PROD-debug.apk
-          asset_name: SampleApp-PROD-debug.apk
+          asset_path: ${{ env.main_project_module }}/mobile/build/outputs/apk/debug/mobile-debug.apk
+          asset_name: SampleApp-Mobile-Debug.apk
           asset_content_type: application/zip
-      - name: Upload Release APK
+      - name: Upload Release APK Mobile
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ env.main_project_module }}/build/outputs/apk/PROD/release/SampleApp-PROD-release.apk
-          asset_name: SampleApp-PROD-release.apk
+          asset_path: ${{ env.main_project_module }}/mobile/build/outputs/apk/release/mobile-release.apk
+          asset_name: SampleApp-Mobile-Release.apk
+          asset_content_type: application/zip
+      - name: Upload Debug APK TV
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.main_project_module }}/tv/build/outputs/apk/debug/tv-debug.apk
+          asset_name: SampleApp-TV-Debug.apk
+          asset_content_type: application/zip
+      - name: Upload Release APK TV
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.main_project_module }}/tv/build/outputs/apk/release/tv-release.apk
+          asset_name: SampleApp-TV-Release.apk
           asset_content_type: application/zip
 
