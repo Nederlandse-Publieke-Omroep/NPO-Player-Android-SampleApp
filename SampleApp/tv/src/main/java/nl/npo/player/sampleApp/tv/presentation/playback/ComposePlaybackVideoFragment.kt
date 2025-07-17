@@ -124,7 +124,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                 PlayerUI.Overlay(
                     modifier = Modifier,
                     state = playerState,
-                    components = CustomPlayerComponents { activity?.onBackPressed() },
+                    components = CustomPlayerComponents { activity?.onBackPressedDispatcher?.onBackPressed() },
                     sceneOverlays =
                         TVSceneRenderer(
                             adsOverlayRenderer =
@@ -136,7 +136,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                                             description = topbarInfo.description,
                                             backButton = {
                                                 PlayerIconButton(
-                                                    onClick = { activity?.onBackPressed() },
+                                                    onClick = { activity?.onBackPressedDispatcher?.onBackPressed() },
                                                 ) {
                                                     Icon(
                                                         painterResource(R.drawable.npo_player_ic_arrow_left),

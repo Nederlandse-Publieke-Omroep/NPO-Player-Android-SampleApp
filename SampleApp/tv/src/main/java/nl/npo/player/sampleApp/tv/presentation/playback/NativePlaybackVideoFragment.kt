@@ -11,10 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -33,18 +30,14 @@ import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.state.PlaybackState
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
-import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
-import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
 import nl.npo.player.library.presentation.tv.compose.shareable.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.tv.compose.shareable.state.collectStreamInfoAsState
 import nl.npo.player.library.presentation.tv.view.NPOVideoPlayerView
-import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -83,17 +76,10 @@ class NativePlaybackVideoFragment : Fragment() {
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
-
-        val playerState by player.playerStateManager.playerState.collectAsState()
         val playerColors by viewModel.playerColors.collectAsState()
-        val subtitleCues by viewModel.subtitles.collectAsState()
-
-        val playbackState by remember { derivedStateOf { playerState.playbackState } }
-        val isPlaying by remember(playbackState) { mutableStateOf(playbackState is PlaybackState.Playing) }
 
         MaterialTheme {
             val isPreview = LocalInspectionMode.current
-            var view: NPOVideoPlayerView? = null
             Box(modifier = Modifier.fillMaxSize()) {
                 AndroidView(
                     modifier =
@@ -107,21 +93,14 @@ class NativePlaybackVideoFragment : Fragment() {
                             if (!isPreview) {
                                 attachPlayer(
                                     npoPlayer = player,
-                                    npoPlayerColors = PlayerColors(),
-                                    sceneOverlays =
-                                        TVSceneRenderer(
-                                            adsOverlayRenderer =
-                                                TvSterOverlayRenderer(
-                                                    toolbar = {},
-                                                ),
-                                        ),
+                                    npoPlayerColors = playerColors,
                                     components =
                                         CustomPlayerComponents(
-                                            onBackPressed = { activity?.onBackPressed() },
+                                            onBackPressed = { activity?.onBackPressedDispatcher?.onBackPressed() },
                                         ),
                                 )
                             }
-                        }.also { view = it }
+                        }
                     },
                 )
             }
