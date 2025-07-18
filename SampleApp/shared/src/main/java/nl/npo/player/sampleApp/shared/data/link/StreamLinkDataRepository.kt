@@ -22,7 +22,7 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "Live NPO1: LI_NL1_4188102",
-                testingDescription = "Playback Live DVR from startpos",
+                testingDescription = "Playback Live DVR from startpos (10 minutes offset from live)",
                 startOffset = -(10 * 60.0),
                 getStreamLink = true,
                 uniqueId = "LI_NL1_4188102",
@@ -58,7 +58,7 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877",
-                testingDescription = "Poster + Playback VOD from startpos",
+                testingDescription = "Poster + Playback VOD from startpos (10 minutes offset from start)",
                 uniqueId = "AT_300002877",
                 startOffset = 10 * 60.0,
                 getStreamLink = true,
