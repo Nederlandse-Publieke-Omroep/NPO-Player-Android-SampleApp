@@ -29,7 +29,6 @@ import androidx.leanback.widget.OnItemViewSelectedListener
 import androidx.leanback.widget.Presenter
 import androidx.leanback.widget.Row
 import androidx.leanback.widget.RowPresenter
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -215,7 +214,6 @@ class MainFragment : BrowseSupportFragment() {
             nl.npo.player.sampleApp.shared.R.string.setting_pause_when_noisy,
             nl.npo.player.sampleApp.shared.R.string.setting_pause_on_cellular,
             nl.npo.player.sampleApp.shared.R.string.setting_enable_casting,
-            nl.npo.player.sampleApp.shared.R.string.setting_only_streamlink_random_enabled,
             -> false
 
             else -> true
