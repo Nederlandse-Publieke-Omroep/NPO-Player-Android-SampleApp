@@ -10,6 +10,7 @@ data class SourceWrapper(
     val testingDescription: String = "",
     val uniqueId: String,
     val getStreamLink: Boolean,
+    val isLive: Boolean = false,
     val streamUrl: String? = null,
     val startOffset: Double = 0.0,
     val offlineDownloadAllowed: Boolean = false,

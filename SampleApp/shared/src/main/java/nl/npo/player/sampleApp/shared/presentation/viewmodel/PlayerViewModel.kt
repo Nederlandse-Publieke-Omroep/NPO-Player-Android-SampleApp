@@ -1,9 +1,13 @@
 package nl.npo.player.sampleApp.shared.presentation.viewmodel
 
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.extensions.copy
@@ -15,7 +19,7 @@ import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
+import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
@@ -33,6 +37,13 @@ class PlayerViewModel
         private val tokenProvider: TokenProvider,
         private val settingsRepository: SettingsRepository,
     ) : ViewModel() {
+        val isSterUIEnabled: StateFlow<Boolean> =
+            settingsRepository.sterUiEnabled.stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly,
+                initialValue = false,
+            )
+
         fun retrieveSource(
             item: SourceWrapper,
             callback: (StreamRetrievalState) -> Unit,
@@ -119,14 +130,15 @@ class PlayerViewModel
         ) {
             viewModelScope.launch {
                 val autoPlay = settingsRepository.autoPlayEnabled.first()
+                val playNextType = settingsRepository.shouldShowPlayNext.first()
                 npoPlayer.load(
                     npoSourceConfig.copy(overrideAutoPlay = autoPlay),
-                    settingsRepository.shouldShowPlayNext.first(),
+                    playNextType,
                 )
             }
         }
 
-        fun getConfiguration(callback: (NPOPlayerConfig, NPOPlayerColors?) -> Unit) {
+        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?) -> Unit) {
             viewModelScope.launch {
                 val playerConfig =
                     NPOPlayerConfig(
@@ -137,12 +149,10 @@ class PlayerViewModel
 
                 val npoPlayerColors =
                     if (settingsRepository.styling.first() == Styling.Custom) {
-                        NPOPlayerColors(
-                            textColor = 0xFFFF0000,
-                            iconColor = 0xFF00FF00,
-                            primaryColor = 0xFF00FF00,
-                            settingsTextColor = 0xFFFFEB3B,
-                            settingsSurfaceColor = 0xFF770099,
+                        NativePlayerColors(
+                            textColor = "#FFFF0000".toColorInt(),
+                            onOverlay = "#FF00FF00".toColorInt(),
+                            primary = "#FF00FF00".toColorInt(),
                         )
                     } else {
                         null
