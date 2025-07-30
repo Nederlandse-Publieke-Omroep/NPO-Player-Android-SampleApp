@@ -18,7 +18,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
@@ -33,13 +32,13 @@ import nl.npo.player.library.domain.player.media.NPOPlaybackSpeed
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.player.ui.model.NPOPlayerColors
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.experimental.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.experimental.DefaultNPOPictureInPictureHandlerNew
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
@@ -83,7 +82,7 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onPaused(stoppedPlayingReason: StoppedPlayingReason, ) {
+            override fun onPaused(stoppedPlayingReason: StoppedPlayingReason) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
@@ -115,9 +114,7 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onSourceLoad(
-                source: NPOSourceConfig,
-            ) {
+            override fun onSourceLoad(source: NPOSourceConfig) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
                 if (!NPOCasting.isCastingConnected()) player?.seek(10000.0.seconds)
 
@@ -141,7 +138,7 @@ class PlayerActivity : BaseActivity() {
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
-            binding.mediaRouteButton.isVisible = state != CastState.NO_DEVICES_AVAILABLE
+            binding.mediaRouteButton.isVisible = true
         }
 
     private val retryListener: (Duration) -> Unit = {
@@ -191,7 +188,7 @@ class PlayerActivity : BaseActivity() {
     private fun loadSource(
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
-        npoPlayerColors: NPOPlayerColors?,
+        npoPlayerColors: NativePlayerColors?,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
@@ -216,11 +213,11 @@ class PlayerActivity : BaseActivity() {
 
                             eventEmitter.addListener(onPlayPauseListener)
                             setupPlayerNotification(
-                                    NOTIFICATION_CHANNEL_ID,
-                                    R.string.app_name,
-                                    R.drawable.ic_launcher_foreground,
-                                    NOTIFICATION_ID,
-                                )
+                                NOTIFICATION_CHANNEL_ID,
+                                R.string.app_name,
+                                R.drawable.ic_launcher_foreground,
+                                NOTIFICATION_ID,
+                            )
                             attachToLifecycle(lifecycle)
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
@@ -230,10 +227,19 @@ class PlayerActivity : BaseActivity() {
                             }
 
                             binding.npoVideoPlayerNative.apply {
+                                val adOverlay =
+                                    if (playerViewModel.isSterUIEnabled.value) {
+                                        player.adManager.supplyDefaultAdsOverlayViewClass()
+                                    } else {
+                                        null
+                                    }
+
                                 attachPlayer(
                                     npoPlayer = player,
-                                    npoPlayerColors = npoPlayerColors ?: NPOPlayerColors(),
+                                    npoPlayerColors = npoPlayerColors ?: NativePlayerColors(),
+                                    adsOverlayClazz = adOverlay,
                                 )
+
                                 setFullScreenHandler(fullScreenHandler)
                                 enablePictureInPictureSupport(defaultPipHandler)
 
@@ -296,8 +302,7 @@ class PlayerActivity : BaseActivity() {
         } else {
             backstackLost = true
             val castContext = CastContext.getSharedInstance(this@PlayerActivity)
-            binding.mediaRouteButton.isVisible =
-                castContext.castState != CastState.NO_DEVICES_AVAILABLE
+            binding.mediaRouteButton.isVisible = true
         }
     }
 
@@ -358,7 +363,7 @@ class PlayerActivity : BaseActivity() {
 
         val castContext = CastContext.getSharedInstance(this@PlayerActivity)
         castContext.addCastStateListener(castStateListener)
-        mediaRouteButton.isVisible = castContext.castState != CastState.NO_DEVICES_AVAILABLE
+        mediaRouteButton.isVisible = true
         CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
     }
 
@@ -419,7 +424,14 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.availableAudioQualities?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.availableAudioTracks?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player?.availableAudioTracks?.size ?: 0) >
+            0
+        ) {
+            PlayerSettings.AUDIO_TRACKS
+        } else {
+            null
+        }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.availableVideoQualities?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null

@@ -104,6 +104,7 @@ object URLLinkDataRepository : LinkRepository {
                     "https://cms-assets.nporadio.nl/npoFunx/_600x515_crop_center-center_none/" +
                         "FunX_FMA23_Header_Desktop.jpg?v=1679646843",
                 avType = AVType.AUDIO,
+                isLive = true,
             ),
             SourceWrapper(
                 title = "FUNX Arab - Icecast stream",
@@ -114,6 +115,7 @@ object URLLinkDataRepository : LinkRepository {
                     "https://cms-assets.nporadio.nl/npoFunx/_600x515_crop_center-center_none/" +
                         "FunX_FMA23_Header_Desktop.jpg?v=1679646843",
                 avType = AVType.AUDIO,
+                isLive = true,
             ),
             SourceWrapper(
                 title = "Piepshow - Test video URL",
@@ -136,6 +138,7 @@ object URLLinkDataRepository : LinkRepository {
                     "https://content.radioveronica.nl/images/66qysnomiif1/3Cy1DKrJZpB4uq4CHxA5d1/" +
                         "31a2820a631bdea44fe6bdcfd054ec68/Radio-Veronica_Martijn-Muijs_1200x675.jpg?fit=thumb&w=774&h=465&fm=webp",
                 avType = AVType.VIDEO,
+                isLive = true,
             ),
         )
     }
