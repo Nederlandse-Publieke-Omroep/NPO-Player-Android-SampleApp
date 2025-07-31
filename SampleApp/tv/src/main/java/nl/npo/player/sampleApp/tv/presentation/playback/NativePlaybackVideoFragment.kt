@@ -31,15 +31,8 @@ import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
-import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.state.PlaybackState
-import nl.npo.player.library.experimental.SurfacePlayer
 import nl.npo.player.library.experimental.attachToLifecycle
-import nl.npo.player.library.presentation.compose.NativeSubtitleView
-import nl.npo.player.library.presentation.compose.PlayerSurface
-import nl.npo.player.library.presentation.compose.theme.Dimens
-import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
@@ -85,7 +78,6 @@ class NativePlaybackVideoFragment : Fragment() {
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
-
         val playerState by player.playerState.collectAsState()
         val playerColors by viewModel.playerColors.collectAsState()
 
@@ -149,7 +141,7 @@ class NativePlaybackVideoFragment : Fragment() {
                                         player
                                             .availableSubtitleTracks.firstOrNull { it != NPOSubtitleTrack.OFF }
                                             ?.let {
-                                                player.selectedSubtitleTrack = it
+                                                player.setSelectedSubtitleTrack(it)
                                             }
                                     }
                                 }
@@ -163,11 +155,10 @@ class NativePlaybackVideoFragment : Fragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink ->
-                    playerViewModel.retrieveSource(
-                        sourceWrapper,
-                        ::handleTokenState,
-                    )
+                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(
+                    sourceWrapper,
+                    ::handleTokenState
+                )
 
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {

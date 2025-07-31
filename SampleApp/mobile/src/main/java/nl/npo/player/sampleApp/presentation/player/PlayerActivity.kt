@@ -38,6 +38,7 @@ import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.experimental.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.experimental.DefaultNPOPictureInPictureHandlerNew
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
@@ -81,7 +82,7 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onPaused(stoppedPlayingReason: StoppedPlayingReason, ) {
+            override fun onPaused(stoppedPlayingReason: StoppedPlayingReason) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
@@ -98,7 +99,7 @@ class PlayerActivity : BaseActivity() {
             override fun onSourceLoaded(
                 source: NPOSourceConfig,
                 streamOptions: StreamOptions,
-                maxTimeShift: Double,
+                maxTimeShift: Duration,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
@@ -113,9 +114,7 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onSourceLoad(
-                source: NPOSourceConfig,
-            ) {
+            override fun onSourceLoad(source: NPOSourceConfig) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
                 if (!NPOCasting.isCastingConnected()) player?.seek(10000.0.seconds)
 
@@ -214,12 +213,13 @@ class PlayerActivity : BaseActivity() {
 
                             eventEmitter.addListener(onPlayPauseListener)
                             setupPlayerNotification(
-                                    NOTIFICATION_CHANNEL_ID,
-                                    R.string.app_name,
-                                    R.drawable.ic_launcher_foreground,
-                                    NOTIFICATION_ID,
-                                )
+                                NOTIFICATION_CHANNEL_ID,
+                                R.string.app_name,
+                                R.drawable.ic_launcher_foreground,
+                                NOTIFICATION_ID,
+                            )
                             attachToLifecycle(lifecycle)
+                            changePageTracker(this, title ?: "")
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
                                 when (action) {
@@ -265,8 +265,9 @@ class PlayerActivity : BaseActivity() {
                 return
             }
         } else {
+            val player = player ?: return
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
-            changePageTracker(title ?: "")
+            changePageTracker(player, title ?: "")
         }
 
         when {
@@ -376,7 +377,7 @@ class PlayerActivity : BaseActivity() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.filter { it.avType != player?.lastLoadedStream?.avType }
+            }?.filter { true }
                 ?.random()
                 ?.let { newSource ->
                     playerViewModel.getConfiguration { config, npoPlayerColors ->
@@ -425,7 +426,14 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.availableAudioQualities?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.availableAudioTracks?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player?.availableAudioTracks?.size ?: 0) >
+            0
+        ) {
+            PlayerSettings.AUDIO_TRACKS
+        } else {
+            null
+        }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.availableVideoQualities?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null
@@ -438,7 +446,7 @@ class PlayerActivity : BaseActivity() {
                     npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
                     npoSubtitleTracks.indexOf(player?.selectedSubtitleTrack),
                 ) { dialog, which ->
-                    player?.selectedSubtitleTrack = npoSubtitleTracks[which]
+                    player?.setSelectedSubtitleTrack(npoSubtitleTracks[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -453,7 +461,7 @@ class PlayerActivity : BaseActivity() {
                     audioTracks.map { it.label ?: it.id }.toTypedArray(),
                     audioTracks.indexOf(player?.selectedAudioTrack),
                 ) { dialog, which ->
-                    player?.selectedAudioTrack = audioTracks[which]
+                    player?.setSelectedAudioTrack(audioTracks[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -468,7 +476,7 @@ class PlayerActivity : BaseActivity() {
                     npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
                     npoAudioQualities.indexOf(player?.selectedAudioQuality),
                 ) { dialog, which ->
-                    player?.selectedAudioQuality = npoAudioQualities[which]
+                    player?.setSelectedAudioQuality(npoAudioQualities[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -483,7 +491,7 @@ class PlayerActivity : BaseActivity() {
                     videoQualities.map { it.label ?: it.id }.toTypedArray(),
                     videoQualities.indexOf(player?.selectedVideoQuality),
                 ) { dialog, which ->
-                    player?.selectedVideoQuality = videoQualities[which]
+                    player?.setSelectedVideoQuality(videoQualities[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -501,14 +509,14 @@ class PlayerActivity : BaseActivity() {
                             ?: PlaybackSpeeds.NORMAL,
                     ),
                 ) { dialog, which ->
-                    player?.playbackSpeed = NPOPlaybackSpeed(speeds[which].value)
+                    player?.setPlaybackSpeed(NPOPlaybackSpeed(speeds[which].value))
                     dialog.dismiss()
                 }.create()
                 .show()
         }
     }
 
-    private fun changePageTracker(title: String) {
+    private fun changePageTracker(player: PlayerWrapper, title: String) {
         val pageTracker =
             (application as PlayerApplication)
                 .npoTag
@@ -516,7 +524,7 @@ class PlayerActivity : BaseActivity() {
                 ?.withPageName(title)
                 ?.build()
 
-        player?.updatePageTracker(
+        player.updatePageTracker(
             when (pageTracker) {
                 is PageTracker -> PlayerTagProvider.getPageTracker(pageTracker)
                 else -> PlayerTagProvider.getPageTracker(PageConfiguration(title))
