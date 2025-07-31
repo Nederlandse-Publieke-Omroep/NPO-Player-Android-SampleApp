@@ -80,10 +80,11 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(
-                    sourceWrapper,
-                    ::handleTokenState
-                )
+                sourceWrapper.getStreamLink ->
+                    playerViewModel.retrieveSource(
+                        sourceWrapper,
+                        ::handleTokenState,
+                    )
 
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
@@ -97,13 +98,14 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.eventBus.publish(
-                NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible)
-            )
+            is StreamRetrievalState.Error ->
+                player.eventBus.publish(
+                    NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible),
+                )
 
-            StreamRetrievalState.Loading
+            StreamRetrievalState.Loading,
 
-                -> {
+            -> {
 //                handleLoading()
             }
 

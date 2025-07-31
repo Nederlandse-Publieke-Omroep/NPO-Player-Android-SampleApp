@@ -114,9 +114,7 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.isVisible = false
             }
 
-            override fun onSourceLoad(
-                source: NPOSourceConfig,
-            ) {
+            override fun onSourceLoad(source: NPOSourceConfig) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
                 if (!NPOCasting.isCastingConnected()) player?.seek(10000.0.seconds)
 
@@ -215,11 +213,11 @@ class PlayerActivity : BaseActivity() {
 
                             eventEmitter.addListener(onPlayPauseListener)
                             setupPlayerNotification(
-                                    NOTIFICATION_CHANNEL_ID,
-                                    R.string.app_name,
-                                    R.drawable.ic_launcher_foreground,
-                                    NOTIFICATION_ID,
-                                )
+                                NOTIFICATION_CHANNEL_ID,
+                                R.string.app_name,
+                                R.drawable.ic_launcher_foreground,
+                                NOTIFICATION_ID,
+                            )
                             attachToLifecycle(lifecycle)
                             changePageTracker(this, title ?: "")
                             setTokenRefreshCallback(retryListener)
@@ -428,7 +426,14 @@ class PlayerActivity : BaseActivity() {
     private fun audioQualitiesSettings(): PlayerSettings? =
         if ((player?.availableAudioQualities?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
 
-    private fun audioTrackSettings(): PlayerSettings? = if ((player?.availableAudioTracks?.size ?: 0) > 0) PlayerSettings.AUDIO_TRACKS else null
+    private fun audioTrackSettings(): PlayerSettings? =
+        if ((player?.availableAudioTracks?.size ?: 0) >
+            0
+        ) {
+            PlayerSettings.AUDIO_TRACKS
+        } else {
+            null
+        }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
         if ((player?.availableVideoQualities?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null

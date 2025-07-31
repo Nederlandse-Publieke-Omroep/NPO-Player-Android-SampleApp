@@ -26,8 +26,12 @@ import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.experimental.PlayerWrapper
+import nl.npo.player.library.domain.analytics.model.PageConfiguration
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
+import nl.npo.player.library.experimental.attachToLifecycle
+import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
@@ -47,6 +51,7 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
 import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
+import nl.npo.tag.sdk.tracker.PageTracker
 
 /** Handles video playback with media controls. */
 @AndroidEntryPoint
@@ -174,6 +179,18 @@ class ComposePlaybackVideoFragment : Fragment() {
                         playerConfig,
                     ).apply {
                         attachToLifecycle(lifecycle)
+
+                        updatePageTracker(
+                            when (activity.pageTracker) {
+                                is PageTracker -> PlayerTagProvider.getPageTracker(activity.pageTracker!!)
+                                else ->
+                                    PlayerTagProvider.getPageTracker(
+                                        PageConfiguration(
+                                            sourceWrapper.title ?: "",
+                                        ),
+                                    )
+                            },
+                        )
                         playbackViewModel.setPlayer(this)
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
