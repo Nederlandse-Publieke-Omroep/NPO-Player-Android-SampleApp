@@ -23,12 +23,12 @@ import androidx.fragment.app.viewModels
 import androidx.tv.material3.Icon
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
-import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.events.NPOPlayerEvent
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
-import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
@@ -55,7 +55,7 @@ class ComposePlaybackVideoFragment : Fragment() {
     private val linkViewModel by viewModels<LinksViewModel>()
     private val playbackViewModel by viewModels<PlaybackViewModel>()
     private lateinit var sourceWrapper: SourceWrapper
-    private lateinit var player: NPOPlayer
+    private lateinit var player: PlayerWrapper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,7 +94,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.filter { it.avType != player.npoSourceConfig?.avType }
+            }?.filter { it.avType != player.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
                     loadSource(newSource.copy(overrideIsPlusUser = sourceWrapper.overrideIsPlusUser))
@@ -169,9 +169,8 @@ class ComposePlaybackVideoFragment : Fragment() {
         playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
             player =
                 NPOPlayerLibrary
-                    .getPlayer(
+                    .getPlayerWrapper(
                         context,
-                        PlayerTagProvider.getPageTracker(activity.pageTracker!!),
                         playerConfig,
                     ).apply {
                         attachToLifecycle(lifecycle)
@@ -179,7 +178,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
-                        playNextListener = { action ->
+                        setPlayNextListener { action ->
                             when (action) {
                                 is PlayNextListenerResult.Triggered -> playRandom()
                             }
@@ -214,7 +213,7 @@ class ComposePlaybackVideoFragment : Fragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.setPlayerError(retrievalState.error)
+            is StreamRetrievalState.Error -> player.eventBus.publish(NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible))
 
             StreamRetrievalState.Loading -> {
                 // NO-OP
