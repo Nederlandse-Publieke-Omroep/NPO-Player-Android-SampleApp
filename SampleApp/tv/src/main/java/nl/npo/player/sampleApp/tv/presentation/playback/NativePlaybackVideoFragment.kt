@@ -78,7 +78,6 @@ class NativePlaybackVideoFragment : Fragment() {
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
-        val playerState by player.playerState.collectAsState()
         val playerColors by viewModel.playerColors.collectAsState()
 
         MaterialTheme {

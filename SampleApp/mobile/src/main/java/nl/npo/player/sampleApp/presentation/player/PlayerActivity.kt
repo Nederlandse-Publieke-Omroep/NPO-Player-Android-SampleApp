@@ -219,7 +219,7 @@ class PlayerActivity : BaseActivity() {
                                 NOTIFICATION_ID,
                             )
                             attachToLifecycle(lifecycle)
-                            changePageTracker(this, title ?: "")
+                            changePageTracker(this, title.orEmpty())
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
                                 when (action) {
@@ -377,7 +377,7 @@ class PlayerActivity : BaseActivity() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.filter { true }
+            }?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
                     playerViewModel.getConfiguration { config, npoPlayerColors ->

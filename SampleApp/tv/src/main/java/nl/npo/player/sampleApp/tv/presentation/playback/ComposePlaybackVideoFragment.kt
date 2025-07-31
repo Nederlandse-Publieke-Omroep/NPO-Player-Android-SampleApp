@@ -24,15 +24,13 @@ import androidx.tv.material3.Icon
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
-import nl.npo.player.library.domain.events.NPOPlayerEvent
-import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
+import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
@@ -230,7 +228,12 @@ class ComposePlaybackVideoFragment : Fragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.eventBus.publish(NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible))
+            is StreamRetrievalState.Error -> player.eventBus.publish(
+                NPOPlayerEvent.Player.Error(
+                    retrievalState.error,
+                    player.isRetryPossible
+                )
+            )
 
             StreamRetrievalState.Loading -> {
                 // NO-OP
