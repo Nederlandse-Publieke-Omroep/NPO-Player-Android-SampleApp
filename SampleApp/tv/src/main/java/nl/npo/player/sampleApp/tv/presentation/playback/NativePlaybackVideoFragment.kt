@@ -172,7 +172,7 @@ class NativePlaybackVideoFragment : Fragment() {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
             is StreamRetrievalState.Error -> {
-                player.eventBus.publish(
+                player.publishEvent(
                     NPOPlayerEvent.Player.Error(
                         retrievalState.error,
                         player.isRetryPossible
