@@ -99,7 +99,6 @@ class PlayerActivity : BaseActivity() {
             override fun onSourceLoaded(
                 source: NPOSourceConfig,
                 streamOptions: StreamOptions,
-                maxTimeShift: Duration,
             ) {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
