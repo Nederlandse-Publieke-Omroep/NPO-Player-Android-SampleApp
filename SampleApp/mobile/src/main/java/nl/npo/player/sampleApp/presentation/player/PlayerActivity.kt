@@ -24,6 +24,7 @@ import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
+import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.experimental.PlayerWrapper
@@ -198,7 +199,9 @@ class PlayerActivity : BaseActivity() {
                     NPOPlayerLibrary
                         .getPlayerWrapper(
                             context = binding.root.context,
+                            pageTracker = getPageTracker(title.orEmpty()),
                             npoPlayerConfig = playerConfig,
+                            useExoPlayer = true,
                         ).apply {
                             val player = this
 
@@ -218,7 +221,6 @@ class PlayerActivity : BaseActivity() {
                                 NOTIFICATION_ID,
                             )
                             attachToLifecycle(lifecycle)
-                            changePageTracker(this, title.orEmpty())
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
                                 when (action) {
@@ -516,6 +518,10 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun changePageTracker(player: PlayerWrapper, title: String) {
+        player.updatePageTracker(getPageTracker(title))
+    }
+
+    private fun getPageTracker(title: String): PlayerPageTracker {
         val pageTracker =
             (application as PlayerApplication)
                 .npoTag
@@ -523,12 +529,10 @@ class PlayerActivity : BaseActivity() {
                 ?.withPageName(title)
                 ?.build()
 
-        player.updatePageTracker(
-            when (pageTracker) {
-                is PageTracker -> PlayerTagProvider.getPageTracker(pageTracker)
-                else -> PlayerTagProvider.getPageTracker(PageConfiguration(title))
-            },
-        )
+        return when (pageTracker) {
+            is PageTracker -> PlayerTagProvider.getPageTracker(pageTracker)
+            else -> PlayerTagProvider.getPageTracker(PageConfiguration(title))
+        }
     }
 
     private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
