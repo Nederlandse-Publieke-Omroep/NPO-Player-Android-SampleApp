@@ -160,6 +160,7 @@ class ComposePlaybackVideoFragment : Fragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -173,8 +174,10 @@ class ComposePlaybackVideoFragment : Fragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayerWrapper(
-                        context,
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoPlayer = true,
                     ).apply {
                         attachToLifecycle(lifecycle)
 
@@ -228,12 +231,13 @@ class ComposePlaybackVideoFragment : Fragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.publishEvent(
-                NPOPlayerEvent.Player.Error(
-                    retrievalState.error,
-                    player.isRetryPossible
+            is StreamRetrievalState.Error ->
+                player.publishEvent(
+                    NPOPlayerEvent.Player.Error(
+                        retrievalState.error,
+                        player.isRetryPossible,
+                    ),
                 )
-            )
 
             StreamRetrievalState.Loading -> {
                 // NO-OP
