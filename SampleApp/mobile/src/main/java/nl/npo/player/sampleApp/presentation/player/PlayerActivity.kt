@@ -124,6 +124,10 @@ class PlayerActivity : BaseActivity() {
                 player?.play()
             }
 
+            override fun onCanStartPlayingBecauseResumingAfterCasting() {
+                player?.play()
+            }
+
             override fun onPlayerError(
                 error: NPOPlayerError,
                 retryPossible: Boolean,
@@ -323,6 +327,20 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        player?.apply {
+            eventEmitter.addListener(onPlayPauseListener)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        player?.apply {
+            eventEmitter.removeListener(onPlayPauseListener)
+        }
+    }
+
     override fun onDestroy() {
         player?.apply {
 //            destroy()
@@ -515,7 +533,10 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private fun changePageTracker(player: PlayerWrapper, title: String) {
+    private fun changePageTracker(
+        player: PlayerWrapper,
+        title: String,
+    ) {
         val pageTracker =
             (application as PlayerApplication)
                 .npoTag
@@ -616,7 +637,7 @@ class PlayerActivity : BaseActivity() {
     private val fullScreenHandler =
         object : NPOFullScreenHandler {
             private var fullscreen = false
-            override val isFullscreen: Boolean get() = fullscreen
+            val isFullscreen: Boolean get() = fullscreen
 
             override fun onDestroy() {
                 // DO nothing
