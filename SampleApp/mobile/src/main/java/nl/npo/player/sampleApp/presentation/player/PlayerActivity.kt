@@ -624,7 +624,7 @@ class PlayerActivity : BaseActivity() {
     private val fullScreenHandler =
         object : NPOFullScreenHandler {
             private var fullscreen = false
-            override val isFullscreen: Boolean get() = fullscreen
+            val isFullscreen: Boolean get() = fullscreen
 
             override fun onDestroy() {
                 // DO nothing
