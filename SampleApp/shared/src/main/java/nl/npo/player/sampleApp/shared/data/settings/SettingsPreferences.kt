@@ -27,6 +27,7 @@ class SettingsPreferences
         private val defaultSettings: DefaultSettings,
     ) {
         object Keys {
+            val useExoplayer = booleanPreferencesKey("useExoplayer")
             val styling = stringPreferencesKey("styling")
             val userType = stringPreferencesKey("userType")
             val settingsType = booleanPreferencesKey("settingsType")
@@ -44,6 +45,18 @@ class SettingsPreferences
             val environment = stringPreferencesKey("environment")
         }
 
+        val useExoplayer: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.useExoplayer] ?: defaultSettings.useExoplayer
+                }
+
+        suspend fun setUseExoplayer(show: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.useExoplayer] = show
+            }
+        }
+
         val styling: Flow<StylingPref>
             get() =
                 dataStore.data.map { prefs ->
@@ -59,7 +72,8 @@ class SettingsPreferences
         val userType: Flow<UserTypePref>
             get() =
                 dataStore.data.map { prefs ->
-                    UserTypePref.getByKey(prefs[Keys.userType].orEmpty()) ?: defaultSettings.userTypePref
+                    UserTypePref.getByKey(prefs[Keys.userType].orEmpty())
+                        ?: defaultSettings.userTypePref
                 }
 
         suspend fun setUserType(value: UserTypePref) {
@@ -143,7 +157,8 @@ class SettingsPreferences
         val pauseOnSwitchToCellularNetwork: Flow<Boolean>
             get() =
                 dataStore.data.map { prefs ->
-                    prefs[Keys.pauseOnSwitchToCellularNetwork] ?: defaultSettings.pauseOnSwitchToCellularNetwork
+                    prefs[Keys.pauseOnSwitchToCellularNetwork]
+                        ?: defaultSettings.pauseOnSwitchToCellularNetwork
                 }
 
         suspend fun setPauseOnSwitchToCellularNetwork(pause: Boolean) {
@@ -160,7 +175,9 @@ class SettingsPreferences
                         showPlayNext = prefs[Keys.shouldPlayNext] ?: default.showPlayNext,
                         duration = prefs[Keys.playNextDuration]?.seconds ?: default.duration,
                         offset = prefs[Keys.playNextOffset]?.seconds ?: default.offset,
-                        autoPlayNextEnabled = prefs[Keys.shouldAutoPlayNext] ?: default.autoPlayNextEnabled,
+                        autoPlayNextEnabled =
+                            prefs[Keys.shouldAutoPlayNext]
+                                ?: default.autoPlayNextEnabled,
                     )
                 }
 
@@ -188,7 +205,8 @@ class SettingsPreferences
         val environment: Flow<EnvironmentPref>
             get() =
                 dataStore.data.map { prefs ->
-                    EnvironmentPref.getByKey(prefs[Keys.environment].orEmpty()) ?: defaultSettings.environment
+                    EnvironmentPref.getByKey(prefs[Keys.environment].orEmpty())
+                        ?: defaultSettings.environment
                 }
 
         suspend fun setEnvironment(value: EnvironmentPref) {

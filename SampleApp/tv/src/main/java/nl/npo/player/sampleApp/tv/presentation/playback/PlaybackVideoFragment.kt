@@ -56,7 +56,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             val pageTracker = activity.pageTracker ?: return@getConfiguration
             val playerPageTracker = PlayerTagProvider.getPageTracker(pageTracker)
             player =
@@ -65,7 +65,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                         context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoPlayer = true,
+                        useExoPlayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         updatePageTracker(playerPageTracker)
