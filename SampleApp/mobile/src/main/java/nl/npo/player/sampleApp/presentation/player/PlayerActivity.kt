@@ -196,6 +196,7 @@ class PlayerActivity : BaseActivity() {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title ?: "")
+            val pageTracker = pageTracker ?: return
 
             try {
                 player =
@@ -203,6 +204,8 @@ class PlayerActivity : BaseActivity() {
                         .getPlayerWrapper(
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
+                            pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                            useExoPlayer = true,
                         ).apply {
                             val player = this
 
@@ -306,7 +309,6 @@ class PlayerActivity : BaseActivity() {
             binding.mediaRouteButton.isVisible = false
         } else {
             backstackLost = true
-            val castContext = CastContext.getSharedInstance(this@PlayerActivity)
             binding.mediaRouteButton.isVisible = true
         }
     }
