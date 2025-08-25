@@ -46,6 +46,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -61,8 +62,10 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayerWrapper(
-                        context,
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoPlayer = true,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         updatePageTracker(playerPageTracker)

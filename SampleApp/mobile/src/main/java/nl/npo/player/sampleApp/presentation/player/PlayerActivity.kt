@@ -125,6 +125,10 @@ class PlayerActivity : BaseActivity() {
                 player?.play()
             }
 
+            override fun onCanStartPlayingBecauseResumingAfterCasting() {
+                player?.play()
+            }
+
             override fun onPlayerError(
                 error: NPOPlayerError,
                 retryPossible: Boolean,
@@ -193,6 +197,7 @@ class PlayerActivity : BaseActivity() {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title ?: "")
+            val pageTracker = pageTracker ?: return
 
             try {
                 player =
@@ -304,7 +309,6 @@ class PlayerActivity : BaseActivity() {
             binding.mediaRouteButton.isVisible = false
         } else {
             backstackLost = true
-            val castContext = CastContext.getSharedInstance(this@PlayerActivity)
             binding.mediaRouteButton.isVisible = true
         }
     }
@@ -322,6 +326,20 @@ class PlayerActivity : BaseActivity() {
             )
         } else {
             super.finish()
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        player?.apply {
+            eventEmitter.addListener(onPlayPauseListener)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        player?.apply {
+            eventEmitter.removeListener(onPlayPauseListener)
         }
     }
 
@@ -620,7 +638,7 @@ class PlayerActivity : BaseActivity() {
     private val fullScreenHandler =
         object : NPOFullScreenHandler {
             private var fullscreen = false
-            override val isFullscreen: Boolean get() = fullscreen
+            val isFullscreen: Boolean get() = fullscreen
 
             override fun onDestroy() {
                 // DO nothing

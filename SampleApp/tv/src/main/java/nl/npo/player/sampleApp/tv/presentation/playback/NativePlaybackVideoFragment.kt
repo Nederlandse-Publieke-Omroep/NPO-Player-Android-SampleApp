@@ -33,6 +33,7 @@ import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.experimental.attachToLifecycle
+import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
@@ -112,6 +113,7 @@ class NativePlaybackVideoFragment : Fragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -125,8 +127,10 @@ class NativePlaybackVideoFragment : Fragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayerWrapper(
-                        context,
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoPlayer = true,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         playbackViewModel.setPlayer(this)
@@ -138,7 +142,8 @@ class NativePlaybackVideoFragment : Fragment() {
                                 override fun onPlaying() {
                                     if (player.selectedSubtitleTrack == NPOSubtitleTrack.OFF) {
                                         player
-                                            .availableSubtitleTracks.firstOrNull { it != NPOSubtitleTrack.OFF }
+                                            .availableSubtitleTracks
+                                            .firstOrNull { it != NPOSubtitleTrack.OFF }
                                             ?.let {
                                                 player.setSelectedSubtitleTrack(it)
                                             }
@@ -154,10 +159,11 @@ class NativePlaybackVideoFragment : Fragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(
-                    sourceWrapper,
-                    ::handleTokenState
-                )
+                sourceWrapper.getStreamLink ->
+                    playerViewModel.retrieveSource(
+                        sourceWrapper,
+                        ::handleTokenState,
+                    )
 
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
@@ -175,8 +181,8 @@ class NativePlaybackVideoFragment : Fragment() {
                 player.publishEvent(
                     NPOPlayerEvent.Player.Error(
                         retrievalState.error,
-                        player.isRetryPossible
-                    )
+                        player.isRetryPossible,
+                    ),
                 )
             }
 
