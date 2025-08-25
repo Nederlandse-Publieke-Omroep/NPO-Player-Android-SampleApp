@@ -123,14 +123,14 @@ class NativePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             player =
                 NPOPlayerLibrary
                     .getPlayerWrapper(
                         context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoPlayer = true,
+                        useExoPlayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         playbackViewModel.setPlayer(this)

@@ -58,6 +58,7 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import nl.npo.tag.sdk.tracker.PageTracker
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -177,8 +178,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
-            loadSource(sourceWrapper, playerConfig, npoPlayerColors)
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
+            loadSource(sourceWrapper, playerConfig, npoPlayerColors, useExoplayer)
         }
     }
 
@@ -193,6 +194,7 @@ class PlayerActivity : BaseActivity() {
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
         npoPlayerColors: NativePlayerColors?,
+        useExoplayer: UseExoplayer,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
@@ -204,9 +206,9 @@ class PlayerActivity : BaseActivity() {
                     NPOPlayerLibrary
                         .getPlayerWrapper(
                             context = binding.root.context,
-                            pageTracker = getPageTracker(title.orEmpty()),
                             npoPlayerConfig = playerConfig,
-                            useExoPlayer = true,
+                            pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                            useExoPlayer = useExoplayer,
                         ).apply {
                             val player = this
 
@@ -399,8 +401,8 @@ class PlayerActivity : BaseActivity() {
             }?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, npoPlayerColors ->
-                        loadSource(newSource, config, npoPlayerColors)
+                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer ->
+                        loadSource(newSource, config, npoPlayerColors, useExoplayer)
                     }
                 }
         }

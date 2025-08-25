@@ -7,6 +7,7 @@ import nl.npo.player.sampleApp.shared.data.model.UserTypePref
 import kotlin.time.Duration.Companion.seconds
 
 data class DefaultSettings(
+    val useExoplayer: Boolean = false,
     val stylingPref: StylingPref = StylingPref.Default,
     val userTypePref: UserTypePref = UserTypePref.Start,
     val showCustomSettings: Boolean = false,

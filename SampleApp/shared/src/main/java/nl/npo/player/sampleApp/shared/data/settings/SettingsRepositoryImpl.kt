@@ -18,6 +18,12 @@ class SettingsRepositoryImpl
     constructor(
         private val prefs: SettingsPreferences,
     ) : SettingsRepository {
+        override val useExoplayer: Flow<Boolean> = prefs.useExoplayer
+
+        override suspend fun setUseExoplayer(useExoplayer: Boolean) {
+            prefs.setUseExoplayer(useExoplayer)
+        }
+
         override val styling: Flow<Styling> =
             prefs.styling.map(StylingPref::toDomain)
 
