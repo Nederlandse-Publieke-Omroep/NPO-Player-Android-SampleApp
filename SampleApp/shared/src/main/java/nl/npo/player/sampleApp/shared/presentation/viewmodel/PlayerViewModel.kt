@@ -15,10 +15,10 @@ import nl.npo.player.library.data.extensions.toNPOPlayerError
 import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.experimental.PlayerWrapper
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository

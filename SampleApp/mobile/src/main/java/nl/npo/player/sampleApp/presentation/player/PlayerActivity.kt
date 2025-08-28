@@ -26,6 +26,7 @@ import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOPlaybackSpeed
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
@@ -34,7 +35,6 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
-import nl.npo.player.library.experimental.PlayerWrapper
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.experimental.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
@@ -207,7 +207,7 @@ class PlayerActivity : BaseActivity() {
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
                             pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                            useExoPlayer = useExoplayer,
+                            useExoplayer = useExoplayer,
                         ).apply {
                             val player = this
 

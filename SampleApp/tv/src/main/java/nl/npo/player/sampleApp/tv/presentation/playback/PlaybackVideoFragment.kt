@@ -12,8 +12,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.events.NPOPlayerEvent
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.experimental.PlayerWrapper
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.tv.adapter.NPOLeanbackPlayerAdapter
@@ -65,7 +65,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                         context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoPlayer = useExoplayer,
+                        useExoplayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         updatePageTracker(playerPageTracker)

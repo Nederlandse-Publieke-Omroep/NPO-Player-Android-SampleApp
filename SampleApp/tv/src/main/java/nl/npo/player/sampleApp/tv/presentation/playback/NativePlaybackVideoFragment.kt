@@ -29,9 +29,9 @@ import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.events.NPOPlayerEvent
+import nl.npo.player.library.domain.experimental.PlayerWrapper
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.experimental.PlayerWrapper
 import nl.npo.player.library.experimental.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
@@ -130,7 +130,7 @@ class NativePlaybackVideoFragment : Fragment() {
                         context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoPlayer = useExoplayer,
+                        useExoplayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         playbackViewModel.setPlayer(this)
