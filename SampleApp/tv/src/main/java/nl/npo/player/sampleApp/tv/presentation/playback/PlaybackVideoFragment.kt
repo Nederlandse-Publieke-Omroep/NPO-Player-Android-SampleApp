@@ -46,6 +46,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -55,14 +56,16 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             val pageTracker = activity.pageTracker ?: return@getConfiguration
             val playerPageTracker = PlayerTagProvider.getPageTracker(pageTracker)
             player =
                 NPOPlayerLibrary
                     .getPlayerWrapper(
-                        context,
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoplayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         updatePageTracker(playerPageTracker)
@@ -99,7 +102,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
             is StreamRetrievalState.Error ->
-                player.eventBus.publish(
+                player.publishEvent(
                     NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible),
                 )
 

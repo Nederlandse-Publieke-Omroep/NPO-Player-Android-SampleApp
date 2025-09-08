@@ -30,6 +30,8 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import javax.inject.Inject
 
+typealias UseExoplayer = Boolean
+
 @HiltViewModel
 class PlayerViewModel
     @Inject
@@ -138,7 +140,7 @@ class PlayerViewModel
             }
         }
 
-        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?) -> Unit) {
+        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, UseExoplayer) -> Unit) {
             viewModelScope.launch {
                 val playerConfig =
                     NPOPlayerConfig(
@@ -157,10 +159,12 @@ class PlayerViewModel
                     } else {
                         null
                     }
+                val useExoplayer: UseExoplayer = settingsRepository.useExoplayer.first()
 
                 callback(
                     playerConfig,
                     npoPlayerColors,
+                    useExoplayer,
                 )
             }
         }

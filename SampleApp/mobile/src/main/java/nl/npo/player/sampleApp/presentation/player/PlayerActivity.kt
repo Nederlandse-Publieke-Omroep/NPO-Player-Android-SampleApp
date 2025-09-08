@@ -57,6 +57,7 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import nl.npo.tag.sdk.tracker.PageTracker
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -163,6 +164,7 @@ class PlayerActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         NPOCasting.updateCastingContext(this)
+        pipHandler?.exitPictureInPicture()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -176,8 +178,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
-            loadSource(sourceWrapper, playerConfig, npoPlayerColors)
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
+            loadSource(sourceWrapper, playerConfig, npoPlayerColors, useExoplayer)
         }
     }
 
@@ -192,10 +194,12 @@ class PlayerActivity : BaseActivity() {
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
         npoPlayerColors: NativePlayerColors?,
+        useExoplayer: UseExoplayer,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
             logPageAnalytics(title ?: "")
+            val pageTracker = pageTracker ?: return
 
             try {
                 player =
@@ -203,6 +207,8 @@ class PlayerActivity : BaseActivity() {
                         .getPlayerWrapper(
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
+                            pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                            useExoplayer = useExoplayer,
                         ).apply {
                             val player = this
 
@@ -306,7 +312,6 @@ class PlayerActivity : BaseActivity() {
             binding.mediaRouteButton.isVisible = false
         } else {
             backstackLost = true
-            val castContext = CastContext.getSharedInstance(this@PlayerActivity)
             binding.mediaRouteButton.isVisible = true
         }
     }
@@ -343,7 +348,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player?.apply {
-            destroy()
+//            destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
         binding.npoVideoPlayerNative.onDestroy()
@@ -397,8 +402,8 @@ class PlayerActivity : BaseActivity() {
             }?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, npoPlayerColors ->
-                        loadSource(newSource, config, npoPlayerColors)
+                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer ->
+                        loadSource(newSource, config, npoPlayerColors, useExoplayer)
                     }
                 }
         }
