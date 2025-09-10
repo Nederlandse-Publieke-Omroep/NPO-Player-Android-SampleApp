@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import nl.npo.player.library.domain.experimental.PlayerWrapper
+import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.ui.model.Cue
 import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import javax.inject.Inject
@@ -15,7 +15,7 @@ import javax.inject.Inject
 class PlaybackViewModel
     @Inject
     constructor() : ViewModel() {
-        private val _player = MutableStateFlow<PlayerWrapper?>(null)
+        private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
 
         private val _playerColors = MutableStateFlow(PlayerColors())
@@ -23,7 +23,7 @@ class PlaybackViewModel
         private val _subtitles = MutableStateFlow<List<Cue>>(emptyList())
         val subtitles = _subtitles.asStateFlow()
 
-        fun setPlayer(player: PlayerWrapper) {
+        fun setPlayer(player: NPOPlayer) {
             _player.value = player.also(::collectPlayerStates)
         }
 
@@ -31,7 +31,7 @@ class PlaybackViewModel
             _playerColors.value = colors
         }
 
-        private fun collectPlayerStates(player: PlayerWrapper) {
+        private fun collectPlayerStates(player: NPOPlayer) {
             with(player) {
                 viewModelScope.launch {
                     playerState.collect { state ->

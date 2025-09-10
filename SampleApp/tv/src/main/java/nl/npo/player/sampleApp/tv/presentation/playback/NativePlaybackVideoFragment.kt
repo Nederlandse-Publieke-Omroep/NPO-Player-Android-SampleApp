@@ -29,10 +29,10 @@ import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.events.NPOPlayerEvent
-import nl.npo.player.library.domain.experimental.PlayerWrapper
+import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.experimental.attachToLifecycle
+import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
@@ -54,7 +54,7 @@ class NativePlaybackVideoFragment : Fragment() {
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val playbackViewModel by viewModels<PlaybackViewModel>()
     private lateinit var sourceWrapper: SourceWrapper
-    private lateinit var player: PlayerWrapper
+    private lateinit var player: NPOPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,7 +126,7 @@ class NativePlaybackVideoFragment : Fragment() {
         playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             player =
                 NPOPlayerLibrary
-                    .getPlayerWrapper(
+                    .getPlayer(
                         context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),

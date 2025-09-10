@@ -26,7 +26,7 @@ import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
-import nl.npo.player.library.domain.experimental.PlayerWrapper
+import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOPlaybackSpeed
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
@@ -35,14 +35,14 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
-import nl.npo.player.library.experimental.attachToLifecycle
-import nl.npo.player.library.experimental.setupPlayerNotification
+import nl.npo.player.library.ext.attachToLifecycle
+import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
-import nl.npo.player.library.presentation.experimental.DefaultNPOPictureInPictureHandlerNew
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
+import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
@@ -68,7 +68,7 @@ const val PLAYER_OFFLINE_SOURCE = "PLAYER_OFFLINE_SOURCE"
 
 @AndroidEntryPoint
 class PlayerActivity : BaseActivity() {
-    private var player: PlayerWrapper? = null
+    private var player: NPOPlayer? = null
     private lateinit var binding: ActivityPlayerBinding
     private lateinit var sourceWrapper: SourceWrapper
     private val playerViewModel by viewModels<PlayerViewModel>()
@@ -204,7 +204,7 @@ class PlayerActivity : BaseActivity() {
             try {
                 player =
                     NPOPlayerLibrary
-                        .getPlayerWrapper(
+                        .getPlayer(
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
                             pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
@@ -213,7 +213,7 @@ class PlayerActivity : BaseActivity() {
                             val player = this
 
                             val defaultPipHandler =
-                                DefaultNPOPictureInPictureHandlerNew(
+                                DefaultNPOPictureInPictureHandler(
                                     this@PlayerActivity,
                                     player,
                                 ).also {
@@ -539,7 +539,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun changePageTracker(
-        player: PlayerWrapper,
+        player: NPOPlayer,
         title: String,
     ) {
         val pageTracker =
