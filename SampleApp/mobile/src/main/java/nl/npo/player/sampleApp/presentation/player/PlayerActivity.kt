@@ -38,8 +38,13 @@ import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
+import nl.npo.player.library.presentation.compose.models.SettingType
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
+import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
+import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
+import nl.npo.player.library.presentation.mobile.compose.scene.experimental.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
@@ -245,18 +250,26 @@ class PlayerActivity : BaseActivity() {
                                     }
 
                                 attachPlayer(
-                                    npoPlayer = player,
-                                    npoPlayerColors = npoPlayerColors ?: NativePlayerColors(),
-                                    adsOverlayClazz = adOverlay,
+                                    player,
+                                    (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
+                                    MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
+                                    DefaultMobilePlayerComponents()
                                 )
 
                                 setFullScreenHandler(fullScreenHandler)
                                 enablePictureInPictureSupport(defaultPipHandler)
 
                                 playerViewModel.hasCustomSettings {
-                                    setSettingsButtonOnClickListener {
-                                        showSettings()
-                                        setSettingsButtonState(true)
+                                    setCustomSettings(
+                                        listOf(
+                                            object : SettingType.Custom {
+                                                override val id: String = "test"
+                                                override val label: String = "Test"
+
+                                            }
+                                        )
+                                    ) {
+
                                     }
                                 }
                             }
@@ -351,7 +364,7 @@ class PlayerActivity : BaseActivity() {
 //            destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
-        binding.npoVideoPlayerNative.onDestroy()
+        binding.npoVideoPlayerNative.destroy()
 
         npoNotificationManager?.setPlayer(null)
         if (isGooglePlayServicesAvailable()) {
@@ -425,7 +438,7 @@ class PlayerActivity : BaseActivity() {
                     }
                     dialog.dismiss()
                 }.setOnDismissListener {
-                    binding.npoVideoPlayerNative.setSettingsButtonState(false)
+//                    binding.npoVideoPlayerNative.setSettingsButtonState(false)
                 }.create()
                 .show()
         }
@@ -446,7 +459,9 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun audioQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableAudioQualities?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
+        if ((player?.availableAudioQualities?.size
+                ?: 0) > 1
+        ) PlayerSettings.AUDIO_QUALITIES else null
 
     private fun audioTrackSettings(): PlayerSettings? =
         if ((player?.availableAudioTracks?.size ?: 0) >
@@ -458,7 +473,9 @@ class PlayerActivity : BaseActivity() {
         }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableVideoQualities?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null
+        if ((player?.availableVideoQualities?.size
+                ?: 0) > 1
+        ) PlayerSettings.VIDEO_QUALITIES else null
 
     private fun showSubtitleDialog() {
         player?.availableSubtitleTracks?.let { npoSubtitleTracks ->
