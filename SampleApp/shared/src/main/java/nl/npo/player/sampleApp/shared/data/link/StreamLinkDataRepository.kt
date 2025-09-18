@@ -65,6 +65,7 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://www.assets.avrotros.nl/user_upload/_processed_/f/a/csm_Flikken-Maastricht-1280-quiz_2279c2e700.jpg",
                 preferThisImageUrlOverStreamLink = true,
                 avType = AVType.VIDEO,
+                offlineDownloadAllowed = true,
             ),
             SourceWrapper(
                 title = "Beste Zangers - s14-e5 - Karsu",
@@ -74,6 +75,16 @@ object StreamLinkDataRepository : LinkRepository {
                 startOffset = (60.1 * 41),
                 imageUrl = "https://assets-start.npo.nl/resources/2023/07/03/5a718c06-b2de-4035-ac9a-4c6919a9828a.jpg?dimensions=600x600",
                 avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "De Joodse Raad: VPWON_1333874",
+                testingDescription = "Chapters ident and intro",
+                uniqueId = "VPWON_1333874",
+                getStreamLink = true,
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2091245",
+                preferThisImageUrlOverStreamLink = false,
+                avType = AVType.VIDEO,
+                offlineDownloadAllowed = true,
             ),
             SourceWrapper(
                 title = "Flikken Maastricht: AT_300002877 ",
@@ -159,7 +170,6 @@ object StreamLinkDataRepository : LinkRepository {
                 testingDescription = "Override NICAM information",
                 uniqueId = "VPWON_1336246",
                 getStreamLink = true,
-                offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
                 avType = AVType.VIDEO,
                 overrideNicamContentDescription =
@@ -239,7 +249,6 @@ object StreamLinkDataRepository : LinkRepository {
                 testingDescription = "Playback VOD (No DRM)",
                 uniqueId = "VPWON_1336246",
                 getStreamLink = true,
-                offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
                 avType = AVType.VIDEO,
             ),
