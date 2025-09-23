@@ -19,6 +19,7 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
@@ -147,6 +148,13 @@ class PlayerViewModel
                         shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                         shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
                         bufferConfig = NPOBufferConfig(),
+                        allowedToSkipFollowingChapterTypes =
+                            listOf(
+                                StreamChapterType.IDENT,
+                                StreamChapterType.INTRO,
+                                StreamChapterType.RECAP,
+                                StreamChapterType.CREDITS,
+                            ),
                     )
 
                 val npoPlayerColors =
