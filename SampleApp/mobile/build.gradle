@@ -47,7 +47,8 @@ android {
         debug {
             debuggable true
             minifyEnabled false
-            testCoverageEnabled true
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
         release {
             debuggable false
@@ -69,11 +70,10 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
-
-    lintOptions {
-        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
-        disable "Instantiatable"
+    lint {
+        disable 'Instantiatable'
     }
+
 }
 
 dependencies {
