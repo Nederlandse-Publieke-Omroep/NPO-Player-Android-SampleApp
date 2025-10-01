@@ -94,7 +94,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.filter { it.avType != player.npoSourceConfig?.avType }
+            } // ?.filter { it.avType != player.npoSourceConfig?.avType }
                 ?.random()
                 ?.let { newSource ->
                     loadSource(newSource.copy(overrideIsPlusUser = sourceWrapper.overrideIsPlusUser))
