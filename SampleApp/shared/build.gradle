@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace 'nl.npo.player.sampleApp.shared'
-    compileSdk 34
+    compileSdk 35
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
