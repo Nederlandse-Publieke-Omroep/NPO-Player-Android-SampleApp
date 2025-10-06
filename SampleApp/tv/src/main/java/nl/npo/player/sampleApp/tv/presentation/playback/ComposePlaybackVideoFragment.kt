@@ -31,14 +31,15 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.PlayerUI
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
+import nl.npo.player.library.presentation.compose.state.collectStreamInfoAsState
+import nl.npo.player.library.presentation.compose.state.rememberNPOPlayerUIState
+import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
-import nl.npo.player.library.presentation.tv.compose.shareable.PlayerUI
-import nl.npo.player.library.presentation.tv.compose.shareable.state.collectStreamInfoAsState
-import nl.npo.player.library.presentation.tv.compose.shareable.state.rememberNPOPlayerUIState
 import nl.npo.player.library.presentation.tv.compose.theme.tv
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
@@ -152,6 +153,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                                 ),
                         ),
                     typography = PlayerTypography.tv(),
+                    npoPlayerColors = PlayerColors(),
                 )
             }
         }

@@ -35,11 +35,11 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
+import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
+import nl.npo.player.library.presentation.compose.state.collectStreamInfoAsState
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
-import nl.npo.player.library.presentation.tv.compose.shareable.state.NPOPlayerUIState
-import nl.npo.player.library.presentation.tv.compose.shareable.state.collectStreamInfoAsState
 import nl.npo.player.library.presentation.tv.view.NPOVideoPlayerView
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
