@@ -109,12 +109,14 @@ class ComposePlaybackVideoFragment : Fragment() {
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
+        val playerUIConfig by viewModel.playerUIConfig.collectAsState()
         val playerState =
             rememberNPOPlayerUIState(player).also {
                 it.actions.nextEpisodeAction = {
                     playRandom()
                 }
             }
+        playerState.setUIConfig(playerUIConfig)
 
         Row {
             val topbarInfo by playerState.collectStreamInfoAsState()
@@ -170,7 +172,7 @@ class ComposePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(
@@ -196,6 +198,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
+                        playbackViewModel.setPlayerUIConfig(playerUIConfig)
                         setPlayNextListener { action ->
                             when (action) {
                                 is PlayNextListenerResult.Triggered -> playRandom()

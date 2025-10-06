@@ -73,6 +73,8 @@ class SettingsViewModel
                     settingsRepository.setPauseOnSwitchToCellularNetwork(value)
 
                 SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
+                SettingsKey.ChapterSkippingEnabled -> settingsRepository.setChapterSkippingEnabled(value)
+                SettingsKey.ChapterSkippingAlwaysFeatured -> settingsRepository.setChapterSkippingAlwaysFeatured(value)
                 SettingsKey.Styling,
                 SettingsKey.Environment,
                 SettingsKey.UserType,
@@ -199,6 +201,22 @@ class SettingsViewModel
                             R.string.setting_environment,
                             settingsRepository.environment.first().toPref(),
                             EnvironmentPref.entries,
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.ChapterSkippingEnabled,
+                            R.string.setting_chapter_skipping_enabled,
+                            SettingsSwitchOption(settingsRepository.chapterSkippingEnabled.first()),
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.ChapterSkippingAlwaysFeatured,
+                            R.string.setting_chapter_skipping_always_featured,
+                            SettingsSwitchOption(settingsRepository.chapterSkippingAlwaysFeatured.first()),
                         ),
                     )
                 }
