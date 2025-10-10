@@ -4,7 +4,6 @@ import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.enums.NPOSourceType
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.streamLink.model.NicamContentDescription
-import nl.npo.player.library.domain.streamLink.model.StreamChapter
 import nl.npo.player.library.domain.streamLink.model.Subtitle
 
 @kotlinx.serialization.Serializable
@@ -24,5 +23,4 @@ data class MyNPOSourceConfig(
     override val drmToken: String? = null,
     override val durationInMillis: Long? = null,
     override val nicamContentDescription: NicamContentDescription? = null,
-    override val chapters: List<StreamChapter> = emptyList(),
 ) : NPOSourceConfig
