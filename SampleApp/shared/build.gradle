@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace 'nl.npo.player.sampleApp.shared'
-    compileSdk 35
+    compileSdk = 36
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
@@ -51,6 +51,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -64,7 +65,7 @@ android {
 }
 
 dependencies {
-
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     implementation "nl.npo.player.library:ster-ads:$libVersionName"
     implementation "nl.npo.player.library:presentation:$libVersionName"
