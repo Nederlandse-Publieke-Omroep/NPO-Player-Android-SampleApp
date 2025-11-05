@@ -140,6 +140,17 @@ object URLLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
                 isLive = true,
             ),
+            SourceWrapper(
+                title = "Test- Audio stream",
+                streamUrl = "https://dev-tommie.cdn.streamgate.nl/video/live/audio/audio.isml/.mpd",
+                uniqueId = "testaudio_1s",
+                getStreamLink = false,
+                imageUrl =
+                    "https://content.radioveronica.nl/images/66qysnomiif1/3Cy1DKrJZpB4uq4CHxA5d1/" +
+                        "31a2820a631bdea44fe6bdcfd054ec68/Radio-Veronica_Martijn-Muijs_1200x675.jpg?fit=thumb&w=774&h=465&fm=webp",
+                avType = AVType.AUDIO,
+                isLive = false,
+            ),
         )
     }
 
