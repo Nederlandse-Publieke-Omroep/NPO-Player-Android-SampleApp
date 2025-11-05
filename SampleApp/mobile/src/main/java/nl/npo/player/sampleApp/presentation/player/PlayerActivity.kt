@@ -412,7 +412,7 @@ class PlayerActivity : BaseActivity() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            }?.filter { it.avType != player?.lastLoadedSource?.avType }
+            } // ?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
                     playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer ->
