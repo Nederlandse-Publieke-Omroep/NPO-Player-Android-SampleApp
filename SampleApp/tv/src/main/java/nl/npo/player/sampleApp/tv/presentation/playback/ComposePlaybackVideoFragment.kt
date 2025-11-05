@@ -23,11 +23,13 @@ import androidx.fragment.app.viewModels
 import androidx.tv.material3.Icon
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.domain.analytics.model.PageConfiguration
+import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
+import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
@@ -47,6 +49,7 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
 import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
+import nl.npo.tag.sdk.tracker.PageTracker
 
 /** Handles video playback with media controls. */
 @AndroidEntryPoint
@@ -94,7 +97,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                 linkViewModel.streamLinkList.value?.union(
                     linkViewModel.urlLinkList.value ?: emptyList(),
                 )
-            } // ?.filter { it.avType != player.npoSourceConfig?.avType }
+            } // ?.filter { it.avType != player.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
                     loadSource(newSource.copy(overrideIsPlusUser = sourceWrapper.overrideIsPlusUser))
@@ -157,6 +160,7 @@ class ComposePlaybackVideoFragment : Fragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -166,20 +170,33 @@ class ComposePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context,
-                        PlayerTagProvider.getPageTracker(activity.pageTracker!!),
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoplayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
+
+                        updatePageTracker(
+                            when (activity.pageTracker) {
+                                is PageTracker -> PlayerTagProvider.getPageTracker(activity.pageTracker!!)
+                                else ->
+                                    PlayerTagProvider.getPageTracker(
+                                        PageConfiguration(
+                                            sourceWrapper.title ?: "",
+                                        ),
+                                    )
+                            },
+                        )
                         playbackViewModel.setPlayer(this)
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
-                        playNextListener = { action ->
+                        setPlayNextListener { action ->
                             when (action) {
                                 is PlayNextListenerResult.Triggered -> playRandom()
                             }
@@ -214,7 +231,13 @@ class ComposePlaybackVideoFragment : Fragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.setPlayerError(retrievalState.error)
+            is StreamRetrievalState.Error ->
+                player.publishEvent(
+                    NPOPlayerEvent.Player.Error(
+                        retrievalState.error,
+                        player.isRetryPossible,
+                    ),
+                )
 
             StreamRetrievalState.Loading -> {
                 // NO-OP

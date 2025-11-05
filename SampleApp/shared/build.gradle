@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace 'nl.npo.player.sampleApp.shared'
-    compileSdk 34
+    compileSdk 35
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
@@ -57,11 +57,10 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
-
-    lintOptions {
-        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
-        disable "Instantiatable"
+    lint {
+        disable 'Instantiatable'
     }
+
 }
 
 dependencies {
