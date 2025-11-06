@@ -9,14 +9,22 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.EditorInfo
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.material3.MaterialTheme
+import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
+import com.bitmovin.player.api.source.Source
+import com.google.android.datatransport.runtime.scheduling.persistence.EventStoreModule_PackageNameFactory.packageName
 import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.common.wrappers.Wrappers.packageManager
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityMainBinding
+import nl.npo.player.sampleApp.presentation.compose.view.PlayerHomeScreen
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.list.MainListAdapter
 import nl.npo.player.sampleApp.presentation.offline.OfflineActivity
@@ -45,13 +53,33 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkLibraryInitialization()
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        //binding = ActivityMainBinding.inflate(layoutInflater)
+        //setContentView(binding.root)
+        setContent {
+
+            val updated = SourceWrapper(
+                streamLinkAdapter.offlineSource.map { it.title }.toString(),
+                streamLinkAdapter.offlineSource.map { it.testingDescription }.toString(),
+                uniqueId = streamLinkAdapter.offlineSource.map { it.uniqueId }.toString(),
+                streamLinkAdapter.offlineSource.map { it.getStreamLink }.isNotEmpty()
+            )
+            MaterialTheme {
+                PlayerHomeScreen(
+                    liveItems = updated,
+                    vodItems = updated,
+                    onItemClick = {
+                        onSourceWrapperListItemClicked(it)
+                    }
+                )
+            }
+        }
+
+
         // Update the context the BitmovinCastManager is using
         // This should be done in every Activity's onCreate using the cast function
         NPOCasting.updateCastingContext(this)
 
-        binding.setupViews()
+        //binding.setupViews()
         setObservers()
         logPageAnalytics("MainActivity")
     }
@@ -113,27 +141,27 @@ class MainActivity : BaseActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun ActivityMainBinding.setupViews() {
-        rvLoadUrlDirectly.adapter = urlLinkAdapter
-        rvStreamLink.adapter = streamLinkAdapter
-        btnOffline.setOnClickListener {
-            startActivity(Intent(this@MainActivity, OfflineActivity::class.java))
-        }
-        etPrid.setOnEditorActionListener { textView, i, _ ->
-            return@setOnEditorActionListener if (i == EditorInfo.IME_ACTION_SEND && textView.text.isNotBlank()) {
-                onSourceWrapperListItemClicked(
-                    SourceWrapper(
-                        title = textView.text.toString(),
-                        uniqueId = textView.text.toString(),
-                        getStreamLink = true,
-                    ),
-                )
-                true
-            } else {
-                false
-            }
-        }
-    }
+//    private fun ActivityMainBinding.setupViews() {
+//        rvLoadUrlDirectly.adapter = urlLinkAdapter
+//        rvStreamLink.adapter = streamLinkAdapter
+//        btnOffline.setOnClickListener {
+//            startActivity(Intent(this@MainActivity, OfflineActivity::class.java))
+//        }
+//        etPrid.setOnEditorActionListener { textView, i, _ ->
+//            return@setOnEditorActionListener if (i == EditorInfo.IME_ACTION_SEND && textView.text.isNotBlank()) {
+//                onSourceWrapperListItemClicked(
+//                    SourceWrapper(
+//                        title = textView.text.toString(),
+//                        uniqueId = textView.text.toString(),
+//                        getStreamLink = true,
+//                    ),
+//                )
+//                true
+//            } else {
+//                false
+//            }
+//        }
+//    }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun setStreamAdapter(sourceWrappers: List<SourceWrapper>) {
