@@ -56,17 +56,12 @@ class MainActivity : BaseActivity() {
         //binding = ActivityMainBinding.inflate(layoutInflater)
         //setContentView(binding.root)
         setContent {
-
-            val updated = SourceWrapper(
-                streamLinkAdapter.offlineSource.map { it.title }.toString(),
-                streamLinkAdapter.offlineSource.map { it.testingDescription }.toString(),
-                uniqueId = streamLinkAdapter.offlineSource.map { it.uniqueId }.toString(),
-                streamLinkAdapter.offlineSource.map { it.getStreamLink }.isNotEmpty()
-            )
+         val stream = linksViewModel.streamLinkList.value
+            val audio = linksViewModel.urlLinkList.value
             MaterialTheme {
                 PlayerHomeScreen(
-                    liveItems = updated,
-                    vodItems = updated,
+                    liveItems = stream,
+                    vodItems = audio,
                     onItemClick = {
                         onSourceWrapperListItemClicked(it)
                     }

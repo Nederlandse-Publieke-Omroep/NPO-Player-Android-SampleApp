@@ -11,16 +11,19 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 @Composable
 fun PlayerHomeScreen(
-    liveItems: SourceWrapper,
-    vodItems: SourceWrapper,
-    onItemClick: (SourceWrapper) -> Unit,
+    liveItems: List<SourceWrapper>,
+    vodItems: List<SourceWrapper>,
+    onItemClick: (SourceWrapper) -> Unit = {},
 ) {
+
+
+
     // Dark surface like the screenshot
     Surface(color = Color(0xFF0C0C0C)) {
         Box(Modifier.fillMaxSize()) {
             ContentList(
-                live = listOf(liveItems),
-                vod = listOf(vodItems),
+                live = liveItems,
+                vod = vodItems,
                 onItemClick = onItemClick
             )
         }
