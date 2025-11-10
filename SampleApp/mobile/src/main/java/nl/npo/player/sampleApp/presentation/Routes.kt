@@ -10,9 +10,4 @@ object Routes {
 
 const val ARG_MEDIA_ID = "mediaId"
 
-data class BottomNavItem(
-    val route: String,
-    val label: String,
-    val icon: ImageVector
-)
 
