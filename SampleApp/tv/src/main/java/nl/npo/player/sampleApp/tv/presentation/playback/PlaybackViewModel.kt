@@ -21,8 +21,8 @@ class PlaybackViewModel
 
         private val _playerColors = MutableStateFlow(PlayerColors())
         val playerColors = _playerColors.asStateFlow()
-        private val _playerUIConfig = MutableStateFlow(NPOPlayerUIConfig())
-        val playerUIConfig = _playerUIConfig.asStateFlow()
+        private val _customPlayerUI = MutableStateFlow<Boolean>(false)
+        val customPlayerUI = _customPlayerUI.asStateFlow()
         private val _subtitles = MutableStateFlow<List<Cue>>(emptyList())
         val subtitles = _subtitles.asStateFlow()
 
@@ -32,10 +32,7 @@ class PlaybackViewModel
 
         fun setPlayerColors(colors: PlayerColors) {
             _playerColors.value = colors
-        }
-
-        fun setPlayerUIConfig(playerUIConfig: NPOPlayerUIConfig) {
-            _playerUIConfig.value = playerUIConfig
+            _customPlayerUI.tryEmit(true)
         }
 
         private fun collectPlayerStates(player: NPOPlayer) {

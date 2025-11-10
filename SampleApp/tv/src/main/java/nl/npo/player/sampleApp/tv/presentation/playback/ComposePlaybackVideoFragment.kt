@@ -31,14 +31,15 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.PlayerUI
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
+import nl.npo.player.library.presentation.compose.state.collectStreamInfoAsState
+import nl.npo.player.library.presentation.compose.state.rememberNPOPlayerUIState
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
+import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
-import nl.npo.player.library.presentation.tv.compose.shareable.PlayerUI
-import nl.npo.player.library.presentation.tv.compose.shareable.state.collectStreamInfoAsState
-import nl.npo.player.library.presentation.tv.compose.shareable.state.rememberNPOPlayerUIState
 import nl.npo.player.library.presentation.tv.compose.theme.tv
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
@@ -109,7 +110,8 @@ class ComposePlaybackVideoFragment : Fragment() {
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
-        val playerUIConfig by viewModel.playerUIConfig.collectAsState()
+        val colors by viewModel.playerColors.collectAsState()
+        val useCustomUI by viewModel.customPlayerUI.collectAsState()
         val playerState =
             rememberNPOPlayerUIState(player).also {
                 it.actions.nextEpisodeAction = {
@@ -129,7 +131,12 @@ class ComposePlaybackVideoFragment : Fragment() {
                 PlayerUI.Overlay(
                     modifier = Modifier,
                     state = playerState,
-                    components = CustomPlayerComponents { activity?.onBackPressedDispatcher?.onBackPressed() },
+                    components =
+                        if (useCustomUI) {
+                            CustomPlayerComponents { activity?.onBackPressedDispatcher?.onBackPressed() }
+                        } else {
+                            DefaultTvPlayerComponents()
+                        },
                     sceneOverlays =
                         TVSceneRenderer(
                             adsOverlayRenderer =
@@ -154,6 +161,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                                 ),
                         ),
                     typography = PlayerTypography.tv(),
+                    npoPlayerColors = colors,
                 )
             }
         }
