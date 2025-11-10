@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.compose.rememberNavController
 import com.bitmovin.player.api.source.Source
 import com.google.android.datatransport.runtime.scheduling.persistence.EventStoreModule_PackageNameFactory.packageName
 import com.google.android.gms.cast.framework.CastButtonFactory
@@ -58,14 +59,12 @@ class MainActivity : BaseActivity() {
         setContent {
          val stream = linksViewModel.streamLinkList.value
             val audio = linksViewModel.urlLinkList.value
+            val navController = rememberNavController()
             MaterialTheme {
-                PlayerHomeScreen(
-                    liveItems = stream,
-                    vodItems = audio,
-                    onItemClick = {
-                        onSourceWrapperListItemClicked(it)
-                    }
-                )
+              PlayerHomeScreen(
+                  audio,
+                  stream
+              )
             }
         }
 
