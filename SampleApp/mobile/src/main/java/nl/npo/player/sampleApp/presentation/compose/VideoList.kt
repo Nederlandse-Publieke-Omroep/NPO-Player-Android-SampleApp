@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -35,7 +36,7 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
         ) {
 
             stickyHeader {
-                Header("Audio")
+                SectionHeader("Audio", AVType.AUDIO)
             }
 
             itemsIndexed(

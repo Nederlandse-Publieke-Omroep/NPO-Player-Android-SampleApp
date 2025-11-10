@@ -5,8 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Headphones
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -17,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -25,17 +23,15 @@ import androidx.navigation.compose.rememberNavController
 import nl.npo.player.sampleApp.presentation.Routes
 import nl.npo.player.sampleApp.presentation.compose.AudioList
 import nl.npo.player.sampleApp.presentation.compose.VideoList
-import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 
 @Composable
-fun PlayerHomeScreen(
-    liveItems: List<SourceWrapper>,
-    vodItems: List<SourceWrapper>,
-    onItemClick: (SourceWrapper) -> Unit
-) {
+fun App() {
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val linksViewModel: LinksViewModel = viewModel()
 
     Scaffold(
         bottomBar = {
@@ -64,16 +60,22 @@ fun PlayerHomeScreen(
             ) {
 
                 composable(Routes.VIDEO_LIST) {
-                    val videoId = liveItems.map { it.uniqueId }
-                    VideoList(
-                        liveItems,
-                    ) { navController.navigate("${Routes.DETAIL}/${videoId}") }
+                    val video = linksViewModel.urlLinkList.value
+                    val id = video?.map { it.uniqueId }
+                    if (video != null) {
+                        VideoList(
+                            video,
+                        ) { navController.navigate("${Routes.DETAIL}/${id}") }
+                    }
                 }
 
                 composable(Routes.AUDIO_LIST) {
-                    val audioId = vodItems.map { it.uniqueId }
-                    AudioList(vodItems)
-                    { navController.navigate("${Routes.DETAIL}/${audioId}") }
+                    val audio = linksViewModel.streamLinkList.value
+                    val id = audio?.map { it.uniqueId }
+                    if (audio != null) {
+                        AudioList(audio)
+                        { navController.navigate("${Routes.DETAIL}/${id}") }
+                    }
 
                 }
             }

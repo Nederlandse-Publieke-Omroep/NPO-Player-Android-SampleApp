@@ -17,7 +17,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
-import nl.npo.player.sampleApp.presentation.compose.view.PlayerHomeScreen
+import nl.npo.player.sampleApp.presentation.compose.view.App
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.list.MainListAdapter
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
@@ -48,15 +48,9 @@ class MainActivity : BaseActivity() {
         //setContentView(binding.root)
         setObservers()
         setContent {
-         val stream = linksViewModel.streamLinkList.value
-            val audio = linksViewModel.urlLinkList.value
             MaterialTheme {
-                    PlayerHomeScreen(
-                        audio,
-                        stream,
-                        onItemClick = {onSourceWrapperListItemClicked(it)}
-                    )
-                }
+                App()
+            }
         }
         // Update the context the BitmovinCastManager is using
         // This should be done in every Activity's onCreate using the cast function
