@@ -35,9 +35,9 @@ import nl.npo.player.library.presentation.PlayerUI
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.state.collectStreamInfoAsState
 import nl.npo.player.library.presentation.compose.state.rememberNPOPlayerUIState
-import nl.npo.player.library.presentation.compose.theme.PlayerColors
 import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
+import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
 import nl.npo.player.library.presentation.tv.compose.theme.tv
@@ -110,6 +110,8 @@ class ComposePlaybackVideoFragment : Fragment() {
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
+        val colors by viewModel.playerColors.collectAsState()
+        val useCustomUI by viewModel.customPlayerUI.collectAsState()
         val playerState =
             rememberNPOPlayerUIState(player).also {
                 it.actions.nextEpisodeAction = {
@@ -128,7 +130,12 @@ class ComposePlaybackVideoFragment : Fragment() {
                 PlayerUI.Overlay(
                     modifier = Modifier,
                     state = playerState,
-                    components = CustomPlayerComponents { activity?.onBackPressedDispatcher?.onBackPressed() },
+                    components =
+                        if (useCustomUI) {
+                            CustomPlayerComponents { activity?.onBackPressedDispatcher?.onBackPressed() }
+                        } else {
+                            DefaultTvPlayerComponents()
+                        },
                     sceneOverlays =
                         TVSceneRenderer(
                             adsOverlayRenderer =
@@ -153,7 +160,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                                 ),
                         ),
                     typography = PlayerTypography.tv(),
-                    npoPlayerColors = PlayerColors(),
+                    npoPlayerColors = colors,
                 )
             }
         }

@@ -253,24 +253,22 @@ class PlayerActivity : BaseActivity() {
                                     player,
                                     (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
                                     MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
-                                    DefaultMobilePlayerComponents()
+                                    DefaultMobilePlayerComponents(),
                                 )
 
                                 setFullScreenHandler(fullScreenHandler)
                                 enablePictureInPictureSupport(defaultPipHandler)
 
                                 playerViewModel.hasCustomSettings {
-                                    setCustomSettings(
+                                    setSettingsOverride(
                                         listOf(
                                             object : SettingType.Custom {
-                                                override val id: String = "test"
-                                                override val label: String = "Test"
-
-                                            }
-                                        )
-                                    ) {
-
-                                    }
+                                                override val id: String = "custom_settings"
+                                                override val label: String = "Open custom settings"
+                                            },
+                                        ),
+                                    )
+                                    setCustomSettingsClickListener { showSettings() }
                                 }
                             }
                         }
@@ -459,23 +457,25 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun audioQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableAudioQualities?.size
-                ?: 0) > 1
-        ) PlayerSettings.AUDIO_QUALITIES else null
+        if ((player?.availableAudioQualities?.size ?: 0) > 1) {
+            PlayerSettings.AUDIO_QUALITIES
+        } else {
+            null
+        }
 
     private fun audioTrackSettings(): PlayerSettings? =
-        if ((player?.availableAudioTracks?.size ?: 0) >
-            0
-        ) {
+        if ((player?.availableAudioTracks?.size ?: 0) > 0) {
             PlayerSettings.AUDIO_TRACKS
         } else {
             null
         }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableVideoQualities?.size
-                ?: 0) > 1
-        ) PlayerSettings.VIDEO_QUALITIES else null
+        if ((player?.availableVideoQualities?.size ?: 0) > 1) {
+            PlayerSettings.VIDEO_QUALITIES
+        } else {
+            null
+        }
 
     private fun showSubtitleDialog() {
         player?.availableSubtitleTracks?.let { npoSubtitleTracks ->
