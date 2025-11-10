@@ -8,27 +8,18 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.inputmethod.EditorInfo
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
-import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
-import androidx.navigation.compose.rememberNavController
-import com.bitmovin.player.api.source.Source
-import com.google.android.datatransport.runtime.scheduling.persistence.EventStoreModule_PackageNameFactory.packageName
 import com.google.android.gms.cast.framework.CastButtonFactory
-import com.google.android.gms.common.wrappers.Wrappers.packageManager
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
-import nl.npo.player.sampleApp.databinding.ActivityMainBinding
 import nl.npo.player.sampleApp.presentation.compose.view.PlayerHomeScreen
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.list.MainListAdapter
-import nl.npo.player.sampleApp.presentation.offline.OfflineActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.settings.SettingsBottomSheetDialog
 import nl.npo.player.sampleApp.shared.domain.model.Environment
@@ -41,7 +32,6 @@ import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
-    private lateinit var binding: ActivityMainBinding
     private val viewModel by viewModels<MainViewModel>()
     private val libraryViewModel by viewModels<LibrarySetupViewModel>()
     private val linksViewModel by viewModels<LinksViewModel>()
@@ -56,25 +46,24 @@ class MainActivity : BaseActivity() {
         checkLibraryInitialization()
         //binding = ActivityMainBinding.inflate(layoutInflater)
         //setContentView(binding.root)
+        setObservers()
         setContent {
          val stream = linksViewModel.streamLinkList.value
             val audio = linksViewModel.urlLinkList.value
-            val navController = rememberNavController()
             MaterialTheme {
-              PlayerHomeScreen(
-                  audio,
-                  stream
-              )
-            }
+                    PlayerHomeScreen(
+                        audio,
+                        stream,
+                        onItemClick = {onSourceWrapperListItemClicked(it)}
+                    )
+                }
         }
-
-
         // Update the context the BitmovinCastManager is using
         // This should be done in every Activity's onCreate using the cast function
         NPOCasting.updateCastingContext(this)
 
         //binding.setupViews()
-        setObservers()
+
         logPageAnalytics("MainActivity")
     }
 

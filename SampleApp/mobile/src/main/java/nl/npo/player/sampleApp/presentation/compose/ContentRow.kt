@@ -1,9 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose
 
-import android.R.attr.description
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 @Composable
 fun RowCard(
@@ -74,62 +70,4 @@ fun RowCard(
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//@Composable
-// fun ContentRow(
-//    item: SourceWrapper,
-//    accent: Color,
-//    onClick: () -> Unit
-//) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 10.dp)
-//            .clickable(onClick = onClick),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//
-//        Thumbnail(
-//            imageUrl = item.imageUrl,
-//            modifier = Modifier
-//                .size(64.dp)
-//                .clip(RoundedCornerShape(12.dp))
-//        )
-//
-//        Spacer(Modifier.width(12.dp))
-//
-//        Column(Modifier.weight(1f)) {
-//            Text(
-//                text = item.title ?: "",
-//                color = Color.White,
-//                style = MaterialTheme.typography.titleMedium,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis
-//            )
-//            Text(
-//                text = item.testingDescription,
-//                color = accent,
-//                style = MaterialTheme.typography.bodyMedium,
-//                fontWeight = FontWeight.SemiBold,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis
-//            )
-//            }
-//        }
-//    }
 
