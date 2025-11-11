@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.presentation
+package nl.npo.player.sampleApp.presentation.compose.navigation
 
 object Routes {
     const val VIDEO_LIST = "video_list"
