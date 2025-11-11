@@ -1,3 +1,5 @@
+@file:JvmName("VideoListKt")
+
 package nl.npo.player.sampleApp.presentation.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -18,14 +20,15 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
- fun AudioList(
-    audioList: List<SourceWrapper>,
+fun VideoList(
+    videoList: List<SourceWrapper>,
     onItemClick: () -> Unit
 ) {
-    val orange = Color(0xFFFF7A00)
-    val audio = audioList.filter { it.avType == AVType.AUDIO }
+    val isLive = videoList.filter { it.isLive }
+    val video = videoList.filter { it.avType == AVType.VIDEO && !it.isLive}
 
-    val isLive = audioList.filter { it.isLive }
+
+    val orange = Color(0xFFFF7A00)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,12 +43,11 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
             if (isLive.isNotEmpty()) {
                 stickyHeader {
-                    SectionHeader("Live", AVType.AUDIO)
+                    SectionHeader("Live", AVType.VIDEO)
                 }
-
                 itemsIndexed(
-                    items = audio,
-                    key = { index, item -> "live_$$index" }   // ← prefix keys
+                    items = video,
+                    key = { index, item -> "live_${item.uniqueId}_$index" }   // ← prefix keys
                 ) { index, item ->
                     RowCard(
                         image = item.imageUrl ?: "",
@@ -58,21 +60,20 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
             }
 
             stickyHeader {
-                SectionHeader("Audio", AVType.AUDIO)
+                SectionHeader("Video", type = AVType.VIDEO)
             }
-
-            itemsIndexed(
-                items = audio,
-                key = { index, item -> "live_${item.uniqueId}_$index" }   // ← prefix keys
-            ) { index, item ->
-                RowCard(
-                    image = item.imageUrl ?: "",
-                    contentTitle = item.title ?: "",
-                    contentDescription = item.testingDescription,
-                    accent = orange,
-                    onClick = { onItemClick() },
-                )
-            }
+                  itemsIndexed(
+                      items = video,
+                      key = { index, item -> "vod_$index" }
+                  ) { index, item ->
+                      RowCard(
+                          image = item.imageUrl ?: "",
+                          contentTitle = item.title ?: "",
+                          contentDescription = item.testingDescription,
+                          accent = orange,
+                          onClick = { onItemClick() },
+                      )
+              }
         }
     }
 }

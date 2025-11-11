@@ -1,4 +1,4 @@
-package nl.npo.player.sampleApp.presentation.compose.view
+package nl.npo.player.sampleApp.presentation.compose.navigation
 
 
 import androidx.compose.foundation.background
@@ -20,7 +20,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import nl.npo.player.sampleApp.presentation.Routes
 import nl.npo.player.sampleApp.presentation.compose.AudioList
 import nl.npo.player.sampleApp.presentation.compose.VideoList
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
@@ -39,21 +38,21 @@ fun App() {
                 NavigationBarItem(
                     selected = currentRoute == Routes.VIDEO_LIST,
                     onClick = { navController.navigate(Routes.VIDEO_LIST) },
-                    icon = { Icon(Icons.Default.Headphones, contentDescription = "Video") },
-                    label = { Text("Audio") }
+                    icon = { Icon(Icons.Default.VideoLibrary, contentDescription = "Video") },
+                    label = { Text("Video") }
                 )
                 NavigationBarItem(
                     selected = currentRoute == Routes.AUDIO_LIST,
                     onClick = { navController.navigate(Routes.AUDIO_LIST) },
-                    icon = { Icon(Icons.Default.VideoLibrary, contentDescription = "Audio") },
-                    label = { Text("video") }
+                    icon = { Icon(Icons.Default.Headphones, contentDescription = "Audio") },
+                    label = { Text("Audio") }
                 )
             }
         }
     ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Routes.AUDIO_LIST,
+                startDestination = Routes.VIDEO_LIST,
                 modifier = Modifier
                     .padding(innerPadding)
                     .background(Color.Black)
@@ -70,7 +69,7 @@ fun App() {
                 }
 
                 composable(Routes.AUDIO_LIST) {
-                    val audio = linksViewModel.streamLinkList.value
+                    val audio = linksViewModel.urlLinkList.value
                     val id = audio?.map { it.uniqueId }
                     if (audio != null) {
                         AudioList(audio)

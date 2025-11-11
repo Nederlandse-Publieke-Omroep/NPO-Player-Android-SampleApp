@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RowCard(
-    contentInfo: String,
+    contentTitle: String,
+    contentDescription:String,
     accent: Color,
     image: String,
     onClick: () -> Unit = {},
@@ -49,7 +50,7 @@ fun RowCard(
 
             Column(Modifier.weight(1f)) {
                 Text(
-                text = contentInfo,
+                text = contentTitle,
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
@@ -57,13 +58,13 @@ fun RowCard(
             )
 
             Text(
-                text = contentInfo,
+                text = contentDescription,
                 color = accent,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
-            )
+             )
             }
             Spacer(Modifier.width(8.dp))
         }

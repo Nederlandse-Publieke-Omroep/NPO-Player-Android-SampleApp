@@ -17,7 +17,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
-import nl.npo.player.sampleApp.presentation.compose.view.App
+import nl.npo.player.sampleApp.presentation.compose.navigation.App
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.list.MainListAdapter
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity

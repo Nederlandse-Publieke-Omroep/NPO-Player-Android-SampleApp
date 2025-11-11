@@ -21,7 +21,7 @@ import coil.compose.AsyncImage
 
 @Composable
  fun Thumbnail(imageUrl: String?, modifier: Modifier = Modifier) {
-    // Replace with AsyncImage(url) if you add Coil
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
