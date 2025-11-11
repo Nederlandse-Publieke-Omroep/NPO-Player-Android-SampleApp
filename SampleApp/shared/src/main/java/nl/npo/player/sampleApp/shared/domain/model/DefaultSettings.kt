@@ -4,8 +4,10 @@ import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
+import kotlin.time.Duration.Companion.seconds
 
 data class DefaultSettings(
+    val useExoplayer: Boolean = false,
     val stylingPref: StylingPref = StylingPref.Default,
     val userTypePref: UserTypePref = UserTypePref.Start,
     val showCustomSettings: Boolean = false,
@@ -18,8 +20,8 @@ data class DefaultSettings(
     val playNext: PlayNext =
         PlayNext(
             false,
-            10,
-            10,
+            10.seconds,
+            10.seconds,
             true,
         ),
     val enableCasting: Boolean,

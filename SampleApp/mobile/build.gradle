@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace 'nl.npo.player.sampleApp'
-    compileSdk 35
+    compileSdk = 36
 
     Properties localProperties = new Properties()
     File propertiesFile = project.rootProject.file('local.properties')
@@ -48,7 +48,8 @@ android {
         debug {
             debuggable true
             minifyEnabled false
-            testCoverageEnabled true
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
         release {
             debuggable false
@@ -69,20 +70,22 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
-
-    lintOptions {
-        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
-        disable "Instantiatable"
+    // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
+    lint {
+        disable 'Instantiatable'
     }
+
 }
 
 dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     api project(":SampleApp:shared")
 

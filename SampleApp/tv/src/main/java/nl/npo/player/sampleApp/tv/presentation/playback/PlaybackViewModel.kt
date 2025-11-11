@@ -34,7 +34,7 @@ class PlaybackViewModel
         private fun collectPlayerStates(player: NPOPlayer) {
             with(player) {
                 viewModelScope.launch {
-                    playerStateManager.playerState.collect { state ->
+                    playerState.collect { state ->
                         _subtitles.emit(state.subtitleCues)
                     }
                 }
