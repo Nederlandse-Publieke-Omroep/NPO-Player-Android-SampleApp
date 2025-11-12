@@ -44,7 +44,7 @@ import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
-import nl.npo.player.library.presentation.mobile.compose.scene.experimental.MobileSceneRenderer
+import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager

@@ -118,7 +118,6 @@ class ComposePlaybackVideoFragment : Fragment() {
                     playRandom()
                 }
             }
-        playerState.setUIConfig(playerUIConfig)
 
         Row {
             val topbarInfo by playerState.collectStreamInfoAsState()
@@ -206,7 +205,6 @@ class ComposePlaybackVideoFragment : Fragment() {
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
-                        playbackViewModel.setPlayerUIConfig(playerUIConfig)
                         setPlayNextListener { action ->
                             when (action) {
                                 is PlayNextListenerResult.Triggered -> playRandom()

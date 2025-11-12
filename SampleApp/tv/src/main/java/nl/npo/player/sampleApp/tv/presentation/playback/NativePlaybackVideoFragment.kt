@@ -80,7 +80,6 @@ class NativePlaybackVideoFragment : Fragment() {
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
         val playerColors by viewModel.playerColors.collectAsState()
-        val playerUIConfig by viewModel.playerUIConfig.collectAsState()
 
         MaterialTheme {
             val isPreview = LocalInspectionMode.current
@@ -103,7 +102,6 @@ class NativePlaybackVideoFragment : Fragment() {
                                             onBackPressed = { activity?.onBackPressedDispatcher?.onBackPressed() },
                                         ),
                                 )
-                                setUIConfig(playerUIConfig)
                             }
                         }
                     },
@@ -139,7 +137,6 @@ class NativePlaybackVideoFragment : Fragment() {
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
-                        playbackViewModel.setPlayerUIConfig(playerUIConfig)
                         eventEmitter.addListener(
                             object : PlayerListener {
                                 override fun onPlaying() {
