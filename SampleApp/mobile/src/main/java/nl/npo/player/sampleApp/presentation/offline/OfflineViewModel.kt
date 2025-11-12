@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,11 +40,46 @@ class OfflineViewModel
         private val mutableMergedLinkList = MutableLiveData<List<SourceWrapper>>()
         val mergedLinkList: LiveData<List<SourceWrapper>> = mutableMergedLinkList
 
+            private val _toastMessage = MutableLiveData<String?>()
+        val toastMessage: LiveData<String?> = _toastMessage
+
+
         init {
             getStreamLinkListItems()
             getUrlLinkListItems()
             getOfflineLinkListItems()
         }
+
+
+     fun onItemClicked(sourceWrapper: SourceWrapper) {
+        if (sourceWrapper.npoOfflineContent != null) {
+            val offlineContent = sourceWrapper.npoOfflineContent ?: return
+            when (offlineContent.downloadState.value) {
+                NPODownloadState.Finished -> {
+                    val offlineSource = offlineContent.getOfflineSource()
+                    sourceWrapper.copy(npoOfflineContent = null, npoSourceConfig = offlineSource)
+
+                }
+                is NPODownloadState.Failed, is NPODownloadState.Paused -> {
+                    offlineContent.startOrResumeDownload()
+                }
+                is NPODownloadState.InProgress -> {
+                    offlineContent.pause()
+                }
+                is NPODownloadState.Deleting, NPODownloadState.Initializing -> {
+                    // NO_OP
+                }
+            }
+          } else {
+            createOfflineContent(sourceWrapper) { throwable ->
+                showError(throwable.message)
+            }
+        }
+    }
+
+        fun showError(message: String?) {
+             _toastMessage.value = message
+         }
 
         override fun onCleared() {
             mutableOfflineLinkList.value?.forEach { it.npoOfflineContent?.release() }

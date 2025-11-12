@@ -85,6 +85,7 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.compose.runtime:runtime-livedata:1.9.4'
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     api project(":SampleApp:shared")

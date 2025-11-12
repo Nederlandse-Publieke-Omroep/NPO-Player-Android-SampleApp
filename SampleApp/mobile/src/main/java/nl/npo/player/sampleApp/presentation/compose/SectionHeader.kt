@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose
 
+import android.R.attr.type
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AudioFile
+import androidx.compose.material.icons.filled.OfflinePin
 import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.Icon
@@ -42,3 +44,20 @@ fun SectionHeader(title: String, type: AVType) {
         }
     }
 
+@Composable
+fun Header(title: String) {
+    val icon = Icons.Default.OfflinePin
+
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon,"header", tint = Color.White)
+        Spacer(Modifier.width(8.dp))
+        Text(title, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.width(8.dp))
+
+    }
+}
