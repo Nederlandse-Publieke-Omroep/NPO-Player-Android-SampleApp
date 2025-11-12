@@ -129,6 +129,7 @@ dependencies {
 
 
     implementation "com.google.dagger:hilt-android:$androidHilt"
+    implementation"androidx.hilt:hilt-navigation-compose:1.2.0"
     ksp "com.google.dagger:hilt-compiler:$androidHilt"
 
     //only needed if Chromecast is used
