@@ -34,9 +34,9 @@ fun SectionHeader(title: String, type: AVType) {
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon,"header", tint = Color.Black)
+        Icon(icon,"header", tint = Color.White)
         Spacer(Modifier.width(8.dp))
-        Text(title, color = Color.Black, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(title, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(8.dp))
 
         }

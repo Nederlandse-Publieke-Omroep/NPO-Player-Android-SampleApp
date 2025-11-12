@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import nl.npo.player.sampleApp.presentation.compose.views.OfflineScreen
 import nl.npo.player.sampleApp.presentation.compose.views.PlayerScreen
 
 
@@ -24,7 +25,7 @@ fun AppNavHost(
         }
 
         composable<Destinations.OfflineList> {
-
+            OfflineScreen()
         }
     }
 }
