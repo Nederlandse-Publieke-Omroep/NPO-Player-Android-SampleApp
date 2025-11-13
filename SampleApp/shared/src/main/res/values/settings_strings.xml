@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="setting_use_exoplayer">Use Exoplayer instead of Bitmovin</string>
     <string name="setting_play_next">Play Next</string>
     <string name="setting_styling">Styling</string>
     <string name="setting_user_type">User type</string>

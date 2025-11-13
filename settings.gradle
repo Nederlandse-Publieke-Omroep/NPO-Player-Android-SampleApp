@@ -22,6 +22,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
         // NPO Player library
         maven {
             name = "GitHubPackages"

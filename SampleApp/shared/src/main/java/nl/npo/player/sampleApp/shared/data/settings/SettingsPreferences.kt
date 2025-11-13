@@ -16,6 +16,8 @@ import nl.npo.player.sampleApp.shared.data.settings.module.SettingsDataStore
 import nl.npo.player.sampleApp.shared.domain.model.DefaultSettings
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 @Singleton
 class SettingsPreferences
@@ -25,6 +27,7 @@ class SettingsPreferences
         private val defaultSettings: DefaultSettings,
     ) {
         object Keys {
+            val useExoplayer = booleanPreferencesKey("useExoplayer")
             val styling = stringPreferencesKey("styling")
             val userType = stringPreferencesKey("userType")
             val settingsType = booleanPreferencesKey("settingsType")
@@ -42,6 +45,18 @@ class SettingsPreferences
             val environment = stringPreferencesKey("environment")
         }
 
+        val useExoplayer: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.useExoplayer] ?: defaultSettings.useExoplayer
+                }
+
+        suspend fun setUseExoplayer(show: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.useExoplayer] = show
+            }
+        }
+
         val styling: Flow<StylingPref>
             get() =
                 dataStore.data.map { prefs ->
@@ -57,7 +72,8 @@ class SettingsPreferences
         val userType: Flow<UserTypePref>
             get() =
                 dataStore.data.map { prefs ->
-                    UserTypePref.getByKey(prefs[Keys.userType].orEmpty()) ?: defaultSettings.userTypePref
+                    UserTypePref.getByKey(prefs[Keys.userType].orEmpty())
+                        ?: defaultSettings.userTypePref
                 }
 
         suspend fun setUserType(value: UserTypePref) {
@@ -141,7 +157,8 @@ class SettingsPreferences
         val pauseOnSwitchToCellularNetwork: Flow<Boolean>
             get() =
                 dataStore.data.map { prefs ->
-                    prefs[Keys.pauseOnSwitchToCellularNetwork] ?: defaultSettings.pauseOnSwitchToCellularNetwork
+                    prefs[Keys.pauseOnSwitchToCellularNetwork]
+                        ?: defaultSettings.pauseOnSwitchToCellularNetwork
                 }
 
         suspend fun setPauseOnSwitchToCellularNetwork(pause: Boolean) {
@@ -156,9 +173,10 @@ class SettingsPreferences
                     val default = defaultSettings.playNext
                     PlayNext(
                         showPlayNext = prefs[Keys.shouldPlayNext] ?: default.showPlayNext,
-                        duration = prefs[Keys.playNextDuration] ?: default.duration,
-                        offset = prefs[Keys.playNextOffset] ?: default.offset,
-                        autoPlayNextEnabled = prefs[Keys.shouldAutoPlayNext] ?: default.autoPlayNextEnabled,
+                        duration = prefs[Keys.playNextDuration]?.seconds ?: default.duration,
+                        offset = prefs[Keys.playNextOffset]?.seconds ?: default.offset,
+                        autoPlayNextEnabled =
+                            prefs[Keys.shouldAutoPlayNext] ?: default.autoPlayNextEnabled,
                     )
                 }
 
@@ -166,8 +184,8 @@ class SettingsPreferences
             dataStore.edit { prefs ->
                 prefs[Keys.shouldPlayNext] = playNext.showPlayNext
                 prefs[Keys.shouldAutoPlayNext] = playNext.autoPlayNextEnabled
-                prefs[Keys.playNextDuration] = playNext.duration
-                prefs[Keys.playNextOffset] = playNext.offset
+                prefs[Keys.playNextDuration] = playNext.duration.toInt(DurationUnit.SECONDS)
+                prefs[Keys.playNextOffset] = playNext.offset.toInt(DurationUnit.SECONDS)
             }
         }
 
@@ -186,7 +204,8 @@ class SettingsPreferences
         val environment: Flow<EnvironmentPref>
             get() =
                 dataStore.data.map { prefs ->
-                    EnvironmentPref.getByKey(prefs[Keys.environment].orEmpty()) ?: defaultSettings.environment
+                    EnvironmentPref.getByKey(prefs[Keys.environment].orEmpty())
+                        ?: defaultSettings.environment
                 }
 
         suspend fun setEnvironment(value: EnvironmentPref) {

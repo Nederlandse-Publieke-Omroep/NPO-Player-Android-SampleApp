@@ -26,10 +26,13 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.domain.common.model.PlayerListener
+import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
+import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
@@ -110,6 +113,7 @@ class NativePlaybackVideoFragment : Fragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -119,19 +123,34 @@ class NativePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context,
-                        PlayerTagProvider.getPageTracker(activity.pageTracker!!),
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoplayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
                         playbackViewModel.setPlayer(this)
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
+                        eventEmitter.addListener(
+                            object : PlayerListener {
+                                override fun onPlaying() {
+                                    if (player.selectedSubtitleTrack == NPOSubtitleTrack.OFF) {
+                                        player
+                                            .availableSubtitleTracks
+                                            .firstOrNull { it != NPOSubtitleTrack.OFF }
+                                            ?.let {
+                                                player.setSelectedSubtitleTrack(it)
+                                            }
+                                    }
+                                }
+                            },
+                        )
                     }
 
             when {
@@ -158,7 +177,14 @@ class NativePlaybackVideoFragment : Fragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.setPlayerError(retrievalState.error)
+            is StreamRetrievalState.Error -> {
+                player.publishEvent(
+                    NPOPlayerEvent.Player.Error(
+                        retrievalState.error,
+                        player.isRetryPossible,
+                    ),
+                )
+            }
 
             StreamRetrievalState.Loading -> {
                 // NO-OP

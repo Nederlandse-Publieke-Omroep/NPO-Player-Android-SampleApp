@@ -7,6 +7,10 @@ import nl.npo.player.sampleApp.shared.domain.model.Styling
 import nl.npo.player.sampleApp.shared.domain.model.UserType
 
 interface SettingsRepository {
+    val useExoplayer: Flow<Boolean>
+
+    suspend fun setUseExoplayer(useExoplayer: Boolean)
+
     val styling: Flow<Styling>
 
     suspend fun setStyling(type: Styling)
