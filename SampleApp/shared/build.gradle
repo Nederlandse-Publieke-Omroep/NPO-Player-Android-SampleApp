@@ -59,6 +59,7 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
     lint {
+        // There seems to be an issue in AGP which doesn't recognise the TestDownloadService as being a android.app.Service subclass
         disable 'Instantiatable'
     }
 
