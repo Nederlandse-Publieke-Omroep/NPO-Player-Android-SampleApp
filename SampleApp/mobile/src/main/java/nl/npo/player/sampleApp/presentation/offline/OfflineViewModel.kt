@@ -1,20 +1,16 @@
 package nl.npo.player.sampleApp.presentation.offline
 
-import android.content.Intent
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.offline.models.NPODownloadState
-import nl.npo.player.sampleApp.presentation.player.PlayerActivity
+import nl.npo.player.sampleApp.presentation.compose.ProgressState
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
@@ -43,6 +39,13 @@ class OfflineViewModel
             private val _toastMessage = MutableLiveData<String?>()
         val toastMessage: LiveData<String?> = _toastMessage
 
+        private val _progressState = MutableStateFlow(
+            ProgressState
+            (list = offlineLinkList.value, NPODownloadState.Initializing)
+        )
+
+        val progressState: StateFlow<ProgressState> = _progressState
+
 
         init {
             getStreamLinkListItems()
@@ -51,10 +54,10 @@ class OfflineViewModel
         }
 
 
-     fun onItemClicked(sourceWrapper: SourceWrapper) {
-        if (sourceWrapper.npoOfflineContent != null) {
+     fun onItemClicked( sourceWrapper: SourceWrapper) {
+        if (sourceWrapper.npoOfflineContent != null ) {
             val offlineContent = sourceWrapper.npoOfflineContent ?: return
-            when (offlineContent.downloadState.value) {
+            when ( offlineContent.downloadState.value) {
                 NPODownloadState.Finished -> {
                     val offlineSource = offlineContent.getOfflineSource()
                     sourceWrapper.copy(npoOfflineContent = null, npoSourceConfig = offlineSource)

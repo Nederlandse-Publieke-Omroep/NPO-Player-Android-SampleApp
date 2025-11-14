@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
+import android.R.attr.onClick
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -29,8 +30,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.asLiveData
+import io.jsonwebtoken.lang.Assert.state
 import nl.npo.player.sampleApp.presentation.compose.Header
 import nl.npo.player.sampleApp.presentation.compose.ContentCard
+import nl.npo.player.sampleApp.presentation.compose.downloadActionIcon
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import kotlin.collections.map
 
@@ -46,7 +50,9 @@ import kotlin.collections.map
         val list = viewModel.mergedLinkList.value
         val toastMessage by viewModel.toastMessage.observeAsState()
         val LoadList = viewModel.mergedLinkList.observeAsState(emptyList())
+        val state  = viewModel.progressState.asLiveData()
         val context = LocalContext.current
+
 
         Column(
             modifier = Modifier
@@ -81,19 +87,21 @@ import kotlin.collections.map
                         Header("Offline")
                         }
 
-                    if (offline != null ) {
+                    if (offline != null && list != null  ) {
                         val content = offline.map { it.npoOfflineContent }
                         val id = content.map { it?.uniqueId }
+
+
                         itemsIndexed(
-                            items = offline,
+                            items = list,
                             key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                         ) { _, item ->
                             ContentCard(
                                 image = null,
                                 contentTitle = item.title ?: "",
                                 accent = orange,
-                                icon = Icons.Default.Download,
-                                onClick = { viewModel.onItemClicked(item) },
+                                icon = downloadActionIcon(state.value?.state),
+                                onClick = { viewModel.onItemClicked( item) },
                             )
 
                             toastMessage?.let { message ->
