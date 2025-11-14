@@ -1,7 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.annotation.SuppressLint
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,8 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nl.npo.player.sampleApp.presentation.compose.Header
-import nl.npo.player.sampleApp.presentation.compose.RowCard
-import nl.npo.player.sampleApp.presentation.compose.SectionHeader
+import nl.npo.player.sampleApp.presentation.compose.ContentCard
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import kotlin.collections.map
 
@@ -46,8 +44,9 @@ import kotlin.collections.map
         val orange = Color(0xFFFF7A00)
         val offline = viewModel.offlineLinkList.value
         val list = viewModel.mergedLinkList.value
-        val context = LocalContext.current
         val toastMessage by viewModel.toastMessage.observeAsState()
+        val LoadList = viewModel.mergedLinkList.observeAsState(emptyList())
+        val context = LocalContext.current
 
         Column(
             modifier = Modifier
@@ -64,14 +63,14 @@ import kotlin.collections.map
                 )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-//                if (list.isNullOrEmpty())
-//                    CircularProgressIndicator(
-//                        modifier = Modifier
-//                            .align(Alignment.Center)
-//                            .size(40.dp),
-//                        color = MaterialTheme.colorScheme.primary
-//                    )
-//                else
+                if (LoadList.value.isEmpty())
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(40.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                else
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -86,10 +85,10 @@ import kotlin.collections.map
                         val content = offline.map { it.npoOfflineContent }
                         val id = content.map { it?.uniqueId }
                         itemsIndexed(
-                            items = list,
+                            items = offline,
                             key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                         ) { _, item ->
-                            RowCard(
+                            ContentCard(
                                 image = null,
                                 contentTitle = item.title ?: "",
                                 accent = orange,

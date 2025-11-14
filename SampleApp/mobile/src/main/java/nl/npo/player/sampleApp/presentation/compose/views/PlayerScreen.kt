@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -25,7 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nl.npo.player.library.domain.common.enums.AVType
-import nl.npo.player.sampleApp.presentation.compose.RowCard
+import nl.npo.player.sampleApp.presentation.compose.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.SectionHeader
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
@@ -41,6 +42,8 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
         val orange = Color(0xFFFF7A00)
         val audio = viewModel.urlLinkList.value
         val video = viewModel.streamLinkList.value
+        val loadUrl = viewModel.urlLinkList.observeAsState(emptyList())
+        val loadStream = viewModel.streamLinkList.observeAsState(emptyList())
         val context = LocalContext.current
 
         Column(
@@ -59,14 +62,14 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
         ) {
 
             Box(modifier = Modifier.fillMaxSize()) {
-//                if (audio.isNullOrEmpty() && video.isNullOrEmpty())
-//                    CircularProgressIndicator(
-//                        modifier = Modifier
-//                            .align(Alignment.Center)
-//                            .size(40.dp),
-//                        color = MaterialTheme.colorScheme.primary
-//                    )
-//                else
+                if (loadUrl.value.isEmpty() && loadStream.value.isEmpty())
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(40.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                else
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -84,7 +87,7 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
                                 items = audio,
                                 key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                             ) { _, item ->
-                                RowCard(
+                                ContentCard(
                                     image = item.imageUrl ?: "",
                                     contentTitle = item.title ?: "",
                                     contentDescription = item.testingDescription,
@@ -111,7 +114,7 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
                                 items = video,
                                 key = { index, _ -> "vod_${id}_$index" }
                             ) { _, item ->
-                                RowCard(
+                                ContentCard(
                                     image = item.imageUrl ?: "",
                                     contentTitle = item.title ?: "",
                                     contentDescription = item.testingDescription,
