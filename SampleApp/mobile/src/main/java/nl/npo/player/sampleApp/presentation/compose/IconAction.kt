@@ -19,8 +19,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 
 
@@ -30,14 +32,11 @@ fun DownloadActionIcon(
             onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    //val currentState by currentState?.observeAsState()
     val currentState: NPODownloadState = currentState
         ?.observeAsState(initial = NPODownloadState.Initializing)
         ?.value
         ?: NPODownloadState.Initializing
 
-    Log.d("DEBUG_ACTION_ICON", "currentState=$currentState")
     Box(
         modifier = modifier.size(32.dp),
         contentAlignment = Alignment.Center
@@ -52,13 +51,12 @@ fun DownloadActionIcon(
         } else {
             IconButton(onClick = { onClick() }) {
                 val icon = when (currentState) {
-                    is DownloadState.InProgress -> error("handled above")
+                    is NPODownloadState.InProgress -> error("handled above")
                     NPODownloadState.Deleting -> Icons.Default.Delete
                     is NPODownloadState.Failed -> Icons.Default.Error
                     NPODownloadState.Finished -> Icons.Default.PlayArrow
                     NPODownloadState.Initializing ->Icons.Default.Download
                     is NPODownloadState.Paused -> Icons.Default.Pause
-                    else  -> Icons.Default.Close
                 }
                 Icon(
                     imageVector = icon,
@@ -71,14 +69,14 @@ fun DownloadActionIcon(
 }
 
 
-//@Composable
-//@Preview
-//fun PreviewIcon() {
-//    val test =  MutableLiveData<NPODownloadState>().apply {
-//        value = NPODownloadState.InProgress(0.5f)
-//    }
-//    DownloadActionIcon(
-//        currentState = test,
-//        onClick = {}
-//    )
-//}
+@Composable
+@Preview
+fun PreviewIcon() {
+    val test =  MutableLiveData<NPODownloadState>().apply {
+        value = NPODownloadState.InProgress(0.5f)
+    }
+    DownloadActionIcon(
+        currentState = test,
+        onClick = {}
+    )
+}

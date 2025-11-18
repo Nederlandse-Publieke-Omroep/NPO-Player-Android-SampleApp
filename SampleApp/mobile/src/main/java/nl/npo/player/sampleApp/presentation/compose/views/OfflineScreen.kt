@@ -1,6 +1,7 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -36,7 +37,9 @@ import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.presentation.compose.Header
 import nl.npo.player.sampleApp.presentation.compose.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.DownloadActionIcon
+import nl.npo.player.sampleApp.presentation.compose.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
+import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import kotlin.collections.map
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -51,10 +54,6 @@ import kotlin.collections.map
 
         val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
         val toastMessage by viewModel.toastMessage.observeAsState()
-
-
-        //val LoadList = viewModel.mergedLinkList.observeAsState(emptyList())
-
         val context = LocalContext.current
 
         Column(
@@ -98,7 +97,6 @@ import kotlin.collections.map
                             key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                         ) { _, item ->
                             val test = item.npoOfflineContent?.downloadState?.asLiveData()
-                            Log.d("DEBUG_INFO","currentState=${test?.value}, item=${item.uniqueId}" )
                             ContentCard(
                                 image = item.imageUrl,
                                 contentTitle = item.title ?: "",
@@ -110,6 +108,25 @@ import kotlin.collections.map
                                     )
                                 }
                             )
+
+                            LaunchedEffect(viewModel) {
+                                viewModel.events.collect {
+                                        event -> when(event) {
+                                    is DownloadEvent.Intent ->
+                                        context.startActivity(
+                                        Intent(
+                                            PlayerActivity.getStartIntent
+                                                (context,
+                                                item
+                                                    .copy(npoOfflineContent = null, npoSourceConfig =
+                                                    item.npoOfflineContent?.getOfflineSource()))
+                                        )
+                                    )
+
+
+                                }
+                                }
+                            }
                             toastMessage?.let { message ->
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
