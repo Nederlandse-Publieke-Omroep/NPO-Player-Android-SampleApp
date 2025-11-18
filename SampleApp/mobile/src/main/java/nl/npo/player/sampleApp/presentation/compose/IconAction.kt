@@ -1,43 +1,33 @@
 package nl.npo.player.sampleApp.presentation.compose
 
 import android.R.attr.onClick
-import android.R.attr.strokeWidth
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import io.jsonwebtoken.lang.Assert.state
 import nl.npo.player.library.domain.offline.models.NPODownloadState
-import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
-import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 
 @Composable
 fun DownloadActionIcon(
     currentState: LiveData<NPODownloadState>?,
-    onClick: () -> Unit,
+            onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -47,6 +37,7 @@ fun DownloadActionIcon(
         ?.value
         ?: NPODownloadState.Initializing
 
+    Log.d("DEBUG_ACTION_ICON", "currentState=$currentState")
     Box(
         modifier = modifier.size(32.dp),
         contentAlignment = Alignment.Center
@@ -61,17 +52,17 @@ fun DownloadActionIcon(
         } else {
             IconButton(onClick = { onClick() }) {
                 val icon = when (currentState) {
-                    DownloadState.Initializing -> Icons.Default.Download
-                    DownloadState.Paused -> Icons.Default.Pause
-                    DownloadState.Finished -> Icons.Default.PlayArrow
-                    is DownloadState.Failed -> Icons.Default.Error
-                    DownloadState.Deleting -> Icons.Default.Delete
                     is DownloadState.InProgress -> error("handled above")
-                    else -> {Icons.Default.Star}
+                    NPODownloadState.Deleting -> Icons.Default.Delete
+                    is NPODownloadState.Failed -> Icons.Default.Error
+                    NPODownloadState.Finished -> Icons.Default.PlayArrow
+                    NPODownloadState.Initializing ->Icons.Default.Download
+                    is NPODownloadState.Paused -> Icons.Default.Pause
+                    else  -> Icons.Default.Close
                 }
-
                 Icon(
                     imageVector = icon,
+                    tint = Color.White,
                     contentDescription = null
                 )
             }
@@ -80,14 +71,14 @@ fun DownloadActionIcon(
 }
 
 
-@Composable
-@Preview
-fun PreviewIcon() {
-    val test =  MutableLiveData<NPODownloadState>().apply {
-        value = NPODownloadState.InProgress(0.5f)
-    }
-    DownloadActionIcon(
-        currentState = test,
-        onClick = {}
-    )
-}
+//@Composable
+//@Preview
+//fun PreviewIcon() {
+//    val test =  MutableLiveData<NPODownloadState>().apply {
+//        value = NPODownloadState.InProgress(0.5f)
+//    }
+//    DownloadActionIcon(
+//        currentState = test,
+//        onClick = {}
+//    )
+//}

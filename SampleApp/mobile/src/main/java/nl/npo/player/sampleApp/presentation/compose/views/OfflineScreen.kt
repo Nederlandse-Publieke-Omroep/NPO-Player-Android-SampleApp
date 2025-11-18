@@ -1,6 +1,7 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -28,6 +30,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.presentation.compose.Header
 import nl.npo.player.sampleApp.presentation.compose.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.DownloadActionIcon
@@ -40,13 +45,13 @@ import kotlin.collections.map
  fun OfflineScreen(
     viewModel: OfflineViewModel = hiltViewModel(),
 ) {
+
     Scaffold(containerColor = Color.Transparent) {
         val orange = Color(0xFFFF7A00)
 
         val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
-
-
         val toastMessage by viewModel.toastMessage.observeAsState()
+
 
         //val LoadList = viewModel.mergedLinkList.observeAsState(emptyList())
 
@@ -87,26 +92,24 @@ import kotlin.collections.map
 
                     val content = mergedList.map { it.npoOfflineContent }
                     val id = content.map { it?.uniqueId }
-
                     if (mergedList.isNotEmpty()) {
                         itemsIndexed(
                             items = mergedList,
                             key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                         ) { _, item ->
-
                             val test = item.npoOfflineContent?.downloadState?.asLiveData()
+                            Log.d("DEBUG_INFO","currentState=${test?.value}, item=${item.uniqueId}" )
                             ContentCard(
-                                image = null,
+                                image = item.imageUrl,
                                 contentTitle = item.title ?: "",
                                 accent = orange,
                                 trailingContent = {
                                     DownloadActionIcon(
                                         currentState = test,
-                                        onClick = { viewModel.onItemClicked(state = test?.value, item.uniqueId) },
+                                        onClick = { viewModel.onItemClicked(item, item.uniqueId) },
                                     )
                                 }
                             )
-
                             toastMessage?.let { message ->
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
