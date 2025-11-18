@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
-import android.R.attr.onClick
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,10 +28,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.asLiveData
-import io.jsonwebtoken.lang.Assert.state
 import nl.npo.player.sampleApp.presentation.compose.Header
 import nl.npo.player.sampleApp.presentation.compose.ContentCard
-import nl.npo.player.sampleApp.presentation.compose.downloadActionIcon
+import nl.npo.player.sampleApp.presentation.compose.DownloadActionIcon
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import kotlin.collections.map
 
@@ -46,13 +42,15 @@ import kotlin.collections.map
 ) {
     Scaffold(containerColor = Color.Transparent) {
         val orange = Color(0xFFFF7A00)
-        val offline = viewModel.offlineLinkList.value
-        val list = viewModel.mergedLinkList.value
-        val toastMessage by viewModel.toastMessage.observeAsState()
-        val LoadList = viewModel.mergedLinkList.observeAsState(emptyList())
-        val state  = viewModel.progressState.asLiveData()
-        val context = LocalContext.current
 
+        val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
+
+
+        val toastMessage by viewModel.toastMessage.observeAsState()
+
+        //val LoadList = viewModel.mergedLinkList.observeAsState(emptyList())
+
+        val context = LocalContext.current
 
         Column(
             modifier = Modifier
@@ -69,7 +67,7 @@ import kotlin.collections.map
                 )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                if (LoadList.value.isEmpty())
+                if (mergedList.isEmpty())
                     CircularProgressIndicator(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -87,21 +85,26 @@ import kotlin.collections.map
                         Header("Offline")
                         }
 
-                    if (offline != null && list != null  ) {
-                        val content = offline.map { it.npoOfflineContent }
-                        val id = content.map { it?.uniqueId }
+                    val content = mergedList.map { it.npoOfflineContent }
+                    val id = content.map { it?.uniqueId }
 
-
+                    if (mergedList.isNotEmpty()) {
                         itemsIndexed(
-                            items = list,
+                            items = mergedList,
                             key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                         ) { _, item ->
+
+                            val test = item.npoOfflineContent?.downloadState?.asLiveData()
                             ContentCard(
                                 image = null,
                                 contentTitle = item.title ?: "",
                                 accent = orange,
-                                icon = downloadActionIcon(state.value?.state),
-                                onClick = { viewModel.onItemClicked( item) },
+                                trailingContent = {
+                                    DownloadActionIcon(
+                                        currentState = test,
+                                        onClick = { viewModel.onItemClicked(state = test?.value, item.uniqueId) },
+                                    )
+                                }
                             )
 
                             toastMessage?.let { message ->

@@ -86,6 +86,7 @@ class OfflineListItemViewHolder private constructor(
                     cpiOffline.isVisible = false
                     ivStatus.apply {
                         setImageResource(android.R.drawable.ic_media_pause)
+
                         isVisible = true
                     }
                 }

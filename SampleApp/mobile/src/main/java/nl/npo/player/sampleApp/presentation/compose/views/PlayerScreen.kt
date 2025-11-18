@@ -61,15 +61,15 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
                 )
         ) {
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (loadUrl.value.isEmpty() && loadStream.value.isEmpty())
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(40.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                else
+            //Box(modifier = Modifier.fillMaxSize()) {
+//                if (loadUrl.value.isEmpty() && loadStream.value.isEmpty())
+//                    CircularProgressIndicator(
+//                        modifier = Modifier
+//                            .align(Alignment.Center)
+//                            .size(40.dp),
+//                        color = MaterialTheme.colorScheme.primary
+//                    )
+              //  else
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -134,6 +134,6 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
             }
         }
     }
-}
+
 
 
