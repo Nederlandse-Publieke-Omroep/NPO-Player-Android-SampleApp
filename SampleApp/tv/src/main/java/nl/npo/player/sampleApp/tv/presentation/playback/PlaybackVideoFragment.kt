@@ -3,7 +3,6 @@ package nl.npo.player.sampleApp.tv.presentation.playback
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
@@ -11,13 +10,13 @@ import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.PlaybackControlsRow
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.attachToLifecycle
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.tv.adapter.NPOLeanbackPlayerAdapter
-import nl.npo.player.library.setAdViewGroup
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -47,6 +46,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val context = context ?: return
         val activity = activity as? BaseActivity ?: return
+        val pageTracker = activity.pageTracker ?: return
         sourceWrapper = intent?.getSourceWrapper() ?: run {
             Log.d(
                 TAG,
@@ -56,17 +56,19 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
             val pageTracker = activity.pageTracker ?: return@getConfiguration
+            val playerPageTracker = PlayerTagProvider.getPageTracker(pageTracker)
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context,
-                        PlayerTagProvider.getPageTracker(pageTracker),
-                        playerConfig,
+                        context = context,
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                        useExoplayer = useExoplayer,
                     ).apply {
                         attachToLifecycle(lifecycle)
-                        setAdViewGroup(view as ViewGroup)
+                        updatePageTracker(playerPageTracker)
                     }
 
             val glueHost = VideoSupportFragmentGlueHost(this@PlaybackVideoFragment)
@@ -81,7 +83,12 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
 
-                sourceWrapper.getStreamLink -> playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
+                sourceWrapper.getStreamLink ->
+                    playerViewModel.retrieveSource(
+                        sourceWrapper,
+                        ::handleTokenState,
+                    )
+
                 sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
                 else -> {
                     /** NO-OP **/
@@ -94,9 +101,14 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         when (retrievalState) {
             is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
 
-            is StreamRetrievalState.Error -> player.setPlayerError(retrievalState.error)
+            is StreamRetrievalState.Error ->
+                player.publishEvent(
+                    NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible),
+                )
 
-            StreamRetrievalState.Loading -> {
+            StreamRetrievalState.Loading,
+
+            -> {
 //                handleLoading()
             }
 

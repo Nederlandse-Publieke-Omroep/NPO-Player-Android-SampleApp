@@ -58,14 +58,17 @@ class SettingsViewModel
             value: Boolean,
         ) {
             when (key) {
+                SettingsKey.Exoplayer -> settingsRepository.setUseExoplayer(value)
                 SettingsKey.CustomSettings -> settingsRepository.setShowCustomSettings(value)
                 SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
                 SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
                 SettingsKey.OnlyStreamLinkRandomEnabled -> settingsRepository.setOnlyStreamLinkRandomEnabled(value)
+
                 SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
                 SettingsKey.PauseOnSwitchToCellularNetwork ->
                     settingsRepository.setPauseOnSwitchToCellularNetwork(value)
+
                 SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
                 SettingsKey.Styling,
                 SettingsKey.Environment,
@@ -87,6 +90,13 @@ class SettingsViewModel
         private suspend fun generateSettingsList(supportsCasting: Boolean) {
             _settingsList.value =
                 buildList {
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.Exoplayer,
+                            R.string.setting_use_exoplayer,
+                            SettingsSwitchOption(settingsRepository.useExoplayer.first()),
+                        ),
+                    )
                     add(
                         SettingsItem.Picker(
                             SettingsKey.ShouldPlayNext,
