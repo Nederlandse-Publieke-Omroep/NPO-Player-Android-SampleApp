@@ -1,11 +1,8 @@
 package nl.npo.player.sampleApp.presentation.compose
 
-import android.R.attr.onClick
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
@@ -29,7 +26,7 @@ import nl.npo.player.library.domain.offline.models.NPODownloadState
 @Composable
 fun DownloadActionIcon(
     currentState: LiveData<NPODownloadState>?,
-            onClick: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val currentState: NPODownloadState = currentState
@@ -41,13 +38,13 @@ fun DownloadActionIcon(
         modifier = modifier.size(32.dp),
         contentAlignment = Alignment.Center
     ) {
-
-        if ( currentState is NPODownloadState.InProgress) {
+        if ( currentState is NPODownloadState.InProgress ) {
             CircularProgressIndicator(
                 progress = currentState.progress,
                 strokeWidth = 2.dp,
                 modifier = Modifier.size(24.dp)
             )
+
         } else {
             IconButton(onClick = { onClick() }) {
                 val icon = when (currentState) {

@@ -2,7 +2,6 @@ package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +20,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,11 +34,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.presentation.compose.Header
 import nl.npo.player.sampleApp.presentation.compose.ContentCard
+import nl.npo.player.sampleApp.presentation.compose.CustomALertDialog
 import nl.npo.player.sampleApp.presentation.compose.DownloadActionIcon
 import nl.npo.player.sampleApp.presentation.compose.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
@@ -54,7 +55,16 @@ import kotlin.collections.map
 
         val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
         val toastMessage by viewModel.toastMessage.observeAsState()
+        val dialogItemId  by viewModel.dialogItemId.collectAsState()
         val context = LocalContext.current
+        var dialogData by remember { mutableStateOf<DownloadEvent.ErrorMessage?>(null) }
+
+        LaunchedEffect(toastMessage) {
+            toastMessage?.let { msg ->
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                viewModel.onToastShown()
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -96,41 +106,56 @@ import kotlin.collections.map
                             items = mergedList,
                             key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
                         ) { _, item ->
-                            val test = item.npoOfflineContent?.downloadState?.asLiveData()
+                            val currentState = item.npoOfflineContent?.downloadState?.asLiveData()
                             ContentCard(
                                 image = item.imageUrl,
                                 contentTitle = item.title ?: "",
                                 accent = orange,
+                                onLongClick = { viewModel.onDialogItemClicked(item) },
                                 trailingContent = {
                                     DownloadActionIcon(
-                                        currentState = test,
+                                        currentState = currentState,
                                         onClick = { viewModel.onItemClicked(item, item.uniqueId) },
                                     )
                                 }
                             )
+                            if (dialogItemId == item.uniqueId) {
+                                CustomALertDialog(
+                                    dialogTitle = "Delete offline content",
+                                    dialogDescription = "Are you sure you want to delete the offline content for \"${item.title}\"",
+                                    modifier = Modifier,
+                                    onConfirm = {
+                                        viewModel.deleteOfflineContent(item)
+                                        viewModel.dismissDialogItem()
+                                    },
+                                    onDismiss = viewModel::dismissDialogItem
+                                )
+                            }
 
                             LaunchedEffect(viewModel) {
-                                viewModel.events.collect {
-                                        event -> when(event) {
+                                viewModel.events.collect { event -> when(event) {
                                     is DownloadEvent.Intent ->
                                         context.startActivity(
-                                        Intent(
-                                            PlayerActivity.getStartIntent
-                                                (context,
-                                                item
-                                                    .copy(npoOfflineContent = null, npoSourceConfig =
-                                                    item.npoOfflineContent?.getOfflineSource()))
+                                            Intent(PlayerActivity.getStartIntent
+                                                (context, item
+                                                .copy(npoOfflineContent = null, npoSourceConfig =
+                                                    item.npoOfflineContent?.getOfflineSource())))
                                         )
-                                    )
-
-
+                                        is DownloadEvent.ErrorMessage -> dialogData = event
                                 }
                                 }
                             }
-                            toastMessage?.let { message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            }
 
+                            dialogData?.let { data ->
+                                CustomALertDialog(
+                                    dialogTitle = data.message,
+                                    modifier = Modifier,
+                                    onConfirm = {
+                                       dialogData = null
+                                    },
+                                    onDismiss = { dialogData = null }
+                                )
+                            }
                         }
                     }
                 }
@@ -138,4 +163,5 @@ import kotlin.collections.map
         }
     }
  }
+
 
