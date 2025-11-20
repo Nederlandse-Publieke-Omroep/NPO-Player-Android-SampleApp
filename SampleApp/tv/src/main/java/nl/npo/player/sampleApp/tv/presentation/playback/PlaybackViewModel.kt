@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.ui.model.Cue
 import nl.npo.player.library.presentation.compose.theme.PlayerColors
-import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import javax.inject.Inject
 
 @HiltViewModel

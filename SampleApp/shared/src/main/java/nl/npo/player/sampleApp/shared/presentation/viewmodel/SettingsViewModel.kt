@@ -62,10 +62,7 @@ class SettingsViewModel
                 SettingsKey.CustomSettings -> settingsRepository.setShowCustomSettings(value)
                 SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
                 SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
-                SettingsKey.OnlyStreamLinkRandomEnabled ->
-                    settingsRepository.setOnlyStreamLinkRandomEnabled(
-                        value,
-                    )
+                SettingsKey.OnlyStreamLinkRandomEnabled -> settingsRepository.setOnlyStreamLinkRandomEnabled(value)
 
                 SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
