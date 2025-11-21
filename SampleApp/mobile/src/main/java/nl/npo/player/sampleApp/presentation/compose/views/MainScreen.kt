@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -15,11 +14,11 @@ fun MainScreen() {
     val nav = rememberNavController()
     Scaffold(
         containerColor = Color.Transparent,
-        bottomBar = { BottomBar(nav) }
+        bottomBar = { BottomBar(nav) },
     ) { innerPadding ->
         AppNavHost(
             navController = nav,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }

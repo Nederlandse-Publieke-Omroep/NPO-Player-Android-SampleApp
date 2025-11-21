@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.presentation.offline
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,8 +14,7 @@ import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.exception.NPOOfflineErrorCode
 import nl.npo.player.library.domain.offline.models.NPODownloadState
-import nl.npo.player.sampleApp.presentation.compose.DownloadEvent
-
+import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
@@ -31,7 +29,6 @@ class OfflineViewModel
         @StreamLinkRepository private val streamLinkRepository: LinkRepository,
         @URLLinkRepository private val urlLinkRepository: LinkRepository,
         @OfflineLinkRepository private val offlineLinkRepository: LinkRepository.OfflineLinkRepository,
-
     ) : ViewModel() {
         private val mutableStreamLinkList = MutableLiveData<List<SourceWrapper>>()
         val streamLinkList: LiveData<List<SourceWrapper>> = mutableStreamLinkList
@@ -39,16 +36,12 @@ class OfflineViewModel
         val urlLinkList: LiveData<List<SourceWrapper>> = mutableURLLinkList
         private val mutableOfflineLinkList = MutableLiveData<List<SourceWrapper>>()
         val offlineLinkList: LiveData<List<SourceWrapper>> = mutableOfflineLinkList
-
         private val mutableMergedLinkList = MutableLiveData<List<SourceWrapper>>()
         val mergedLinkList: LiveData<List<SourceWrapper>> = mutableMergedLinkList
-
         private val _toastMessage = MutableLiveData<String?>()
         val toastMessage: LiveData<String?> = _toastMessage
-
         private val _events = MutableSharedFlow<DownloadEvent>()
         val events = _events.asSharedFlow()
-
         private val _dialogItemId = MutableStateFlow<String?>(null)
         val dialogItemId: StateFlow<String?> = _dialogItemId
 
@@ -58,78 +51,95 @@ class OfflineViewModel
             getOfflineLinkListItems()
         }
 
+        fun onItemClicked(
+            sourceWrapper: SourceWrapper,
+            id: String,
+        ) {
+            if (sourceWrapper.npoOfflineContent != null) {
+                val offlineContent = sourceWrapper.npoOfflineContent ?: return
+                if (sourceWrapper.uniqueId != id) return
+                when (offlineContent.downloadState.value) {
+                    NPODownloadState.Finished -> {
+                        val offlineSource = offlineContent.getOfflineSource()
+                        sourceWrapper.copy(npoOfflineContent = null, npoSourceConfig = offlineSource)
+                        viewModelScope.launch {
+                            _events.emit(DownloadEvent.Request(id, wrapper = sourceWrapper))
+                        }
+                    }
 
-    fun onItemClicked(sourceWrapper: SourceWrapper, id: String) {
-        if (sourceWrapper.npoOfflineContent != null) {
-            val offlineContent = sourceWrapper.npoOfflineContent ?: return
-            if (sourceWrapper.uniqueId != id ) return
-            when (offlineContent.downloadState.value) {
-                NPODownloadState.Finished -> {
-                    val offlineSource = offlineContent.getOfflineSource()
-                    sourceWrapper.copy(npoOfflineContent = null, npoSourceConfig = offlineSource)
-                    viewModelScope.launch {
-                        _events.emit(DownloadEvent.Intent(id, sourceWrapper = sourceWrapper))
+                    is NPODownloadState.Failed -> {
+                        handleDownloadState(offlineContent.downloadState.value, id, sourceWrapper = sourceWrapper)
+                        offlineContent.startOrResumeDownload()
+                    }
+
+                    is NPODownloadState.Paused -> {
+                        offlineContent.startOrResumeDownload()
+                    }
+                    is NPODownloadState.InProgress -> {
+                        offlineContent.pause()
+                    }
+                    is NPODownloadState.Deleting, NPODownloadState.Initializing -> {
+                        // NO_OP
                     }
                 }
-
-                is NPODownloadState.Failed -> {
-                    handleDownloadState(offlineContent.downloadState.value)
-                    Log.d("DEBUG_STATE", "state=${offlineContent.downloadState.value}")
-                    offlineContent.startOrResumeDownload()
-                }
-
-
-                is NPODownloadState.Paused -> { offlineContent.startOrResumeDownload() }
-                is NPODownloadState.InProgress -> {
-                    offlineContent.pause()
-                }
-                is NPODownloadState.Deleting, NPODownloadState.Initializing -> {
-                    // NO_OP
-                }
-
-            }
-
-        } else {
-            createOfflineContent(sourceWrapper) { throwable ->
-                showError(throwable.message)
-            }
-        }
-    }
-
-
-    fun handleDownloadState(state: NPODownloadState?) {
-        if (state is NPODownloadState.Failed) {
-            val error = state.reason as? NPOOfflineContentException.DownloadError
-
-            Log.d("DEBUG_STATE", "error=${error.toString()}")
-            Log.d("DEBUG_STATE", "currentState=${state}")
-            val isFailedDownload = error?.errorCode == NPOOfflineErrorCode.DownloadFailed
-            Log.d("DEBUG_STATE", "errorCode=${error?.errorCode}")
-            if (isFailedDownload) {
-                viewModelScope.launch {
-                    _events.emit(
-                        DownloadEvent.ErrorMessage(
-                            message = state.reason.message ?: "Download failed",
-                        )
-                    )
+            } else {
+                createOfflineContent(sourceWrapper) { throwable ->
+                    showError(throwable.message)
                 }
             }
         }
-    }
 
+        fun handleDownloadState(
+            state: NPODownloadState?,
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                if (state is NPODownloadState.Failed) {
+                    val error = state.reason as? NPOOfflineContentException.DownloadError
+                    val isFailedDownload = error?.errorCode == NPOOfflineErrorCode.DownloadFailed
 
-    fun onDialogItemClicked(sourceWrapper: SourceWrapper) {
-        _dialogItemId.value = sourceWrapper.uniqueId
-    }
+                    if (isFailedDownload) {
+                        viewModelScope.launch {
+                            _events.emit(
+                                DownloadEvent.Error(
+                                    itemId = id,
+                                    message = state.reason.message ?: "Download failed",
+                                ),
+                            )
+                        }
+                    } else {
+                        val gen = state.reason as? NPOOfflineContentException.IOException
+                        viewModelScope.launch {
+                            _events.emit(
+                                DownloadEvent.Error(
+                                    itemId = id,
+                                    message = gen?.message,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
+        fun onDialogItemClicked(sourceWrapper: SourceWrapper) {
+            _dialogItemId.value = sourceWrapper.uniqueId
+        }
 
-    fun dismissDialogItem() { _dialogItemId.value = null }
+        fun dismissDialogItem() {
+            _dialogItemId.value = null
+        }
 
-    fun showError(message: String?) { _toastMessage.value = message }
+        fun showError(message: String?) {
+            _toastMessage.value = message
+        }
 
-    fun onToastShown() { _toastMessage.value = null }
+        fun onToastShown() {
+            _toastMessage.value = null
+        }
 
-    override fun onCleared() {
+        override fun onCleared() {
             mutableOfflineLinkList.value?.forEach { it.npoOfflineContent?.release() }
             super.onCleared()
         }
@@ -205,9 +215,5 @@ class OfflineViewModel
                     },
                 )
             }
-
         }
-
-
     }
-

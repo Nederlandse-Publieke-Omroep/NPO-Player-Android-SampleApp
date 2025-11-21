@@ -19,6 +19,4 @@ class MainViewModel
     ) : ViewModel() {
         val enableCasting = settingsRepository.enableCasting.asLiveData()
         val environment = settingsRepository.environment.asLiveData()
-
-
     }

@@ -1,6 +1,5 @@
-package nl.npo.player.sampleApp.presentation.compose
+package nl.npo.player.sampleApp.presentation.compose.components
 
-import android.R.attr.type
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,26 +22,29 @@ import androidx.compose.ui.unit.dp
 import nl.npo.player.library.domain.common.enums.AVType
 
 @Composable
-fun SectionHeader(title: String, type: AVType) {
-    val icon = when(type) {
-        AVType.AUDIO -> Icons.Default.AudioFile
-        AVType.VIDEO -> Icons.Default.VideoFile
-        AVType.UNKNOWN -> Icons.Default.Unarchive
-    }
+fun SectionHeader(
+    title: String,
+    type: AVType,
+) {
+    val icon =
+        when (type) {
+            AVType.AUDIO -> Icons.Default.AudioFile
+            AVType.VIDEO -> Icons.Default.VideoFile
+            AVType.UNKNOWN -> Icons.Default.Unarchive
+        }
 
     Row(
         Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon,"header", tint = Color.White)
+        Icon(icon, "header", tint = Color.White)
         Spacer(Modifier.width(8.dp))
         Text(title, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(8.dp))
-
-        }
     }
+}
 
 @Composable
 fun Header(title: String) {
@@ -52,12 +54,14 @@ fun Header(title: String) {
         Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon,"header", tint = Color.White)
+        Icon(icon, "header", tint = Color.White)
         Spacer(Modifier.width(8.dp))
-        Text(title, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(title,
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(8.dp))
-
     }
 }

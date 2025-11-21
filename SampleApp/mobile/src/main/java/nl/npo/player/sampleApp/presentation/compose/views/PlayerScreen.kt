@@ -26,19 +26,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import nl.npo.player.library.domain.common.enums.AVType
-import nl.npo.player.sampleApp.presentation.compose.ContentCard
-import nl.npo.player.sampleApp.presentation.compose.SectionHeader
+import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
+import nl.npo.player.sampleApp.presentation.compose.components.SectionHeader
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
- fun PlayerScreen(
-    viewModel: LinksViewModel = hiltViewModel(),
-) {
-    Scaffold(
-        containerColor = Color.Transparent) {
-
+fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
+    Scaffold(containerColor = Color.Transparent) {
         val orange = Color(0xFFFF7A00)
         val audio = viewModel.urlLinkList.value
         val video = viewModel.streamLinkList.value
@@ -47,45 +43,47 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
         val context = LocalContext.current
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF121212), // near black / charcoal
-                            Color(0xFF2C1A00), // deep brown-orange glow base
-                            Color(0xFFFF6B00)  // accent orange glow at the bottom
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    Color(0xFF121212),
+                                    Color(0xFF2C1A00),
+                                    Color(0xFFFF6B00),
+                                ),
+                        ),
+                    ),
         ) {
-
-            //Box(modifier = Modifier.fillMaxSize()) {
-//                if (loadUrl.value.isEmpty() && loadStream.value.isEmpty())
-//                    CircularProgressIndicator(
-//                        modifier = Modifier
-//                            .align(Alignment.Center)
-//                            .size(40.dp),
-//                        color = MaterialTheme.colorScheme.primary
-//                    )
-              //  else
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (loadUrl.value.isEmpty() && loadStream.value.isEmpty()) {
+                    CircularProgressIndicator(
+                        modifier =
+                            Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     ) {
-
                         stickyHeader {
-                            SectionHeader("Audio", AVType.AUDIO)
+                            SectionHeader(title = "Audio", type = AVType.AUDIO)
                         }
 
                         if (audio != null) {
                             val id = audio.map { it.uniqueId }
                             itemsIndexed(
                                 items = audio,
-                                key = { index, _ -> "live_${id}_$index" }   // ← prefix keys
+                                key = { index, _ -> "audio_${id}_$index" },
                             ) { _, item ->
                                 ContentCard(
                                     image = item.imageUrl ?: "",
@@ -96,8 +94,9 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
                                         context.startActivity(
                                             Intent(
                                                 PlayerActivity.getStartIntent
-                                                    (context, item)
-                                            )
+                                                    (packageContext = context,
+                                                    sourceWrapper = item),
+                                            ),
                                         )
                                     },
                                 )
@@ -105,14 +104,14 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
                         }
 
                         stickyHeader {
-                            SectionHeader("Video", type = AVType.VIDEO)
+                            SectionHeader(title = "Video", type = AVType.VIDEO)
                         }
 
                         if (video != null) {
                             val id = video.map { it.uniqueId }
                             itemsIndexed(
                                 items = video,
-                                key = { index, _ -> "vod_${id}_$index" }
+                                key = { index, _ -> "video_${id}_$index" },
                             ) { _, item ->
                                 ContentCard(
                                     image = item.imageUrl ?: "",
@@ -123,17 +122,17 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
                                         context.startActivity(
                                             Intent(
                                                 PlayerActivity.getStartIntent
-                                                    (context, item)
-                                            )
+                                                    (packageContext = context,
+                                                    sourceWrapper = item),
+                                            ),
                                         )
                                     },
                                 )
                             }
                         }
                     }
+                }
             }
         }
     }
-
-
-
+}

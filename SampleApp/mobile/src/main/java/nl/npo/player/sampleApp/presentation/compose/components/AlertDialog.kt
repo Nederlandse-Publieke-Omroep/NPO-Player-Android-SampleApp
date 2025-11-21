@@ -1,6 +1,5 @@
-package nl.npo.player.sampleApp.presentation.compose
+package nl.npo.player.sampleApp.presentation.compose.components
 
-import android.R.attr.dialogTitle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -14,37 +13,35 @@ import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomALertDialog(
+fun CustomAlertDialog(
     dialogTitle: String,
-    dialogDescription:String? = "" ,
-    modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit? = {}
-
+    dialogDescription: String? = "",
+    onConfirm: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
-    var dialogVisible by remember { mutableStateOf(false ) }
-
-    fun openDialog() {
-        dialogVisible = true
-    }
+    var dialogVisible by remember { mutableStateOf(false) }
 
     fun closeDialog() {
         dialogVisible = false
     }
 
-    if(dialogVisible) return
+    if (dialogVisible) return
 
     AlertDialog(
-        title = {Text(dialogTitle)},
-        text =  {Text(dialogDescription ?: "")},
-        confirmButton = { TextButton(onClick = { onConfirm() }) {
-            Text("Ok")
-        } },
+        title = { Text(dialogTitle) },
+        text = { Text(dialogDescription ?: "") },
+        confirmButton = {
+            TextButton(onClick = { onConfirm() }) {
+                Text("Ok")
+            }
+        },
         dismissButton = {
             TextButton(onClick = { onDismiss() }) {
-            Text("Close")
-        } },
+                Text("Close")
+            }
+        },
         modifier = modifier,
-        onDismissRequest = ::closeDialog
+        onDismissRequest = ::closeDialog,
     )
 }

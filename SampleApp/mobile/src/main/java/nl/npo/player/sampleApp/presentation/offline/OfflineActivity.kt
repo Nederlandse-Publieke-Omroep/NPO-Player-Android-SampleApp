@@ -33,7 +33,6 @@ class OfflineActivity : BaseActivity() {
         setContentView(binding.root)
         binding.setupViews()
 
-
         // Update the context the BitmovinCastManager is using
         // This should be done in every Activity's onCreate using the cast function
         NPOCasting.updateCastingContext(this)

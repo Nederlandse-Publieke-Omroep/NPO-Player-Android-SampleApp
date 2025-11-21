@@ -76,8 +76,8 @@ class MainActivity : BaseActivity() {
             }
             lastKnownEnvironment = it
         }
-       // linksViewModel.streamLinkList.observeNonNull(this, ::setStreamAdapter)
-        //linksViewModel.urlLinkList.observeNonNull(this, ::setURLAdapter)
+        // linksViewModel.streamLinkList.observeNonNull(this, ::setStreamAdapter)
+        // linksViewModel.urlLinkList.observeNonNull(this, ::setURLAdapter)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

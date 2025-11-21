@@ -11,17 +11,17 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
- fun BottomBar(navController: NavHostController) {
+fun BottomBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
 
     NavigationBar {
         bottomNavItems.forEach { item ->
-            val selected = when (item.destination) {
-                is Destinations.Player -> current?.hasRoute<Destinations.Player>() == true
-                is Destinations.OfflineList -> current?.hasRoute<Destinations.OfflineList>() == true
-
-            }
+            val selected =
+                when (item.destination) {
+                    is Destinations.Player -> current?.hasRoute<Destinations.Player>() == true
+                    is Destinations.OfflineList -> current?.hasRoute<Destinations.OfflineList>() == true
+                }
 
             NavigationBarItem(
                 selected = selected,
@@ -35,12 +35,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
                 icon = {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.label
+                        contentDescription = item.label,
                     )
                 },
-                label = { Text(item.label) }
+                label = { Text(item.label) },
             )
         }
     }
 }
-

@@ -9,16 +9,15 @@ import androidx.navigation.compose.rememberNavController
 import nl.npo.player.sampleApp.presentation.compose.views.OfflineScreen
 import nl.npo.player.sampleApp.presentation.compose.views.PlayerScreen
 
-
 @Composable
 fun AppNavHost(
+    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = Destinations.Player,
-        modifier = modifier
+        modifier = modifier,
     ) {
         composable<Destinations.Player> {
             PlayerScreen()
