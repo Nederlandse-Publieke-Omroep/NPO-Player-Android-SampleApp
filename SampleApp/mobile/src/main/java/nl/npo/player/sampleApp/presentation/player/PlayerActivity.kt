@@ -437,8 +437,6 @@ class PlayerActivity : BaseActivity() {
                         PlayerSettings.SPEED -> showSpeedSelectionDialog()
                     }
                     dialog.dismiss()
-                }.setOnDismissListener {
-//                    binding.npoVideoPlayerNative.setSettingsButtonState(false)
                 }.create()
                 .show()
         }
