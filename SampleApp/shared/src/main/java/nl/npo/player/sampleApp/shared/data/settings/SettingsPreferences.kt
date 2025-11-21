@@ -43,6 +43,8 @@ class SettingsPreferences
             val playNextOffset = intPreferencesKey("playNextOffset")
             val enableCasting = booleanPreferencesKey("enableCasting")
             val environment = stringPreferencesKey("environment")
+            val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
+            val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
         }
 
         val useExoplayer: Flow<Boolean>
@@ -211,6 +213,31 @@ class SettingsPreferences
         suspend fun setEnvironment(value: EnvironmentPref) {
             dataStore.edit { prefs ->
                 prefs[Keys.environment] = value.key
+            }
+        }
+
+        val chapterSkippingEnabled: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.chapterSkippingEnabled] ?: defaultSettings.chapterSkippingEnabled
+                }
+
+        suspend fun setChapterSkippingEnabled(enabled: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.chapterSkippingEnabled] = enabled
+            }
+        }
+
+        val chapterSkippingAlwaysFeatured: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.chapterSkippingAlwaysFeatured]
+                        ?: defaultSettings.chapterSkippingAlwaysFeatured
+                }
+
+        suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.chapterSkippingAlwaysFeatured] = enabled
             }
         }
     }
