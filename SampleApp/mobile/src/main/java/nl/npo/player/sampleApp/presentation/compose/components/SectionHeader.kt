@@ -41,7 +41,12 @@ fun SectionHeader(
     ) {
         Icon(icon, "header", tint = Color.White)
         Spacer(Modifier.width(8.dp))
-        Text(title, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(
+            title,
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
         Spacer(Modifier.width(8.dp))
     }
 }
@@ -58,10 +63,12 @@ fun Header(title: String) {
     ) {
         Icon(icon, "header", tint = Color.White)
         Spacer(Modifier.width(8.dp))
-        Text(title,
+        Text(
+            title,
             color = Color.White,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold)
+            fontWeight = FontWeight.SemiBold,
+        )
         Spacer(Modifier.width(8.dp))
     }
 }

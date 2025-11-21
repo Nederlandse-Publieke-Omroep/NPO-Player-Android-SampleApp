@@ -37,8 +37,8 @@ import androidx.lifecycle.asLiveData
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
 import nl.npo.player.sampleApp.presentation.compose.components.DownloadActionIcon
-import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.compose.components.Header
+import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 
@@ -144,7 +144,9 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                                             sourceWrapper =
                                                                 item.copy(
                                                                     npoOfflineContent = null,
-                                                                    npoSourceConfig = item.npoOfflineContent?.getOfflineSource(),
+                                                                    npoSourceConfig =
+                                                                        item.npoOfflineContent
+                                                                            ?.getOfflineSource(),
                                                                 ),
                                                         ),
                                                     ),

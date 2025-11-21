@@ -93,9 +93,10 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                                     onClick = {
                                         context.startActivity(
                                             Intent(
-                                                PlayerActivity.getStartIntent
-                                                    (packageContext = context,
-                                                    sourceWrapper = item),
+                                                PlayerActivity.getStartIntent(
+                                                    packageContext = context,
+                                                    sourceWrapper = item,
+                                                ),
                                             ),
                                         )
                                     },
@@ -121,9 +122,10 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                                     onClick = {
                                         context.startActivity(
                                             Intent(
-                                                PlayerActivity.getStartIntent
-                                                    (packageContext = context,
-                                                    sourceWrapper = item),
+                                                PlayerActivity.getStartIntent(
+                                                    packageContext = context,
+                                                    sourceWrapper = item,
+                                                ),
                                             ),
                                         )
                                     },
