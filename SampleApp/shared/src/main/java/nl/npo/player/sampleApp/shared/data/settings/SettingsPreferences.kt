@@ -176,8 +176,7 @@ class SettingsPreferences
                         duration = prefs[Keys.playNextDuration]?.seconds ?: default.duration,
                         offset = prefs[Keys.playNextOffset]?.seconds ?: default.offset,
                         autoPlayNextEnabled =
-                            prefs[Keys.shouldAutoPlayNext]
-                                ?: default.autoPlayNextEnabled,
+                            prefs[Keys.shouldAutoPlayNext] ?: default.autoPlayNextEnabled,
                     )
                 }
 
