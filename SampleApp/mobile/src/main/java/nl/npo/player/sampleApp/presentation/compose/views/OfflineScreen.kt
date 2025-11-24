@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -99,7 +100,15 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
           ) {
 
-            stickyHeader { Header("Offline") }
+            stickyHeader {
+              Box(
+                modifier = Modifier
+                  .background(Color(0xFF121212)) // or your gradient
+
+              ) {
+                Header("Offline")
+              }
+            }
 
             if (mergedList.isNotEmpty()) {
               itemsIndexed(

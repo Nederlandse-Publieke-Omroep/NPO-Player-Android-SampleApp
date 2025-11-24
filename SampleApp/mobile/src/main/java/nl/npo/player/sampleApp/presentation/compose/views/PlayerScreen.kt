@@ -78,7 +78,13 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
           ) {
             stickyHeader {
-              Header(title = "Audio", type = AVType.AUDIO)
+              Box(
+                modifier = Modifier
+                  .background(Color(0xFF121212)) // or your gradient
+
+              ) {
+                Header(title = "Audio", type = AVType.AUDIO)
+              }
             }
 
             if (audioItems.value.isNotEmpty()) {
@@ -95,10 +101,14 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 )
               }
             }
-
             stickyHeader {
-              Header(title = "Video", type = AVType.VIDEO)
-            }
+              Box(
+                modifier = Modifier
+                  .background(Color(0xFF121212)) // or your gradient
+              ) {
+                  Header(title = "Video", type = AVType.VIDEO)
+                }
+              }
 
             if (videoItems.value.isNotEmpty()) {
               itemsIndexed(
