@@ -2,6 +2,7 @@ package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     Scaffold(containerColor = Color.Transparent) {

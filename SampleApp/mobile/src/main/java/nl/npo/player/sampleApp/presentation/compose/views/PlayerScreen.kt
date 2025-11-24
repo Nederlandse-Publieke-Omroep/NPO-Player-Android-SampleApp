@@ -1,6 +1,7 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.content.Intent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import nl.npo.player.sampleApp.presentation.compose.components.SectionHeader
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     Scaffold(containerColor = Color.Transparent) {
