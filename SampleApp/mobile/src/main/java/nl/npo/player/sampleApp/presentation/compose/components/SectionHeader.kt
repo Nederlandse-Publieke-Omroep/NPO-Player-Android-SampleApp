@@ -22,39 +22,15 @@ import androidx.compose.ui.unit.dp
 import nl.npo.player.library.domain.common.enums.AVType
 
 @Composable
-fun SectionHeader(
-    title: String,
-    type: AVType,
-) {
-    val icon =
-        when (type) {
-            AVType.AUDIO -> Icons.Default.AudioFile
-            AVType.VIDEO -> Icons.Default.VideoFile
-            AVType.UNKNOWN -> Icons.Default.Unarchive
-        }
+fun Header(title: String, type: AVType? = null) {
 
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, "header", tint = Color.White)
-        Spacer(Modifier.width(8.dp))
-        Text(
-            title,
-            color = Color.White,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Spacer(Modifier.width(8.dp))
+  val icon =
+    when (type) {
+      AVType.AUDIO -> Icons.Default.AudioFile
+      AVType.VIDEO -> Icons.Default.VideoFile
+      AVType.UNKNOWN -> Icons.Default.Unarchive
+      else -> {Icons.Default.OfflinePin}
     }
-}
-
-@Composable
-fun Header(title: String) {
-    val icon = Icons.Default.OfflinePin
-
     Row(
         Modifier
             .fillMaxWidth()

@@ -52,7 +52,7 @@ fun ProgressActionIcon(
             CircularProgressIndicator(
                 progress = { uiProgress },
                 strokeWidth = 2.dp,
-                modifier = modifier.size(24.dp),
+                modifier = Modifier.size(24.dp),
             )
         } else {
             IconButton(onClick = { onClick() }) {

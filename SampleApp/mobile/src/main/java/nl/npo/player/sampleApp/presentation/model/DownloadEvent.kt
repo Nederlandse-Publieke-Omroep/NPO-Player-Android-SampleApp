@@ -3,6 +3,7 @@ package nl.npo.player.sampleApp.presentation.model
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 sealed interface DownloadEvent {
+  object None : DownloadEvent
     data class Request(
         val itemId: String,
         val wrapper: SourceWrapper,
@@ -12,4 +13,5 @@ sealed interface DownloadEvent {
         val itemId: String?,
         val message: String?,
     ) : DownloadEvent
+
 }

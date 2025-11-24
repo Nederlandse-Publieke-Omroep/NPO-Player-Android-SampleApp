@@ -79,17 +79,12 @@ fun ContentCard(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Row(
-                modifier =
-                    Modifier
-                        .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (trailingContent != null) {
+
+          if (trailingContent != null) {
                     trailingContent()
-                }
-            }
             Spacer(Modifier.width(8.dp))
+          }
+
         }
     }
 }
