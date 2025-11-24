@@ -26,4 +26,6 @@ data class DefaultSettings(
         ),
     val enableCasting: Boolean,
     val environment: EnvironmentPref = EnvironmentPref.Production,
+    val chapterSkippingEnabled: Boolean = true,
+    val chapterSkippingAlwaysFeatured: Boolean = false,
 )

@@ -38,9 +38,15 @@ import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
+import nl.npo.player.library.presentation.compose.models.SettingType
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
+import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
+import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
+import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
@@ -178,8 +184,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer ->
-            loadSource(sourceWrapper, playerConfig, npoPlayerColors, useExoplayer)
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
+            loadSource(sourceWrapper, playerConfig, npoPlayerColors, useExoplayer, playerUIConfig)
         }
     }
 
@@ -195,6 +201,7 @@ class PlayerActivity : BaseActivity() {
         playerConfig: NPOPlayerConfig,
         npoPlayerColors: NativePlayerColors?,
         useExoplayer: UseExoplayer,
+        playerUIConfig: NPOPlayerUIConfig,
     ) {
         val title = sourceWrapper.title
         if (player == null) {
@@ -245,19 +252,25 @@ class PlayerActivity : BaseActivity() {
                                     }
 
                                 attachPlayer(
-                                    npoPlayer = player,
-                                    npoPlayerColors = npoPlayerColors ?: NativePlayerColors(),
-                                    adsOverlayClazz = adOverlay,
+                                    player,
+                                    (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
+                                    MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
+                                    DefaultMobilePlayerComponents(),
                                 )
 
                                 setFullScreenHandler(fullScreenHandler)
                                 enablePictureInPictureSupport(defaultPipHandler)
 
                                 playerViewModel.hasCustomSettings {
-                                    setSettingsButtonOnClickListener {
-                                        showSettings()
-                                        setSettingsButtonState(true)
-                                    }
+                                    setSettingsOverride(
+                                        listOf(
+                                            object : SettingType.Custom {
+                                                override val id: String = "custom_settings"
+                                                override val label: String = "Open custom settings"
+                                            },
+                                        ),
+                                    )
+                                    setCustomSettingsClickListener { showSettings() }
                                 }
                             }
                         }
@@ -351,7 +364,7 @@ class PlayerActivity : BaseActivity() {
 //            destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
-        binding.npoVideoPlayerNative.onDestroy()
+        binding.npoVideoPlayerNative.destroy()
 
         npoNotificationManager?.setPlayer(null)
         if (isGooglePlayServicesAvailable()) {
@@ -402,8 +415,8 @@ class PlayerActivity : BaseActivity() {
             } // ?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer ->
-                        loadSource(newSource, config, npoPlayerColors, useExoplayer)
+                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer, playerUIConfig ->
+                        loadSource(newSource, config, npoPlayerColors, useExoplayer, playerUIConfig)
                     }
                 }
         }
@@ -424,8 +437,6 @@ class PlayerActivity : BaseActivity() {
                         PlayerSettings.SPEED -> showSpeedSelectionDialog()
                     }
                     dialog.dismiss()
-                }.setOnDismissListener {
-                    binding.npoVideoPlayerNative.setSettingsButtonState(false)
                 }.create()
                 .show()
         }
@@ -446,19 +457,25 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun audioQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableAudioQualities?.size ?: 0) > 1) PlayerSettings.AUDIO_QUALITIES else null
+        if ((player?.availableAudioQualities?.size ?: 0) > 1) {
+            PlayerSettings.AUDIO_QUALITIES
+        } else {
+            null
+        }
 
     private fun audioTrackSettings(): PlayerSettings? =
-        if ((player?.availableAudioTracks?.size ?: 0) >
-            0
-        ) {
+        if ((player?.availableAudioTracks?.size ?: 0) > 0) {
             PlayerSettings.AUDIO_TRACKS
         } else {
             null
         }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableVideoQualities?.size ?: 0) > 1) PlayerSettings.VIDEO_QUALITIES else null
+        if ((player?.availableVideoQualities?.size ?: 0) > 1) {
+            PlayerSettings.VIDEO_QUALITIES
+        } else {
+            null
+        }
 
     private fun showSubtitleDialog() {
         player?.availableSubtitleTracks?.let { npoSubtitleTracks ->
