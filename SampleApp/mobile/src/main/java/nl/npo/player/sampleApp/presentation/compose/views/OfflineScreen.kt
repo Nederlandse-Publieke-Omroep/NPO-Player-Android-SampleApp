@@ -36,8 +36,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.asLiveData
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
-import nl.npo.player.sampleApp.presentation.compose.components.DownloadActionIcon
 import nl.npo.player.sampleApp.presentation.compose.components.Header
+import nl.npo.player.sampleApp.presentation.compose.components.ProgressActionIcon
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
@@ -51,9 +51,9 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
 
         val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
         val toastMessage by viewModel.toastMessage.observeAsState()
-        val dialogItemId by viewModel.dialogItemId.collectAsState()
+        val itemId by viewModel.itemId.collectAsState()
         val context = LocalContext.current
-        var dialogData by remember { mutableStateOf<DownloadEvent.Error?>(null) }
+        var downloadEventError by remember { mutableStateOf<DownloadEvent.Error?>(null) }
 
         LaunchedEffect(toastMessage) {
             toastMessage?.let { msg ->
@@ -88,84 +88,86 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         color = MaterialTheme.colorScheme.primary,
                     )
                 } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                    ) {
-                        stickyHeader { Header("Offline") }
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Header("Offline")
 
-                        val content = mergedList.map { it.npoOfflineContent }
-                        val id = content.map { it?.uniqueId }
-                        if (mergedList.isNotEmpty()) {
-                            itemsIndexed(
-                                items = mergedList,
-                                key = { index, _ -> "live_${id}_$index" },
-                            ) { _, item ->
-                                val currentState =
-                                    item.npoOfflineContent?.downloadState?.asLiveData()
-                                ContentCard(
-                                    image = item.imageUrl,
-                                    contentTitle = item.title ?: "",
-                                    accent = orange,
-                                    onLongClick = { viewModel.onDialogItemClicked(sourceWrapper = item) },
-                                    trailingContent = {
-                                        DownloadActionIcon(
-                                            downloadState = currentState,
-                                            onClick = {
-                                                viewModel.onItemClicked(
-                                                    sourceWrapper = item,
-                                                    id = item.uniqueId,
-                                                )
-                                            },
-                                        )
-                                    },
-                                )
-                                if (dialogItemId == item.uniqueId) {
-                                    CustomAlertDialog(
-                                        dialogTitle = "Delete offline content",
-                                        dialogDescription = "Are you sure you want to delete the offline content for \"${item.title}\"",
-                                        modifier = Modifier,
-                                        onConfirm = {
-                                            viewModel.deleteOfflineContent(sourceWrapper = item)
-                                            viewModel.dismissDialogItem()
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        ) {
+                            val content = mergedList.map { it.npoOfflineContent }
+                            val id = content.map { it?.uniqueId }
+                            if (mergedList.isNotEmpty()) {
+                                itemsIndexed(
+                                    items = mergedList,
+                                    key = { index, _ -> "live_${id}_$index" },
+                                ) { _, item ->
+                                    val currentState =
+                                        item.npoOfflineContent?.downloadState?.asLiveData()
+                                    ContentCard(
+                                        image = item.imageUrl,
+                                        contentTitle = item.title ?: "",
+                                        accent = orange,
+                                        onLongClick = { viewModel.onDialogItemClicked(sourceWrapper = item) },
+                                        trailingContent = {
+                                            ProgressActionIcon(
+                                                downloadState = currentState,
+                                                onClick = {
+                                                    viewModel.onItemClicked(
+                                                        sourceWrapper = item,
+                                                        id = item.uniqueId,
+                                                    )
+                                                },
+                                            )
                                         },
-                                        onDismiss = viewModel::dismissDialogItem,
                                     )
-                                }
-                                LaunchedEffect(viewModel) {
-                                    viewModel.events.collect { event ->
-                                        when (event) {
-                                            is DownloadEvent.Request ->
-                                                context.startActivity(
-                                                    Intent(
-                                                        PlayerActivity.getStartIntent(
-                                                            packageContext = context,
-                                                            sourceWrapper =
-                                                                item.copy(
-                                                                    npoOfflineContent = null,
-                                                                    npoSourceConfig =
-                                                                        item.npoOfflineContent
-                                                                            ?.getOfflineSource(),
-                                                                ),
+                                    if (itemId == item.uniqueId) {
+                                        CustomAlertDialog(
+                                            dialogTitle = "Delete offline content",
+                                            dialogDescription = "Are you sure you want to delete the offline content for \"${item.title}\"",
+                                            modifier = Modifier,
+                                            onConfirm = {
+                                                viewModel.deleteOfflineContent(sourceWrapper = item)
+                                                viewModel.dismissDialogItem()
+                                            },
+                                            onDismiss = viewModel::dismissDialogItem,
+                                        )
+                                    }
+                                    LaunchedEffect(viewModel) {
+                                        viewModel.events.collect { event ->
+                                            when (event) {
+                                                is DownloadEvent.Request ->
+                                                    context.startActivity(
+                                                        Intent(
+                                                            PlayerActivity.getStartIntent(
+                                                                packageContext = context,
+                                                                sourceWrapper =
+                                                                    item.copy(
+                                                                        npoOfflineContent = null,
+                                                                        npoSourceConfig =
+                                                                            item.npoOfflineContent
+                                                                                ?.getOfflineSource(),
+                                                                    ),
+                                                            ),
                                                         ),
-                                                    ),
-                                                )
+                                                    )
 
-                                            is DownloadEvent.Error -> dialogData = event
+                                                is DownloadEvent.Error -> downloadEventError = event
+                                            }
                                         }
                                     }
-                                }
 
-                                dialogData?.let { data ->
-                                    CustomAlertDialog(
-                                        dialogTitle = data.message ?: "",
-                                        modifier = Modifier,
-                                        onConfirm = {
-                                            dialogData = null
-                                        },
-                                        onDismiss = { dialogData = null },
-                                    )
+                                    downloadEventError?.let { data ->
+                                        CustomAlertDialog(
+                                            dialogTitle = data.message ?: "",
+                                            modifier = Modifier,
+                                            onConfirm = {
+                                                downloadEventError = null
+                                            },
+                                            onDismiss = { downloadEventError = null },
+                                        )
+                                    }
                                 }
                             }
                         }

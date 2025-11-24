@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import nl.npo.player.sampleApp.presentation.compose.navigation.model.Destinations
 import nl.npo.player.sampleApp.presentation.compose.views.OfflineScreen
 import nl.npo.player.sampleApp.presentation.compose.views.PlayerScreen
 

@@ -42,8 +42,8 @@ class OfflineViewModel
         val toastMessage: LiveData<String?> = _toastMessage
         private val _events = MutableSharedFlow<DownloadEvent>()
         val events = _events.asSharedFlow()
-        private val _dialogItemId = MutableStateFlow<String?>(null)
-        val dialogItemId: StateFlow<String?> = _dialogItemId
+        private val _itemId = MutableStateFlow<String?>(null)
+        val itemId: StateFlow<String?> = _itemId
 
         init {
             getStreamLinkListItems()
@@ -61,14 +61,27 @@ class OfflineViewModel
                 when (offlineContent.downloadState.value) {
                     NPODownloadState.Finished -> {
                         val offlineSource = offlineContent.getOfflineSource()
-                        sourceWrapper.copy(npoOfflineContent = null, npoSourceConfig = offlineSource)
+                        sourceWrapper.copy(
+                            npoOfflineContent = null,
+                            npoSourceConfig = offlineSource,
+                        )
                         viewModelScope.launch {
-                            _events.emit(DownloadEvent.Request(id, wrapper = sourceWrapper))
+                            _events.emit(
+                                value =
+                                    DownloadEvent.Request(
+                                        itemId = id,
+                                        wrapper = sourceWrapper,
+                                    ),
+                            )
                         }
                     }
 
                     is NPODownloadState.Failed -> {
-                        handleDownloadState(offlineContent.downloadState.value, id, sourceWrapper = sourceWrapper)
+                        handleDownloadState(
+                            state = offlineContent.downloadState.value,
+                            id = id,
+                            sourceWrapper = sourceWrapper,
+                        )
                         offlineContent.startOrResumeDownload()
                     }
 
@@ -108,27 +121,17 @@ class OfflineViewModel
                                 ),
                             )
                         }
-                    } else {
-                        val gen = state.reason as? NPOOfflineContentException.IOException
-                        viewModelScope.launch {
-                            _events.emit(
-                                DownloadEvent.Error(
-                                    itemId = id,
-                                    message = gen?.message,
-                                ),
-                            )
-                        }
                     }
                 }
             }
         }
 
         fun onDialogItemClicked(sourceWrapper: SourceWrapper) {
-            _dialogItemId.value = sourceWrapper.uniqueId
+            _itemId.value = sourceWrapper.uniqueId
         }
 
         fun dismissDialogItem() {
-            _dialogItemId.value = null
+            _itemId.value = null
         }
 
         fun showError(message: String?) {

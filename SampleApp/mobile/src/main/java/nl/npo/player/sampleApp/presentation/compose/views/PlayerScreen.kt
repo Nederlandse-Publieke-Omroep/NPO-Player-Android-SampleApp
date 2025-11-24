@@ -41,6 +41,9 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
         val loadUrl = viewModel.urlLinkList.observeAsState(emptyList())
         val loadStream = viewModel.streamLinkList.observeAsState(emptyList())
         val context = LocalContext.current
+        val isLoading = loadUrl.value.isEmpty() && loadStream.value.isEmpty()
+        val audioItems = audio.orEmpty()
+        val videoItems = video.orEmpty()
 
         Column(
             modifier =
@@ -59,7 +62,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                     ),
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                if (loadUrl.value.isEmpty() && loadStream.value.isEmpty()) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier =
                             Modifier
@@ -79,10 +82,10 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                             SectionHeader(title = "Audio", type = AVType.AUDIO)
                         }
 
-                        if (audio != null) {
-                            val id = audio.map { it.uniqueId }
+                        if (audioItems.isNotEmpty()) {
+                            val id = audioItems.map { it.uniqueId }
                             itemsIndexed(
-                                items = audio,
+                                items = audioItems,
                                 key = { index, _ -> "audio_${id}_$index" },
                             ) { _, item ->
                                 ContentCard(
@@ -108,10 +111,10 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                             SectionHeader(title = "Video", type = AVType.VIDEO)
                         }
 
-                        if (video != null) {
-                            val id = video.map { it.uniqueId }
+                        if (videoItems.isNotEmpty()) {
+                            val id = videoItems.map { it.uniqueId }
                             itemsIndexed(
-                                items = video,
+                                items = videoItems,
                                 key = { index, _ -> "video_${id}_$index" },
                             ) { _, item ->
                                 ContentCard(

@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.OfflinePin
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
+import nl.npo.player.sampleApp.presentation.compose.navigation.model.Destinations
 
 data class BottomNavItem(
     val destination: Destinations,

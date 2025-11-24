@@ -24,7 +24,7 @@ import androidx.lifecycle.MutableLiveData
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 
 @Composable
-fun DownloadActionIcon(
+fun ProgressActionIcon(
     downloadState: LiveData<NPODownloadState>?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -78,12 +78,12 @@ fun DownloadActionIcon(
 @Composable
 @Preview
 fun PreviewIcon() {
-    val test =
+    val downloadState =
         MutableLiveData<NPODownloadState>().apply {
             value = NPODownloadState.InProgress(0.5f)
         }
-    DownloadActionIcon(
-        downloadState = test,
+    ProgressActionIcon(
+        downloadState = downloadState,
         onClick = {},
     )
 }

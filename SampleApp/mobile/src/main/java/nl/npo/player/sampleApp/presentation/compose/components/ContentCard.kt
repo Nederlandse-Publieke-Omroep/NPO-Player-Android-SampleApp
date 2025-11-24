@@ -95,8 +95,8 @@ fun ContentCard(
 @Composable
 fun CardPreview() {
     ContentCard(
-        contentTitle = "Test",
-        contentDescription = "",
+        contentTitle = "Audio Stream",
+        contentDescription = "TestAudio",
         accent = Color.Cyan,
         trailingContent = {
         },

@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import nl.npo.player.sampleApp.presentation.compose.navigation.model.Destinations
 
 @Composable
 fun BottomBar(navController: NavHostController) {
