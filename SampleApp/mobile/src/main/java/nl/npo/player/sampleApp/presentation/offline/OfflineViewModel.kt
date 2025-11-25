@@ -35,12 +35,11 @@ class OfflineViewModel
         val offlineLinkList: LiveData<List<SourceWrapper>> = mutableOfflineLinkList
         private val mutableMergedLinkList = MutableLiveData<List<SourceWrapper>>()
         val mergedLinkList: LiveData<List<SourceWrapper>> = mutableMergedLinkList
-        private val _downloadError = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
-        val downloadError = _downloadError
-        private val _itemId = MutableStateFlow<String?>(null)
-        val itemId: StateFlow<String?> = _itemId
+        private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
+        val downloadEvent = _downloadEvent
         private val _toastMessage = MutableStateFlow<String?>(null)
         val toastMessage: StateFlow<String?> = _toastMessage
+
 
         init {
             getStreamLinkListItems()
@@ -56,7 +55,7 @@ class OfflineViewModel
             if (sourceWrapper.npoOfflineContent != null) {
                 val offlineContent = sourceWrapper.npoOfflineContent ?: return
                 if (sourceWrapper.uniqueId != id) return
-                when (offlineContent.downloadState.value) {
+              when (val downloadState = offlineContent.downloadState.value) {
                     NPODownloadState.Finished -> {
                         val offlineSource = offlineContent.getOfflineSource()
                         sourceWrapper.copy(
@@ -73,7 +72,7 @@ class OfflineViewModel
 
                     is NPODownloadState.Failed -> {
                         handleDownloadState(
-                            state = offlineContent.downloadState.value,
+                            state = downloadState,
                             id = id,
                             sourceWrapper = sourceWrapper,
                         )
@@ -86,10 +85,13 @@ class OfflineViewModel
                     is NPODownloadState.InProgress -> {
                         offlineContent.pause()
                     }
-                    is NPODownloadState.Deleting, NPODownloadState.Initializing -> {
-                        // NO_OP
+                    is NPODownloadState.Deleting -> {
+                        deleteDownloadedItem( sourceWrapper = sourceWrapper)
                     }
-                }
+                  NPODownloadState.Initializing -> {
+                    dismissDownloadEventDialog()
+                  }
+                   }
             } else {
                 createOfflineContent(sourceWrapper) { throwable ->
                     onErrorToastMessage(throwable.message)
@@ -97,21 +99,25 @@ class OfflineViewModel
             }
         }
 
-        fun handleDownloadState(
-            state: NPODownloadState?,
+      private fun handleDownloadState(
+            state: NPODownloadState.Failed,
             id: String,
             sourceWrapper: SourceWrapper,
         ) {
             if (sourceWrapper.uniqueId == id) {
-                if (state is NPODownloadState.Failed) {
-                    _downloadError.value =
+                    _downloadEvent.value =
                         DownloadEvent.Error(
                             itemId = id,
                             message = state.reason.message ?: "Download failed",
                         )
-                }
+
             }
         }
+
+      fun deleteDownloadedItem( sourceWrapper: SourceWrapper) {
+        _downloadEvent.value = DownloadEvent.Delete( sourceWrapper = sourceWrapper)
+            deleteOfflineContent(sourceWrapper = sourceWrapper)
+      }
 
         fun onErrorToastMessage(message: String?) {
             viewModelScope.launch {
@@ -125,16 +131,8 @@ class OfflineViewModel
             _toastMessage.value = null
         }
 
-        fun onDialogItemClicked(sourceWrapper: SourceWrapper) {
-            _itemId.value = sourceWrapper.uniqueId
-        }
-
-        fun dismissDialogItem() {
-            _itemId.value = null
-        }
-
-        fun dismissErrorDialog() {
-            _downloadError.value = DownloadEvent.None
+        fun dismissDownloadEventDialog() {
+            _downloadEvent.value = DownloadEvent.None
         }
 
         override fun onCleared() {

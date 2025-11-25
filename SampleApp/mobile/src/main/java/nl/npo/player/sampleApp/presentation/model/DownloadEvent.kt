@@ -14,4 +14,8 @@ sealed interface DownloadEvent {
         val itemId: String?,
         val message: String?,
     ) : DownloadEvent
+
+  data class Delete(
+    val sourceWrapper: SourceWrapper,
+  ): DownloadEvent
 }

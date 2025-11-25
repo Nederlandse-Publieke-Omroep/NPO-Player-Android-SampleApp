@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContentCard(
+    modifier: Modifier = Modifier,
     contentTitle: String,
     contentDescription: String? = null,
     accent: Color,
@@ -41,7 +42,7 @@ fun ContentCard(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .combinedClickable(
                     onClick = { onClick() },
@@ -49,19 +50,19 @@ fun ContentCard(
                 ),
     ) {
         Row(
-            Modifier.padding(12.dp),
+          modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Thumbnail(
                 imageUrl = image,
                 modifier =
-                    Modifier
+                  modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(12.dp)),
             )
-            Spacer(Modifier.width(12.dp))
+            Spacer(modifier.width(12.dp))
 
-            Column(Modifier.weight(1f)) {
+            Column(modifier.weight(1f)) {
                 Text(
                     text = contentTitle,
                     color = Color.White,

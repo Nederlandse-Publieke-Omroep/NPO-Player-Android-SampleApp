@@ -42,12 +42,14 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
+fun OfflineScreen(
+  modifier: Modifier = Modifier,
+  viewModel: OfflineViewModel = hiltViewModel()
+) {
     val orange = Color(0xFFFF7A00)
     val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
-    val itemId by viewModel.itemId.collectAsState()
     val context = LocalContext.current
-    val downloadError by viewModel.downloadError.collectAsState()
+    val downloadEvent by viewModel.downloadEvent.collectAsState()
     val toastMessage by viewModel.toastMessage.collectAsState()
 
     LaunchedEffect(toastMessage) {
@@ -56,19 +58,35 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
         }
     }
 
-    if (downloadError is DownloadEvent.Error) {
-        val data = downloadError as DownloadEvent.Error
+    if (downloadEvent is DownloadEvent.Error) {
+        val data = downloadEvent as DownloadEvent.Error
         CustomAlertDialog(
             dialogTitle = data.message ?: "",
             modifier = Modifier,
-            onConfirm = viewModel::dismissErrorDialog,
-            onDismiss = viewModel::dismissErrorDialog,
+            onConfirm = viewModel::dismissDownloadEventDialog,
+            onDismiss = viewModel::dismissDownloadEventDialog,
         )
     }
 
+
+  if (downloadEvent is DownloadEvent.Delete) {
+    val data = downloadEvent as DownloadEvent.Delete
+    val msg =  context.getString(R.string.delete_offline_confirmation,
+      data.sourceWrapper.title)
+    CustomAlertDialog(
+      dialogTitle = stringResource(R.string.delete_offline_title),
+      dialogDescription = msg,
+      modifier = modifier,
+      onConfirm = viewModel::dismissDownloadEventDialog,
+      onDismiss = viewModel::dismissDownloadEventDialog,
+    )
+  }
+
+
+
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
@@ -81,7 +99,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     ),
                 ),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = modifier.fillMaxSize()) {
             if (mergedList.isEmpty()) {
                 CircularProgressIndicator(
                     modifier =
@@ -92,15 +110,15 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                 )
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     stickyHeader {
                         Box(
-                            modifier = Modifier.background(Color(0xFF121212)),
+                            modifier = modifier.background(Color(0xFF121212)),
                         ) {
-                            Header(stringResource(R.string.offline_header))
+                            Header(modifier =modifier, stringResource(R.string.offline_header))
                         }
                     }
 
@@ -115,7 +133,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                 image = item.imageUrl,
                                 contentTitle = item.title ?: "",
                                 accent = orange,
-                                onLongClick = { viewModel.onDialogItemClicked(sourceWrapper = item) },
+                                onLongClick = { viewModel.deleteDownloadedItem( item)},
                                 trailingContent = {
                                     ProgressActionIcon(
                                         downloadState = currentState,
@@ -129,19 +147,6 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                     )
                                 },
                             )
-                            if (itemId == item.uniqueId) {
-                                CustomAlertDialog(
-                                    dialogTitle = stringResource(R.string.delete_offline_confirmation),
-                                    dialogDescription = context.getString(R.string.delete_offline_confirmation,
-                                item.title),
-                                  modifier = Modifier,
-                                  onConfirm = {
-                                        viewModel.deleteOfflineContent(sourceWrapper = item)
-                                        viewModel.dismissDialogItem()
-                                    },
-                                    onDismiss = viewModel::dismissDialogItem,
-                                )
-                            }
                         }
                     }
                 }

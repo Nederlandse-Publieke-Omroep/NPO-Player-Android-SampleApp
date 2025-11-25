@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import nl.npo.player.library.domain.common.enums.AVType
 
 @Composable
 fun Header(
+    modifier: Modifier = Modifier,
     title: String,
     type: AVType? = null,
 ) {
@@ -36,19 +38,20 @@ fun Header(
             }
         }
     Row(
-        Modifier
+        modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
+       horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(icon, "header", tint = Color.White)
-        Spacer(Modifier.width(8.dp))
+
         Text(
             title,
             color = Color.White,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(modifier.width(8.dp))
     }
 }
