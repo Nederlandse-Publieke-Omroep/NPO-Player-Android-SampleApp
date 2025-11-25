@@ -13,7 +13,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,13 +43,8 @@ fun ProgressActionIcon(
         contentAlignment = Alignment.Center,
     ) {
         if (currentState is NPODownloadState.InProgress) {
-            val uiProgress =
-                remember(currentState.progress) {
-                    val raw = currentState.progress.coerceIn(0f, 1f)
-                    (raw * 0.9f).coerceIn(0f, 0.9f)
-                }
             CircularProgressIndicator(
-                progress = { uiProgress },
+                progress = { currentState.progress},
                 strokeWidth = 2.dp,
                 modifier = Modifier.size(24.dp),
             )
