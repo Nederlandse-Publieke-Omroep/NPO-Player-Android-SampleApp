@@ -36,15 +36,15 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
-  val orange = Color(0xFFFF7A00)
-  val audioItems = viewModel.urlLinkList.observeAsState(emptyList())
-  val filteredAudioItems = audioItems.value.filter { it.avType == AVType.AUDIO }
-  val videoItems = viewModel.streamLinkList.observeAsState(emptyList())
-  val filteredVideoItems = videoItems.value.filter { it.avType == AVType.VIDEO }
-  val loadUrl = viewModel.urlLinkList.observeAsState(emptyList())
-  val loadStream = viewModel.streamLinkList.observeAsState(emptyList())
-  val context = LocalContext.current
-  val isLoading = loadUrl.value.isEmpty() && loadStream.value.isEmpty()
+    val orange = Color(0xFFFF7A00)
+    val audioItems = viewModel.urlLinkList.observeAsState(emptyList())
+    val filteredAudioItems = audioItems.value.filter { it.avType == AVType.AUDIO }
+    val videoItems = viewModel.streamLinkList.observeAsState(emptyList())
+    val filteredVideoItems = videoItems.value.filter { it.avType == AVType.VIDEO }
+    val loadUrl = viewModel.urlLinkList.observeAsState(emptyList())
+    val loadStream = viewModel.streamLinkList.observeAsState(emptyList())
+    val context = LocalContext.current
+    val isLoading = loadUrl.value.isEmpty() && loadStream.value.isEmpty()
 
     Column(
         modifier =
@@ -86,8 +86,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                         }
                     }
 
-
-                    if (filteredAudioItems.isNotEmpty() ) {
+                    if (filteredAudioItems.isNotEmpty()) {
                         itemsIndexed(
                             items = filteredAudioItems,
                             key = { index, item -> "audio_${item.uniqueId}_$index" },
@@ -107,7 +106,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                         }
                     }
 
-                    if (filteredVideoItems.isNotEmpty() ) {
+                    if (filteredVideoItems.isNotEmpty()) {
                         itemsIndexed(
                             items = filteredVideoItems,
                             key = { index, item -> "video_${item.uniqueId}_$index" },

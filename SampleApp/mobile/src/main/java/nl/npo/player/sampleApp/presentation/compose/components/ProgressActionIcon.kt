@@ -44,7 +44,7 @@ fun ProgressActionIcon(
     ) {
         if (currentState is NPODownloadState.InProgress) {
             CircularProgressIndicator(
-                progress = { currentState.progress},
+                progress = { currentState.progress },
                 strokeWidth = 2.dp,
                 modifier = Modifier.size(24.dp),
             )

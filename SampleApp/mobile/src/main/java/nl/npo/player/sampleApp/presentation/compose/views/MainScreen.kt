@@ -47,10 +47,9 @@ fun MainScreen() {
                     Text(stringResource(R.string.app_name))
                 },
                 actions = {
-                    if (NPOCasting.isCastingEnabled)
-                        {
-                            CastButton()
-                        }
+                    if (NPOCasting.isCastingEnabled) {
+                        CastButton()
+                    }
                     SettingsActionIcon()
                 },
             )

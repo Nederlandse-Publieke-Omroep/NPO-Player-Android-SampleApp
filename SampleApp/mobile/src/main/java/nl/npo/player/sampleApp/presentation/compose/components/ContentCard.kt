@@ -50,13 +50,13 @@ fun ContentCard(
                 ),
     ) {
         Row(
-          modifier.padding(12.dp),
+            modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Thumbnail(
                 imageUrl = image,
                 modifier =
-                  modifier
+                    modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(12.dp)),
             )
