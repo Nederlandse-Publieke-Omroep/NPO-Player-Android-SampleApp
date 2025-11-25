@@ -49,9 +49,9 @@ class OfflineViewModel
         }
 
         fun onItemClicked(
-          sourceWrapper: SourceWrapper,
-          id: String,
-          onClick: (DownloadEvent) -> Unit,
+            sourceWrapper: SourceWrapper,
+            id: String,
+            onClick: (DownloadEvent) -> Unit,
         ) {
             if (sourceWrapper.npoOfflineContent != null) {
                 val offlineContent = sourceWrapper.npoOfflineContent ?: return
@@ -64,10 +64,11 @@ class OfflineViewModel
                             npoSourceConfig = offlineSource,
                         )
                         onClick(
-                          DownloadEvent.Request(
-                          itemId = sourceWrapper.uniqueId,
-                          wrapper = sourceWrapper,
-                        ))
+                            DownloadEvent.Request(
+                                itemId = sourceWrapper.uniqueId,
+                                wrapper = sourceWrapper,
+                            ),
+                        )
                     }
 
                     is NPODownloadState.Failed -> {
@@ -93,35 +94,36 @@ class OfflineViewModel
                 createOfflineContent(sourceWrapper) { throwable ->
                     onErrorToastMessage(throwable.message)
                 }
-
             }
         }
 
-  fun handleDownloadState(
-    state: NPODownloadState?,
-    id: String,
-    sourceWrapper: SourceWrapper,
-  ) {
-    if (sourceWrapper.uniqueId == id) {
-      if (state is NPODownloadState.Failed) {
-        _downloadError.value = DownloadEvent.Error(
-          itemId = id,
-          message = state.reason.message ?: "Download failed",
-        )
-      }
-    }
-  }
-  fun onErrorToastMessage(message: String?) {
-    viewModelScope.launch {
-      _toastMessage.value = message ?: "Unknown error"
-      delay(100)
-      dismissToastMessage()
-    }
-  }
+        fun handleDownloadState(
+            state: NPODownloadState?,
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                if (state is NPODownloadState.Failed) {
+                    _downloadError.value =
+                        DownloadEvent.Error(
+                            itemId = id,
+                            message = state.reason.message ?: "Download failed",
+                        )
+                }
+            }
+        }
 
-      fun dismissToastMessage(){
-      _toastMessage.value = null
-      }
+        fun onErrorToastMessage(message: String?) {
+            viewModelScope.launch {
+                _toastMessage.value = message ?: "Unknown error"
+                delay(100)
+                dismissToastMessage()
+            }
+        }
+
+        fun dismissToastMessage()  {
+            _toastMessage.value = null
+        }
 
         fun onDialogItemClicked(sourceWrapper: SourceWrapper) {
             _itemId.value = sourceWrapper.uniqueId
@@ -131,12 +133,11 @@ class OfflineViewModel
             _itemId.value = null
         }
 
-      fun dismissErrorDialog() {
-        _downloadError.value = DownloadEvent.None
-      }
+        fun dismissErrorDialog() {
+            _downloadError.value = DownloadEvent.None
+        }
 
-
-       override fun onCleared() {
+        override fun onCleared() {
             mutableOfflineLinkList.value?.forEach { it.npoOfflineContent?.release() }
             super.onCleared()
         }

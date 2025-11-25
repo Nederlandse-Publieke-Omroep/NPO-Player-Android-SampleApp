@@ -22,15 +22,19 @@ import androidx.compose.ui.unit.dp
 import nl.npo.player.library.domain.common.enums.AVType
 
 @Composable
-fun Header(title: String, type: AVType? = null) {
-
-  val icon =
-    when (type) {
-      AVType.AUDIO -> Icons.Default.AudioFile
-      AVType.VIDEO -> Icons.Default.VideoFile
-      AVType.UNKNOWN -> Icons.Default.Unarchive
-      else -> {Icons.Default.OfflinePin}
-    }
+fun Header(
+    title: String,
+    type: AVType? = null,
+) {
+    val icon =
+        when (type) {
+            AVType.AUDIO -> Icons.Default.AudioFile
+            AVType.VIDEO -> Icons.Default.VideoFile
+            AVType.UNKNOWN -> Icons.Default.Unarchive
+            else -> {
+                Icons.Default.OfflinePin
+            }
+        }
     Row(
         Modifier
             .fillMaxWidth()

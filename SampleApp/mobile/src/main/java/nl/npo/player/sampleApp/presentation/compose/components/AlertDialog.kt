@@ -5,6 +5,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import nl.npo.player.sampleApp.R
 
 @Composable
 fun CustomAlertDialog(
@@ -19,12 +21,12 @@ fun CustomAlertDialog(
         text = { Text(dialogDescription ?: "") },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {
-                Text("Ok")
+                Text(stringResource(R.string.alert_dialog_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = { onDismiss() }) {
-                Text("Close")
+                Text(stringResource(R.string.alert_dialog_dismiss))
             }
         },
         modifier = modifier,

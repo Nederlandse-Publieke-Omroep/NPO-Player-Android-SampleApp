@@ -6,6 +6,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -16,7 +17,7 @@ fun BottomBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
 
-    NavigationBar {
+    NavigationBar(containerColor = Color(0xFFFF6B00).copy(alpha = 0.20f)) {
         bottomNavItems.forEach { item ->
             val selected =
                 when (item.destination) {
@@ -37,9 +38,10 @@ fun BottomBar(navController: NavHostController) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
+                        tint = Color.White,
                     )
                 },
-                label = { Text(item.label) },
+                label = { Text(item.label, color = Color.White) },
             )
         }
     }

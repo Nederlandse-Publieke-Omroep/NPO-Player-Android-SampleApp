@@ -5,20 +5,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
 import androidx.core.content.ContextCompat
-import com.google.android.gms.cast.framework.CastButtonFactory
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
-import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.views.MainScreen
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
-import nl.npo.player.sampleApp.presentation.settings.SettingsBottomSheetDialog
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.MainViewModel
@@ -78,31 +73,31 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val menuInflater = menuInflater
-        menuInflater.inflate(R.menu.menu_activity_main, menu)
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+//        val menuInflater = menuInflater
+// //        menuInflater.inflate(R.menu.menu_activity_main, menu)
+//
+//        menu.findItem(R.id.media_route_menu_item).isVisible = NPOCasting.isCastingEnabled
+//
+//        // Adding a Cast Button in the menu bar
+//        if (NPOCasting.isCastingEnabled) {
+//            CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
+//        }
+//        return true
+//    }
 
-        menu.findItem(R.id.media_route_menu_item).isVisible = NPOCasting.isCastingEnabled
-
-        // Adding a Cast Button in the menu bar
-        if (NPOCasting.isCastingEnabled) {
-            CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
-        }
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_settings) {
-            showSettings()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun showSettings() {
-        SettingsBottomSheetDialog.newInstance().show(supportFragmentManager, null)
-    }
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        if (item.itemId == R.id.menu_settings) {
+//            showSettings()
+//            return true
+//        }
+//
+//        return super.onOptionsItemSelected(item)
+//    }
+//
+//    private fun showSettings() {
+//        SettingsBottomSheetDialog.newInstance().show(supportFragmentManager, null)
+//    }
 
     private val requestPermissionLauncher =
         registerForActivityResult(

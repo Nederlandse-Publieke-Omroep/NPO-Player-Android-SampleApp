@@ -80,11 +80,10 @@ fun ContentCard(
                 )
             }
 
-          if (trailingContent != null) {
-                    trailingContent()
-            Spacer(Modifier.width(8.dp))
-          }
-
+            if (trailingContent != null) {
+                trailingContent()
+                Spacer(Modifier.width(8.dp))
+            }
         }
     }
 }
