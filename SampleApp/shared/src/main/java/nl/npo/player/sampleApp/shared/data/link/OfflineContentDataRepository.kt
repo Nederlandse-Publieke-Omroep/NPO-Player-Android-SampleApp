@@ -33,6 +33,7 @@ class OfflineContentDataRepository
                     uniqueId = offlineContent.uniqueId,
                     getStreamLink = false,
                     title = offlineContent.getOriginalSource().title ?: offlineContent.uniqueId,
+                    imageUrl = offlineContent.getOfflineSource()?.imageUrl,
                     npoOfflineContent = offlineContent,
                 )
             }

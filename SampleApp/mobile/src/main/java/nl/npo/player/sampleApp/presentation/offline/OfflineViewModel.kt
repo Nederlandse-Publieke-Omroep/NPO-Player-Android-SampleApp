@@ -6,7 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import nl.npo.player.library.domain.offline.models.NPODownloadState
+import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
@@ -28,14 +33,104 @@ class OfflineViewModel
         val urlLinkList: LiveData<List<SourceWrapper>> = mutableURLLinkList
         private val mutableOfflineLinkList = MutableLiveData<List<SourceWrapper>>()
         val offlineLinkList: LiveData<List<SourceWrapper>> = mutableOfflineLinkList
-
         private val mutableMergedLinkList = MutableLiveData<List<SourceWrapper>>()
         val mergedLinkList: LiveData<List<SourceWrapper>> = mutableMergedLinkList
+        private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
+        val downloadEvent = _downloadEvent
+        private val _toastMessage = MutableStateFlow<String?>(null)
+        val toastMessage: StateFlow<String?> = _toastMessage
 
         init {
             getStreamLinkListItems()
             getUrlLinkListItems()
             getOfflineLinkListItems()
+        }
+
+        fun onItemClicked(
+            sourceWrapper: SourceWrapper,
+            id: String,
+            onClick: (DownloadEvent) -> Unit,
+        ) {
+            if (sourceWrapper.npoOfflineContent != null) {
+                val offlineContent = sourceWrapper.npoOfflineContent ?: return
+                if (sourceWrapper.uniqueId != id) return
+                when (val downloadState = offlineContent.downloadState.value) {
+                    NPODownloadState.Finished -> {
+                        val offlineSource = offlineContent.getOfflineSource()
+                        sourceWrapper.copy(
+                            npoOfflineContent = null,
+                            npoSourceConfig = offlineSource,
+                        )
+                        onClick(
+                            DownloadEvent.Request(
+                                itemId = sourceWrapper.uniqueId,
+                                wrapper = sourceWrapper,
+                            ),
+                        )
+                    }
+
+                    is NPODownloadState.Failed -> {
+                        handleDownloadState(
+                            state = downloadState,
+                            id = id,
+                            sourceWrapper = sourceWrapper,
+                        )
+                        offlineContent.startOrResumeDownload()
+                    }
+
+                    is NPODownloadState.Paused -> {
+                        offlineContent.startOrResumeDownload()
+                    }
+                    is NPODownloadState.InProgress -> {
+                        offlineContent.pause()
+                    }
+                    is NPODownloadState.Deleting -> {
+                        deleteDownloadedItem(sourceWrapper = sourceWrapper)
+                    }
+                    NPODownloadState.Initializing -> {
+                        dismissDownloadEventDialog()
+                    }
+                }
+            } else {
+                createOfflineContent(sourceWrapper) { throwable ->
+                    onErrorToastMessage(throwable.message)
+                }
+            }
+        }
+
+        private fun handleDownloadState(
+            state: NPODownloadState.Failed,
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                _downloadEvent.value =
+                    DownloadEvent.Error(
+                        itemId = id,
+                        message = state.reason.message ?: "Download failed",
+                    )
+            }
+        }
+
+        fun deleteDownloadedItem(sourceWrapper: SourceWrapper) {
+            _downloadEvent.value = DownloadEvent.Delete(sourceWrapper = sourceWrapper)
+            deleteOfflineContent(sourceWrapper = sourceWrapper)
+        }
+
+        fun onErrorToastMessage(message: String?) {
+            viewModelScope.launch {
+                _toastMessage.value = message ?: "Unknown error"
+                delay(100)
+                dismissToastMessage()
+            }
+        }
+
+        fun dismissToastMessage() {
+            _toastMessage.value = null
+        }
+
+        fun dismissDownloadEventDialog() {
+            _downloadEvent.value = DownloadEvent.None
         }
 
         override fun onCleared() {
