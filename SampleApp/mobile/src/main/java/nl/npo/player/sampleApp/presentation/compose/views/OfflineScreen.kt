@@ -58,31 +58,31 @@ fun OfflineScreen(
         }
     }
 
-    if (downloadEvent is DownloadEvent.Error) {
-        val data = downloadEvent as DownloadEvent.Error
-        CustomAlertDialog(
-            dialogTitle = data.message ?: "",
-            modifier = Modifier,
-            onConfirm = viewModel::dismissDownloadEventDialog,
-            onDismiss = viewModel::dismissDownloadEventDialog,
-        )
+  when (downloadEvent) {
+    is DownloadEvent.Error -> {
+      CustomAlertDialog(
+        dialogTitle = (downloadEvent as DownloadEvent.Error).message.orEmpty(),
+        modifier = Modifier,
+        onConfirm = viewModel::dismissDownloadEventDialog,
+        onDismiss = viewModel::dismissDownloadEventDialog,
+      )
     }
 
-    if (downloadEvent is DownloadEvent.Delete) {
-        val data = downloadEvent as DownloadEvent.Delete
-        val msg =
-            context.getString(
-                R.string.delete_offline_confirmation,
-                data.sourceWrapper.title,
-            )
-        CustomAlertDialog(
-            dialogTitle = stringResource(R.string.delete_offline_title),
-            dialogDescription = msg,
-            modifier = modifier,
-            onConfirm = viewModel::dismissDownloadEventDialog,
-            onDismiss = viewModel::dismissDownloadEventDialog,
-        )
+    is DownloadEvent.Delete -> {
+      val msg = context.getString(
+        R.string.delete_offline_confirmation,
+        (downloadEvent as DownloadEvent.Delete).sourceWrapper.title,
+      )
+      CustomAlertDialog(
+        dialogTitle = stringResource(R.string.delete_offline_title),
+        dialogDescription = msg,
+        modifier = modifier,
+        onConfirm = viewModel::dismissDownloadEventDialog,
+        onDismiss = viewModel::dismissDownloadEventDialog,
+      )
     }
+    else -> { }
+  }
 
     Column(
         modifier =
