@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -41,7 +40,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val audioItems = viewModel.audioItems.collectAsState(emptyList())
     val videoItems = viewModel.videoItems.collectAsState(emptyList())
-    val isLoading =  videoItems.value.isEmpty() && audioItems.value.isEmpty()
+    val isLoading = videoItems.value.isEmpty() && audioItems.value.isEmpty()
 
     Column(
         modifier =
