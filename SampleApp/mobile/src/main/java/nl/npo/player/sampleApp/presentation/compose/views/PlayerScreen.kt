@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,14 +38,10 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 @Composable
 fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     val orange = Color(0xFFFF7A00)
-    val audioItems = viewModel.urlLinkList.observeAsState(emptyList())
-    val filteredAudioItems = audioItems.value.filter { it.avType == AVType.AUDIO }
-    val videoItems = viewModel.streamLinkList.observeAsState(emptyList())
-    val filteredVideoItems = videoItems.value.filter { it.avType == AVType.VIDEO }
-    val loadUrl = viewModel.urlLinkList.observeAsState(emptyList())
-    val loadStream = viewModel.streamLinkList.observeAsState(emptyList())
     val context = LocalContext.current
-    val isLoading = loadUrl.value.isEmpty() && loadStream.value.isEmpty()
+    val audioItems = viewModel.audioItems.collectAsState(emptyList())
+    val videoItems = viewModel.videoItems.collectAsState(emptyList())
+    val isLoading =  videoItems.value.isEmpty() && audioItems.value.isEmpty()
 
     Column(
         modifier =
@@ -86,9 +83,9 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                         }
                     }
 
-                    if (filteredAudioItems.isNotEmpty()) {
+                    if (audioItems.value.isNotEmpty()) {
                         itemsIndexed(
-                            items = filteredAudioItems,
+                            items = audioItems.value,
                             key = { index, item -> "audio_${item.uniqueId}_$index" },
                         ) { _, item ->
                             ContentCard(
@@ -106,9 +103,9 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                         }
                     }
 
-                    if (filteredVideoItems.isNotEmpty()) {
+                    if (videoItems.value.isNotEmpty()) {
                         itemsIndexed(
-                            items = filteredVideoItems,
+                            items = videoItems.value,
                             key = { index, item -> "video_${item.uniqueId}_$index" },
                         ) { _, item ->
                             ContentCard(
