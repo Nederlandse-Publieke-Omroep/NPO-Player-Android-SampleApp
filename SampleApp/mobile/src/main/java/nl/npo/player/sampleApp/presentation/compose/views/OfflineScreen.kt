@@ -58,31 +58,32 @@ fun OfflineScreen(
         }
     }
 
-  when (downloadEvent) {
-    is DownloadEvent.Error -> {
-      CustomAlertDialog(
-        dialogTitle = (downloadEvent as DownloadEvent.Error).message.orEmpty(),
-        modifier = Modifier,
-        onConfirm = viewModel::dismissDownloadEventDialog,
-        onDismiss = viewModel::dismissDownloadEventDialog,
-      )
-    }
+    when (downloadEvent) {
+        is DownloadEvent.Error -> {
+            CustomAlertDialog(
+                dialogTitle = (downloadEvent as DownloadEvent.Error).message.orEmpty(),
+                modifier = Modifier,
+                onConfirm = viewModel::dismissDownloadEventDialog,
+                onDismiss = viewModel::dismissDownloadEventDialog,
+            )
+        }
 
-    is DownloadEvent.Delete -> {
-      val msg = context.getString(
-        R.string.delete_offline_confirmation,
-        (downloadEvent as DownloadEvent.Delete).sourceWrapper.title,
-      )
-      CustomAlertDialog(
-        dialogTitle = stringResource(R.string.delete_offline_title),
-        dialogDescription = msg,
-        modifier = modifier,
-        onConfirm = viewModel::dismissDownloadEventDialog,
-        onDismiss = viewModel::dismissDownloadEventDialog,
-      )
+        is DownloadEvent.Delete -> {
+            val msg =
+                context.getString(
+                    R.string.delete_offline_confirmation,
+                    (downloadEvent as DownloadEvent.Delete).sourceWrapper.title,
+                )
+            CustomAlertDialog(
+                dialogTitle = stringResource(R.string.delete_offline_title),
+                dialogDescription = msg,
+                modifier = modifier,
+                onConfirm = viewModel::dismissDownloadEventDialog,
+                onDismiss = viewModel::dismissDownloadEventDialog,
+            )
+        }
+        else -> { }
     }
-    else -> { }
-  }
 
     Column(
         modifier =
@@ -110,8 +111,9 @@ fun OfflineScreen(
                 )
             } else {
                 LazyColumn(
-                    modifier = modifier.fillMaxWidth()
-                      .background(Color.Transparent),
+                    modifier =
+                        modifier.fillMaxWidth()
+                            .background(Color.Transparent),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
@@ -119,8 +121,9 @@ fun OfflineScreen(
                         Box(
                             modifier = modifier.background(Color(0xFF141414)),
                         ) {
-                            Header(modifier = modifier,
-                              title = stringResource(R.string.offline_header)
+                            Header(
+                                modifier = modifier,
+                                title = stringResource(R.string.offline_header),
                             )
                         }
                     }

@@ -24,9 +24,9 @@ import nl.npo.player.library.domain.offline.models.NPODownloadState
 
 @Composable
 fun ProgressActionIcon(
-  downloadState: LiveData<NPODownloadState>?,
-  modifier: Modifier = Modifier,
-  onClick: () -> Unit,
+    downloadState: LiveData<NPODownloadState>?,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
 ) {
     // Note: observing LiveData at item-level is intentional.
 // Each card needs to update independently when its download state changes.
