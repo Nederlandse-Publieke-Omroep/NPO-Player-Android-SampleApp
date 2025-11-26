@@ -17,10 +17,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -47,16 +45,9 @@ fun OfflineScreen(
     viewModel: OfflineViewModel = hiltViewModel(),
 ) {
     val orange = Color(0xFFFF7A00)
-    val mergedList by viewModel.mergedLinkList.observeAsState(emptyList())
+    val mergedList by viewModel.mergedSourceList.collectAsState()
     val context = LocalContext.current
     val downloadEvent by viewModel.downloadEvent.collectAsState()
-    val toastMessage by viewModel.toastMessage.collectAsState()
-
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let { msg ->
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     when (downloadEvent) {
         is DownloadEvent.Error -> {
@@ -148,6 +139,7 @@ fun OfflineScreen(
                                                 sourceWrapper = item,
                                                 id = item.uniqueId,
                                                 onClick = { context.startPlayerActivity(item) },
+                                                error = { Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show() },
                                             )
                                         },
                                     )
