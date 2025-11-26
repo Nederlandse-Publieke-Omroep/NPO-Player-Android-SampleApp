@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContentCard(
-    modifier: Modifier = Modifier,
     contentTitle: String,
-    contentDescription: String? = null,
     accent: Color,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
     image: String? = null,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},

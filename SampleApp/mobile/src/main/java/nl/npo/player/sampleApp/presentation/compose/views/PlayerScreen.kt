@@ -80,7 +80,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 ) {
                     stickyHeader {
                         Box(
-                            modifier = Modifier.background(Color(0xFF121212)),
+                            modifier = Modifier.background(Color(0xFF121212).copy(alpha = 0.05f)),
                         ) {
                             Header(title = stringResource(R.string.header_audio), type = AVType.AUDIO)
                         }
@@ -101,7 +101,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                         }
                     }
                     stickyHeader {
-                        Box(modifier = Modifier.background(Color(0xFF121212))) {
+                        Box(modifier = Modifier.background(Color(0xFF141414).copy(alpha = 0.5f))) {
                             Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
                         }
                     }

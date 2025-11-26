@@ -11,10 +11,10 @@ import nl.npo.player.sampleApp.R
 @Composable
 fun CustomAlertDialog(
     dialogTitle: String,
+    modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     dialogDescription: String? = "",
     onConfirm: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     AlertDialog(
         title = { Text(dialogTitle) },

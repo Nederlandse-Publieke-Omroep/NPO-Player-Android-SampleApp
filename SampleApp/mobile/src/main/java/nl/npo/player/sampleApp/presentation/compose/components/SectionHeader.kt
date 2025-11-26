@@ -24,8 +24,8 @@ import nl.npo.player.library.domain.common.enums.AVType
 
 @Composable
 fun Header(
-    modifier: Modifier = Modifier,
     title: String,
+    modifier: Modifier = Modifier,
     type: AVType? = null,
 ) {
     val icon =

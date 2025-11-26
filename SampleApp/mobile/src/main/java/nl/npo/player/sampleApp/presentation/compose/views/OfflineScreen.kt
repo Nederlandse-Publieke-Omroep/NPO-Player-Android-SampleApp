@@ -110,15 +110,18 @@ fun OfflineScreen(
                 )
             } else {
                 LazyColumn(
-                    modifier = modifier.fillMaxWidth(),
+                    modifier = modifier.fillMaxWidth()
+                      .background(Color.Transparent),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     stickyHeader {
                         Box(
-                            modifier = modifier.background(Color(0xFF121212)),
+                            modifier = modifier.background(Color(0xFF141414)),
                         ) {
-                            Header(modifier = modifier, stringResource(R.string.offline_header))
+                            Header(modifier = modifier,
+                              title = stringResource(R.string.offline_header)
+                            )
                         }
                     }
 

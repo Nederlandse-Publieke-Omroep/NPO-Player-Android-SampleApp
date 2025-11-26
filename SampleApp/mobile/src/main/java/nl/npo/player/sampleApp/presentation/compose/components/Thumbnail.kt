@@ -19,8 +19,8 @@ import coil.compose.AsyncImage
 
 @Composable
 fun Thumbnail(
-    imageUrl: String?,
-    modifier: Modifier = Modifier,
+  modifier: Modifier = Modifier,
+  imageUrl: String?,
 ) {
     Box(
         modifier =
