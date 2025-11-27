@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -70,7 +68,6 @@ class OfflineViewModel
 
         init {
             getOfflineLinkListItems()
-            CoroutineScope(Dispatchers.Default).launch { }
         }
 
         fun onItemClicked(
@@ -115,12 +112,14 @@ class OfflineViewModel
                     }
 
                     is NPODownloadState.Deleting -> {
-                        deleteDownloadedItem(sourceWrapper = sourceWrapper)
+                        onClick(
+                            DownloadEvent.Delete(
+                                sourceWrapper.uniqueId,
+                                sourceWrapper,
+                            ),
+                        )
                     }
-
-                    NPODownloadState.Initializing -> {
-                        dismissDownloadEventDialog()
-                    }
+                    NPODownloadState.Initializing -> {}
                 }
             } else {
                 createOfflineContent(sourceWrapper) { throwable ->
@@ -143,9 +142,13 @@ class OfflineViewModel
             }
         }
 
-        fun deleteDownloadedItem(sourceWrapper: SourceWrapper) {
-            _downloadEvent.value = DownloadEvent.Delete(sourceWrapper = sourceWrapper)
-            deleteOfflineContent(sourceWrapper = sourceWrapper)
+        fun deleteDownloadedItem(
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                _downloadEvent.value = DownloadEvent.Delete(id, sourceWrapper = sourceWrapper)
+            }
         }
 
         fun dismissDownloadEventDialog() {

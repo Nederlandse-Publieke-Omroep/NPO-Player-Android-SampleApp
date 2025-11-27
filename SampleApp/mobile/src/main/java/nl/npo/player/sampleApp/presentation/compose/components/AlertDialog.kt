@@ -11,7 +11,6 @@ import nl.npo.player.sampleApp.R
 @Composable
 fun CustomAlertDialog(
     dialogTitle: String,
-    modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     dialogDescription: String? = "",
     onConfirm: () -> Unit = {},
@@ -29,7 +28,7 @@ fun CustomAlertDialog(
                 Text(stringResource(R.string.alert_dialog_dismiss))
             }
         },
-        modifier = modifier,
+        modifier = Modifier,
         onDismissRequest = {},
     )
 }

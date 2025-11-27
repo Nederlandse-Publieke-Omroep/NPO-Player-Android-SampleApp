@@ -78,6 +78,6 @@ fun PreviewIcon() {
         }
     ProgressActionIcon(
         downloadState = downloadState,
-        onClick = {},
+        onClick = {}
     )
 }

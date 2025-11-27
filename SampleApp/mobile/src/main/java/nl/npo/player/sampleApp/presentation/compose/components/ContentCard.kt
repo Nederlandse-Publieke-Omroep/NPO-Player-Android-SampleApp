@@ -30,19 +30,18 @@ import androidx.compose.ui.unit.dp
 fun ContentCard(
     contentTitle: String,
     accent: Color,
-    modifier: Modifier = Modifier,
     contentDescription: String? = null,
     image: String? = null,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
-    trailingContent: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable ((onAction: () -> Unit) -> Unit)? = null,
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier =
-            modifier
+            Modifier
                 .fillMaxWidth()
                 .combinedClickable(
                     onClick = { onClick() },
@@ -50,19 +49,19 @@ fun ContentCard(
                 ),
     ) {
         Row(
-            modifier.padding(12.dp),
+            Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Thumbnail(
                 imageUrl = image,
                 modifier =
-                    modifier
+                    Modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(12.dp)),
             )
-            Spacer(modifier.width(12.dp))
+            Spacer(Modifier.width(12.dp))
 
-            Column(modifier.weight(1f)) {
+            Column(Modifier.weight(1f)) {
                 Text(
                     text = contentTitle,
                     color = Color.White,
@@ -82,7 +81,7 @@ fun ContentCard(
             }
 
             if (trailingContent != null) {
-                trailingContent()
+                trailingContent(onClick)
                 Spacer(Modifier.width(8.dp))
             }
         }
