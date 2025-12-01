@@ -99,14 +99,12 @@ fun OfflineScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     stickyHeader {
-
-                            Header(
-                                modifier = Modifier,
-                                title = stringResource(R.string.offline_header),
+                        Header(
+                            modifier = Modifier,
+                            title = stringResource(R.string.offline_header),
                             )
 
                     }
-
                     if (mergedList.isNotEmpty()) {
                         itemsIndexed(
                             items = mergedList,
@@ -141,7 +139,7 @@ fun OfflineScreen(
     }
 }
 
-fun Context.startPlayerActivity(wrapper: SourceWrapper) {
+fun Context.startPlayerActivity( wrapper: SourceWrapper) {
     startActivity(
         Intent(
             PlayerActivity.getStartIntent(
