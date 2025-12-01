@@ -30,7 +30,7 @@ class MainActivity : BaseActivity() {
         checkLibraryInitialization()
         setContent {
             MaterialTheme {
-                MainScreen()
+                MainScreen(this)
             }
         }
         // Update the context the BitmovinCastManager is using

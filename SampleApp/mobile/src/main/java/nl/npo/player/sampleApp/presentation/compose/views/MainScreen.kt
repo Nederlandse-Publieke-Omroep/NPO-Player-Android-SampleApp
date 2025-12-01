@@ -1,5 +1,7 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
+import androidx.activity.compose.LocalActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.cast.framework.CastStateListener
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.CastButton
@@ -25,13 +28,14 @@ import nl.npo.player.sampleApp.presentation.compose.navigation.BottomBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(activity: AppCompatActivity) {
         val navController = rememberNavController()
         val gradientColors = listOf(
         colorResource(R.color.gradient_top),
         colorResource(R.color.gradient_mid),
         colorResource(R.color.gradient_bottom),
     )
+
         Scaffold(
             modifier =
                 Modifier
@@ -50,7 +54,7 @@ fun MainScreen() {
                     title = { Text(stringResource(R.string.app_name)) },
                     actions = {
                         if (NPOCasting.isCastingEnabled) {
-                            CastButton()
+                            CastButton(activity)
                         }
                         SettingsActionIcon()
                     },
