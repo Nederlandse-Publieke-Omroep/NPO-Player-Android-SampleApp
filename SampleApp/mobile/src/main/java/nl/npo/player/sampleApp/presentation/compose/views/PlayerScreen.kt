@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -46,16 +48,6 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors =
-                            listOf(
-                                Color(0xFF121212),
-                                Color(0xFF2C1A00),
-                                Color(0xFFFF6B00),
-                            ),
-                    ),
-                ),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (isLoading) {
@@ -75,11 +67,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     stickyHeader {
-                        Box(
-                            modifier = Modifier.background(Color(0xFF121212).copy(alpha = 0.05f)),
-                        ) {
-                            Header(title = stringResource(R.string.header_audio), type = AVType.AUDIO)
-                        }
+                        Header(title = stringResource(R.string.header_audio), type = AVType.AUDIO)
                     }
 
                     if (audioItems.value.isNotEmpty()) {
@@ -96,10 +84,9 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                             )
                         }
                     }
+
                     stickyHeader {
-                        Box(modifier = Modifier.background(Color(0xFF141414).copy(alpha = 0.5f))) {
                             Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
-                        }
                     }
 
                     if (videoItems.value.isNotEmpty()) {

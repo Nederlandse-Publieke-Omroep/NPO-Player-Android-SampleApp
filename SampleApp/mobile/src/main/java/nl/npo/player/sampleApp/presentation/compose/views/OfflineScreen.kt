@@ -52,25 +52,23 @@ fun OfflineScreen(
         is DownloadEvent.Error -> {
             CustomAlertDialog(
                 dialogTitle = (downloadEvent as DownloadEvent.Error).message.orEmpty(),
-
                 onConfirm = viewModel::dismissDownloadEventDialog,
-                onDismiss = viewModel::dismissDownloadEventDialog,
             )
         }
 
         is DownloadEvent.Delete -> {
-            val list = downloadEvent as DownloadEvent.Delete
+            val downloadEvent = downloadEvent as DownloadEvent.Delete
             val msg =
                 context.getString(
                     R.string.delete_offline_confirmation,
-                    list.sourceWrapper.title,
+                    downloadEvent.sourceWrapper.title,
                 )
             CustomAlertDialog(
                 dialogTitle = stringResource(R.string.delete_offline_title),
                 dialogDescription = msg,
                 onConfirm = {
+                    viewModel.deleteOfflineContent(downloadEvent.sourceWrapper)
                     viewModel.dismissDownloadEventDialog()
-                    viewModel.deleteOfflineContent(list.sourceWrapper)
                 },
                 onDismiss = viewModel::dismissDownloadEventDialog,
             )
@@ -82,16 +80,6 @@ fun OfflineScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors =
-                            listOf(
-                                Color(0xFF121212),
-                                Color(0xFF2C1A00),
-                                Color(0xFFFF6B00),
-                            ),
-                    ),
-                ),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (mergedList.isEmpty()) {
@@ -111,14 +99,12 @@ fun OfflineScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     stickyHeader {
-                        Box(
-                            modifier = Modifier.background(Color(0xFF141414)),
-                        ) {
+
                             Header(
                                 modifier = Modifier,
                                 title = stringResource(R.string.offline_header),
                             )
-                        }
+
                     }
 
                     if (mergedList.isNotEmpty()) {
