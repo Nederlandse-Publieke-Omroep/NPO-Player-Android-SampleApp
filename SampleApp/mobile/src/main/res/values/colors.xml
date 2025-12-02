@@ -6,4 +6,11 @@
     <color name="ebony">#FF0B1C36</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="gradient_top">#121212</color>
+    <color name="gradient_mid">#2C1A00</color>
+    <color name="gradient_bottom">#CC5500</color>
+
+    <color name="nav_icon_color">#FFFFFFFF</color>
+    <color name="nav_text_color">#FFFFFFFF</color>
 </resources>
