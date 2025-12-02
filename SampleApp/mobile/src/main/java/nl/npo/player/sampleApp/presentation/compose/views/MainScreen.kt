@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding

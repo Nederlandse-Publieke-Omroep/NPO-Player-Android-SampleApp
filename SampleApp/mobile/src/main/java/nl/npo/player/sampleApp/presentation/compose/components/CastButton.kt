@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.presentation.compose.components
 
-import android.app.Activity
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
