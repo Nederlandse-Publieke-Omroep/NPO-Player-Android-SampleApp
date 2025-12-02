@@ -63,6 +63,7 @@ android {
         compose = true
         buildConfig = true
         viewBinding = true
+        compose = true
     }
 
     composeOptions {
@@ -81,7 +82,12 @@ android {
     lint {
         disable 'Instantiatable'
     }
+}
 
+composeCompiler {
+    enableStrongSkippingMode = true
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    metricsDestination = layout.buildDirectory.dir("compose_compiler")
 }
 
 dependencies {
@@ -139,4 +145,9 @@ dependencies {
     implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'
+
+    // Compose
+    implementation 'androidx.compose.runtime:runtime:1.9.5'
+    implementation 'androidx.compose.ui:ui-android:1.7.7'
+    implementation 'androidx.compose.foundation:foundation:1.9.5'
 }

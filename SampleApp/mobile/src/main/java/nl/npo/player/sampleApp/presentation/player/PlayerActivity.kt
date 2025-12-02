@@ -12,6 +12,16 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -38,11 +48,15 @@ import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
+import nl.npo.player.library.presentation.compose.components.PlayerIcon
+import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.models.SettingType
+import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
+import nl.npo.player.library.presentation.mobile.compose.components.MobilePlayerTopBar
 import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
@@ -255,8 +269,13 @@ class PlayerActivity : BaseActivity() {
                                     player,
                                     (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
                                     MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
-                                    DefaultMobilePlayerComponents(),
+                                    if (npoPlayerColors != null) {
+                                        CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                                    } else {
+                                        DefaultMobilePlayerComponents()
+                                    },
                                 )
+                                setUIConfig(playerUIConfig)
 
                                 setFullScreenHandler(fullScreenHandler)
                                 enablePictureInPictureSupport(defaultPipHandler)
@@ -361,7 +380,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player?.apply {
-//            destroy()
+            if (!NPOCasting.isCastingConnected()) destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
         binding.npoVideoPlayerNative.destroy()
@@ -597,7 +616,7 @@ class PlayerActivity : BaseActivity() {
             PlayerActivity::class.simpleName,
             "Loading stream in player failed with result:${error.getMessage(this@PlayerActivity)}",
         )
-//        player?.setPlayerError(error)
+        player?.setError(error)
         binding.loadingIndicator.isVisible = false
 
         with(binding.retryBtn) {
@@ -699,6 +718,41 @@ class PlayerActivity : BaseActivity() {
                 doSystemUiVisibility(isFullscreen)
             }
         }
+
+    class CustomPlayerComponents(
+        val onBackPressed: () -> Unit,
+    ) : DefaultMobilePlayerComponents() {
+        @Composable
+        override fun TopControlsBar(
+            modifier: Modifier,
+            playerUIState: NPOPlayerUIState,
+        ) {
+            Row(
+                modifier =
+                    modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .semantics { isTraversalGroup = true },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PlayerIconButton(
+                    onClick = {
+                        onBackPressed()
+                    },
+                ) {
+                    PlayerIcon(
+                        painterResource(R.drawable.npo_player_ic_arrow_left),
+                        stringResource(R.string.player_close),
+                    )
+                }
+
+                MobilePlayerTopBar(
+                    playerUiState = playerUIState,
+                    modifier = Modifier,
+                )
+            }
+        }
+    }
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
