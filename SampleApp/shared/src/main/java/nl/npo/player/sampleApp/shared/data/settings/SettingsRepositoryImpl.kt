@@ -101,4 +101,16 @@ class SettingsRepositoryImpl
         override suspend fun setEnvironment(type: Environment) {
             prefs.setEnvironment(type.toPref())
         }
+
+        override val chapterSkippingEnabled: Flow<Boolean> = prefs.chapterSkippingEnabled
+
+        override suspend fun setChapterSkippingEnabled(enabled: Boolean) {
+            prefs.setChapterSkippingEnabled(enabled)
+        }
+
+        override val chapterSkippingAlwaysFeatured: Flow<Boolean> = prefs.chapterSkippingAlwaysFeatured
+
+        override suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean) {
+            prefs.setChapterSkippingAlwaysFeatured(enabled)
+        }
     }

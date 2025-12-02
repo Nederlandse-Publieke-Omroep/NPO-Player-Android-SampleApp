@@ -14,4 +14,6 @@ enum class SettingsKey {
     ShouldPlayNext,
     EnableCasting,
     Environment,
+    ChapterSkippingEnabled,
+    ChapterSkippingAlwaysFeatured,
 }

@@ -58,4 +58,12 @@ interface SettingsRepository {
     val environment: Flow<Environment>
 
     suspend fun setEnvironment(type: Environment)
+
+    val chapterSkippingEnabled: Flow<Boolean>
+
+    suspend fun setChapterSkippingEnabled(enabled: Boolean)
+
+    val chapterSkippingAlwaysFeatured: Flow<Boolean>
+
+    suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean)
 }

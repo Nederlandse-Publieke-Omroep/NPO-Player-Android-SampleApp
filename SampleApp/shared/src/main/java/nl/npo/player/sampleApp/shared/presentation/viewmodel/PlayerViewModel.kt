@@ -19,8 +19,10 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.enums.CastMediaType
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
 import nl.npo.player.sampleApp.shared.domain.model.StreamInfoResult
@@ -29,6 +31,7 @@ import nl.npo.player.sampleApp.shared.domain.model.UserType
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import javax.inject.Inject
+import kotlin.time.Duration
 
 typealias UseExoplayer = Boolean
 
@@ -140,13 +143,24 @@ class PlayerViewModel
             }
         }
 
-        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, UseExoplayer) -> Unit) {
+        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, UseExoplayer, NPOPlayerUIConfig) -> Unit) {
             viewModelScope.launch {
                 val playerConfig =
                     NPOPlayerConfig(
                         shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
                         shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
                         bufferConfig = NPOBufferConfig(),
+                        allowedToSkipFollowingChapterTypes =
+                            if (settingsRepository.chapterSkippingEnabled.first()) {
+                                listOf(
+                                    StreamChapterType.IDENT,
+                                    StreamChapterType.INTRO,
+                                    StreamChapterType.RECAP,
+                                    StreamChapterType.CREDITS,
+                                )
+                            } else {
+                                emptyList()
+                            },
                     )
 
                 val npoPlayerColors =
@@ -160,11 +174,20 @@ class PlayerViewModel
                         null
                     }
                 val useExoplayer: UseExoplayer = settingsRepository.useExoplayer.first()
+                val playerUIConfig =
+                    if (settingsRepository.chapterSkippingAlwaysFeatured.first()) {
+                        NPOPlayerUIConfig(
+                            maximumTimeToShowChapterSkipButton = Duration.INFINITE,
+                        )
+                    } else {
+                        NPOPlayerUIConfig()
+                    }
 
                 callback(
                     playerConfig,
                     npoPlayerColors,
                     useExoplayer,
+                    playerUIConfig,
                 )
             }
         }

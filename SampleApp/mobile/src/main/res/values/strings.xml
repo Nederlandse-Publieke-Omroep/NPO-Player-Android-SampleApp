@@ -10,6 +10,7 @@
     <string name="select_audio_stream">Change Settings</string>
     <string name="btn_offline_content">Go to Offline list</string>
     <string name="manual_prid_hint">Manual PRID</string>
+    <string name="player_close">Terug naar vorige scherm</string>
     <!--    For testing S&A Audio Receiver-->
 <!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
     <!--    NPO Player Receiver-->
