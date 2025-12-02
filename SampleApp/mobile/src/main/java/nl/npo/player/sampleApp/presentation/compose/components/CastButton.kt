@@ -37,7 +37,6 @@ fun CastButtonPreview() {
                 Modifier
                     .padding(16.dp)
                     .size(48.dp),
-            // ensures the AndroidView is visible
             contentAlignment = Alignment.Center,
         ) {
             CastButton()
