@@ -201,19 +201,4 @@ class OfflineViewModel
             viewModelScope.launch {
                 mutableOfflineLinkList.emit(offlineLinkRepository.getSourceList())
             }
-
-//  private suspend fun updateMergedLinkList(
-//    offlineList: List<SourceWrapper>,
-//  ): List<SourceWrapper> {
-//      val streamLink = streamLinkRepository.getSourceList()
-//      val urlLink = urlLinkRepository.getSourceList()
-//      return urlLink
-//      .union(streamLink)
-//      .filter { it.offlineDownloadAllowed }
-//      .map { source ->
-//        offlineList.firstOrNull { offlineSource ->
-//          source.uniqueId == offlineSource.uniqueId
-//        } ?: source
-//      }
-//  }
     }
