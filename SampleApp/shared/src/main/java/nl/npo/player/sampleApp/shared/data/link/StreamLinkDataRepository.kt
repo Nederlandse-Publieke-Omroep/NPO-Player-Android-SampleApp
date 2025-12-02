@@ -285,7 +285,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_RA2_837085",
                 getStreamLink = true,
                 imageUrl = "https://www.nporadio5.nl/sterrennl/images/blue-diamonds.webp",
-                avType = AVType.VIDEO,
+                avType = AVType.AUDIO,
                 isLive = true,
             ),
             SourceWrapper(
