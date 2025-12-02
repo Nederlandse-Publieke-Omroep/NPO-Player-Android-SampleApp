@@ -21,7 +21,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -40,9 +39,7 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun OfflineScreen(
-    viewModel: OfflineViewModel = hiltViewModel(),
-) {
+fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     val orange = Color(0xFFFF7A00)
     val mergedList by viewModel.mergedSourceList.collectAsState()
     val context = LocalContext.current
@@ -79,7 +76,7 @@ fun OfflineScreen(
     Column(
         modifier =
             Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (mergedList.isEmpty()) {
@@ -102,8 +99,7 @@ fun OfflineScreen(
                         Header(
                             modifier = Modifier,
                             title = stringResource(R.string.offline_header),
-                            )
-
+                        )
                     }
                     if (mergedList.isNotEmpty()) {
                         itemsIndexed(
@@ -126,9 +122,11 @@ fun OfflineScreen(
                                 },
                                 onLongClick = { viewModel.deleteDownloadedItem(item.uniqueId, item) },
                                 trailingContent = {
-                                    onAction ->
+                                        onAction ->
                                     ProgressActionIcon(
-                                        onClick = {onAction()}, downloadState = currentState)
+                                        onClick = { onAction() },
+                                        downloadState = currentState,
+                                    )
                                 },
                             )
                         }
@@ -139,7 +137,7 @@ fun OfflineScreen(
     }
 }
 
-fun Context.startPlayerActivity( wrapper: SourceWrapper) {
+fun Context.startPlayerActivity(wrapper: SourceWrapper) {
     startActivity(
         Intent(
             PlayerActivity.getStartIntent(

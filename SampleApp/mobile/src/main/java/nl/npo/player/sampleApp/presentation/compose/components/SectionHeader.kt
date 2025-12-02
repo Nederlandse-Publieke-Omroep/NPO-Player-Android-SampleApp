@@ -34,14 +34,14 @@ fun Header(
             AVType.AUDIO -> Icons.Default.AudioFile
             AVType.VIDEO -> Icons.Default.VideoFile
             AVType.UNKNOWN -> Icons.Default.Unarchive
-            else -> {
-                Icons.Default.OfflinePin
-            }
+            else -> Icons.Default.OfflinePin
         }
+
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .background(Color(0xFF121212).copy(alpha = 0.95f))
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {

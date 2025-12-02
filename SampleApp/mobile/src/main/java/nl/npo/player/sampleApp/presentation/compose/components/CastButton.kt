@@ -17,7 +17,8 @@ import androidx.mediarouter.app.MediaRouteButton
 import com.google.android.gms.cast.framework.CastButtonFactory
 
 @Composable
-fun CastButton(activity: Activity) {
+fun CastButton() {
+    val activity = LocalActivity.current as? AppCompatActivity ?: return
     AndroidView(
         factory = { context ->
             MediaRouteButton(context).apply {
@@ -31,15 +32,16 @@ fun CastButton(activity: Activity) {
 @Preview(showBackground = true)
 @Composable
 fun CastButtonPreview() {
-    val activity = LocalActivity.current as? AppCompatActivity ?: return
     MaterialTheme {
         Box(
-            modifier = Modifier
-                .padding(16.dp)
-                .size(48.dp), // ensures the AndroidView is visible
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .padding(16.dp)
+                    .size(48.dp),
+            // ensures the AndroidView is visible
+            contentAlignment = Alignment.Center,
         ) {
-            CastButton(activity)
+            CastButton()
         }
     }
 }

@@ -3,7 +3,6 @@ package nl.npo.player.sampleApp.presentation.compose.views
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,15 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -47,7 +43,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     Column(
         modifier =
             Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (isLoading) {
@@ -86,7 +82,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                     }
 
                     stickyHeader {
-                            Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
+                        Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
                     }
 
                     if (videoItems.value.isNotEmpty()) {

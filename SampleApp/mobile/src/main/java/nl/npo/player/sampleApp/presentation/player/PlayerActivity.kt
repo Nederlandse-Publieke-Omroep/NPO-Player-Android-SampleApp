@@ -16,7 +16,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -149,7 +148,6 @@ class PlayerActivity : BaseActivity() {
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
-
             binding.composeCastButton.isVisible = true
         }
 
@@ -404,9 +402,7 @@ class PlayerActivity : BaseActivity() {
         castContext.addCastStateListener(castStateListener)
         composeCastButton.isVisible = true
         composeCastButton.setContent {
-            CastButton(
-                activity = this@PlayerActivity,
-            )
+            CastButton()
         }
     }
 
