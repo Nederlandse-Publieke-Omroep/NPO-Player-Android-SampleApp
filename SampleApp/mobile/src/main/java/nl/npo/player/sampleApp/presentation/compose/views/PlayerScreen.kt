@@ -62,11 +62,11 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
-                    stickyHeader {
-                        Header(title = stringResource(R.string.header_audio), type = AVType.AUDIO)
-                    }
-
                     if (audioItems.value.isNotEmpty()) {
+                        stickyHeader {
+                            Header(title = stringResource(R.string.header_audio), type = AVType.AUDIO)
+                        }
+
                         itemsIndexed(
                             items = audioItems.value,
                             key = { index, item -> "audio_${item.uniqueId}_$index" },
@@ -81,11 +81,10 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                         }
                     }
 
-                    stickyHeader {
-                        Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
-                    }
-
                     if (videoItems.value.isNotEmpty()) {
+                        stickyHeader {
+                            Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
+                        }
                         itemsIndexed(
                             items = videoItems.value,
                             key = { index, item -> "video_${item.uniqueId}_$index" },

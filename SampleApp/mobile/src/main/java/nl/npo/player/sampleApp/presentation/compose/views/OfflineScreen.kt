@@ -95,13 +95,13 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 ) {
-                    stickyHeader {
-                        Header(
-                            modifier = Modifier,
-                            title = stringResource(R.string.offline_header),
-                        )
-                    }
                     if (mergedList.isNotEmpty()) {
+                        stickyHeader {
+                            Header(
+                                modifier = Modifier,
+                                title = stringResource(R.string.offline_header),
+                            )
+                        }
                         itemsIndexed(
                             items = mergedList,
                             key = { index, item -> "offline_${item.uniqueId}_$index" },
