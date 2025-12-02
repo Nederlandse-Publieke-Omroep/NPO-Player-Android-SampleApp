@@ -29,7 +29,7 @@ class OfflineContentDataRepository
         override suspend fun getSourceList(): List<SourceWrapper> =
             npoOfflineContentManager.getAll().map { offlineContent ->
                 SourceWrapper(
-                    npoSourceConfig = offlineContent.getOfflineSource(),
+                    npoSourceConfig = null,
                     uniqueId = offlineContent.uniqueId,
                     getStreamLink = false,
                     title = offlineContent.getOriginalSource().title ?: offlineContent.uniqueId,
