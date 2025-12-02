@@ -81,11 +81,6 @@ class OfflineViewModel
                 if (sourceWrapper.uniqueId != id) return
                 when (val downloadState = offlineContent.downloadState.value) {
                     NPODownloadState.Finished -> {
-                        val offlineSource = offlineContent.getOfflineSource()
-                        sourceWrapper.copy(
-                            npoOfflineContent = null,
-                            npoSourceConfig = offlineSource,
-                        )
                         onClick(
                             DownloadEvent.Request(
                                 itemId = sourceWrapper.uniqueId,
