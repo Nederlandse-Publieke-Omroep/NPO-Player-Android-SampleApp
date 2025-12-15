@@ -66,4 +66,8 @@ interface SettingsRepository {
     val chapterSkippingAlwaysFeatured: Flow<Boolean>
 
     suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean)
+
+    val allowLockUI: Flow<Boolean>
+
+    suspend fun setAllowLockUI(allow: Boolean)
 }

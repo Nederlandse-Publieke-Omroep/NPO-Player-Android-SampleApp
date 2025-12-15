@@ -174,11 +174,17 @@ class PlayerViewModel
                         null
                     }
                 val useExoplayer: UseExoplayer = settingsRepository.useExoplayer.first()
+
+                val chapterSkippingAlwaysFeatured = settingsRepository.chapterSkippingAlwaysFeatured.first()
+                val allowLockingUI = settingsRepository.allowLockUI.first()
+
                 val playerUIConfig =
-                    if (settingsRepository.chapterSkippingAlwaysFeatured.first()) {
+                    if (chapterSkippingAlwaysFeatured) {
                         NPOPlayerUIConfig(
                             maximumTimeToShowChapterSkipButton = Duration.INFINITE,
                         )
+                    } else if (allowLockingUI) {
+                        NPOPlayerUIConfig(allowLockingUI = true)
                     } else {
                         NPOPlayerUIConfig()
                     }
