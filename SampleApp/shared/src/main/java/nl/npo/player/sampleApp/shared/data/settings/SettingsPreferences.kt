@@ -112,7 +112,7 @@ class SettingsPreferences
         val isLockUiEnabled: Flow<Boolean>
             get() =
                 dataStore.data.map { prefs ->
-                    prefs[Keys.isLockUiEnabled] ?: defaultSettings.allowLockUI
+                    prefs[Keys.isLockUiEnabled] ?: defaultSettings.isLockUiEnabled
                 }
 
         suspend fun setIsLockUiEnabled(enabled: Boolean) {
