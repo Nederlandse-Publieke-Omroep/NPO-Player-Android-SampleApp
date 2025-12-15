@@ -176,7 +176,7 @@ class PlayerViewModel
                 val useExoplayer: UseExoplayer = settingsRepository.useExoplayer.first()
 
                 val chapterSkippingAlwaysFeatured = settingsRepository.chapterSkippingAlwaysFeatured.first()
-                val allowLockingUI = settingsRepository.allowLockUI.first()
+                val allowLockingUI = settingsRepository.isLockUiEnabled.first()
 
                 val playerUIConfig =
                     if (chapterSkippingAlwaysFeatured) {

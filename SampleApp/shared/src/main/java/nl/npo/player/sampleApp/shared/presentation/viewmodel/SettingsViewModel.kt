@@ -68,7 +68,7 @@ class SettingsViewModel
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
                 SettingsKey.PauseOnSwitchToCellularNetwork ->
                     settingsRepository.setPauseOnSwitchToCellularNetwork(value)
-                SettingsKey.AllowLockUI -> settingsRepository.setAllowLockUI(value)
+                SettingsKey.LockUiEnabled -> settingsRepository.setLockUiEnabled(value)
 
                 SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
                 SettingsKey.ChapterSkippingEnabled -> settingsRepository.setChapterSkippingEnabled(value)
@@ -219,9 +219,9 @@ class SettingsViewModel
                     )
                     add(
                         SettingsItem.Switch(
-                            SettingsKey.AllowLockUI,
+                            SettingsKey.LockUiEnabled,
                             R.string.setting_allow_lock_ui_enabled,
-                            SettingsSwitchOption(settingsRepository.allowLockUI.first()),
+                            SettingsSwitchOption(settingsRepository.isLockUiEnabled.first()),
                         ),
                     )
                 }

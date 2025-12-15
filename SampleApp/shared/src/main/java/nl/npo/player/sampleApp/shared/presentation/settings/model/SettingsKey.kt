@@ -16,5 +16,5 @@ enum class SettingsKey {
     Environment,
     ChapterSkippingEnabled,
     ChapterSkippingAlwaysFeatured,
-    AllowLockUI,
+    LockUiEnabled,
 }
