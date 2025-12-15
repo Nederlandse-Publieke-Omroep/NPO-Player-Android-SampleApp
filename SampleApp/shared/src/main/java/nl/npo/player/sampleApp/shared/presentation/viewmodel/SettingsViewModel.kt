@@ -220,7 +220,7 @@ class SettingsViewModel
                     add(
                         SettingsItem.Switch(
                             SettingsKey.LockUiEnabled,
-                            R.string.setting_allow_lock_ui_enabled,
+                            R.string.setting_lock_ui_enabled,
                             SettingsSwitchOption(settingsRepository.isLockUiEnabled.first()),
                         ),
                     )

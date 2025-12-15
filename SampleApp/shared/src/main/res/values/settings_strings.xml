@@ -16,5 +16,5 @@
     <string name="setting_environment">Environment</string>
     <string name="setting_chapter_skipping_enabled">Skipping chapters enabled</string>
     <string name="setting_chapter_skipping_always_featured">Chapter skipping always visible</string>
-    <string name="setting_allow_lock_ui_enabled">Lockscreen enabled</string>
+    <string name="setting_lock_ui_enabled">Lock screen enabled</string>
 </resources>
