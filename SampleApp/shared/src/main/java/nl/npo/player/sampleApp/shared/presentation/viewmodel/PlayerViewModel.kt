@@ -184,7 +184,7 @@ class PlayerViewModel
                             maximumTimeToShowChapterSkipButton = Duration.INFINITE,
                         )
                     } else if (allowLockingUI) {
-                        NPOPlayerUIConfig(allowLockingUI = true)
+                        NPOPlayerUIConfig(isLockUiEnabled = true)
                     } else {
                         NPOPlayerUIConfig()
                     }
