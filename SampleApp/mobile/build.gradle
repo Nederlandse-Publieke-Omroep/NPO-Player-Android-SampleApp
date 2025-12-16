@@ -91,8 +91,8 @@ composeCompiler {
 }
 
 dependencies {
-    implementation 'androidx.compose.runtime:runtime-livedata:1.9.4'
-    implementation 'androidx.compose.material3:material3:1.4.0'
+
+
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     api project(":SampleApp:shared")
@@ -126,6 +126,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-compose'
     implementation 'androidx.compose.material:material-icons-core-android:1.7.8'
     implementation 'androidx.compose.material:material-icons-extended'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.9.4'
 
     implementation 'androidx.activity:activity-compose:1.9.2'
     implementation 'io.coil-kt:coil-compose:2.6.0'

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContentCard(
+    modifier: Modifier = Modifier,
     contentTitle: String,
     accent: Color,
     contentDescription: String? = null,
@@ -41,7 +42,7 @@ fun ContentCard(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF141414)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .combinedClickable(
                     onClick = { onClick() },
