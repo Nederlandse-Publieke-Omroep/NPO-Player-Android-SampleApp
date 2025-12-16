@@ -18,7 +18,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NPOPlayerLibraryAndroid"
+        android:theme="@style/Theme.NPOPlayer"
         tools:remove="android:taskAffinity"
         tools:replace="android:label"
         tools:targetApi="32">
@@ -45,10 +45,6 @@
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true" />
-
-        <activity
-            android:name=".presentation.offline.OfflineActivity"
-            android:exported="false" />
 
         <activity
             android:name=".presentation.player.PlayerActivity"
