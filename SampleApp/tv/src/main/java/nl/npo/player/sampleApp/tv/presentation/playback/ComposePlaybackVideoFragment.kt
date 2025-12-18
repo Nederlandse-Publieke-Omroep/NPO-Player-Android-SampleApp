@@ -24,7 +24,6 @@ import androidx.tv.material3.Icon
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
-import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
@@ -50,7 +49,6 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
 import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
-import nl.npo.tag.sdk.tracker.PageTracker
 
 /** Handles video playback with media controls. */
 @AndroidEntryPoint
@@ -112,11 +110,13 @@ class ComposePlaybackVideoFragment : Fragment() {
         val player = viewModel.player.collectAsState().value ?: return
         val colors by viewModel.playerColors.collectAsState()
         val useCustomUI by viewModel.customPlayerUI.collectAsState()
+        val playerUIConfig by viewModel.playerUIConfig.collectAsState()
         val playerState =
             rememberNPOPlayerUIState(player).also {
                 it.actions.nextEpisodeAction = {
                     playRandom()
                 }
+                it.setUIConfig(playerUIConfig)
             }
 
         Row {
@@ -190,21 +190,12 @@ class ComposePlaybackVideoFragment : Fragment() {
                     ).apply {
                         attachToLifecycle(lifecycle)
 
-                        updatePageTracker(
-                            when (activity.pageTracker) {
-                                is PageTracker -> PlayerTagProvider.getPageTracker(activity.pageTracker!!)
-                                else ->
-                                    PlayerTagProvider.getPageTracker(
-                                        PageConfiguration(
-                                            sourceWrapper.title ?: "",
-                                        ),
-                                    )
-                            },
-                        )
+                        updatePageTracker(PlayerTagProvider.getPageTracker(pageTracker))
                         playbackViewModel.setPlayer(this)
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
                         }
+                        playbackViewModel.setPlayerUIConfig(playerUIConfig)
                         setPlayNextListener { action ->
                             when (action) {
                                 is PlayNextListenerResult.Triggered -> playRandom()
@@ -218,35 +209,43 @@ class ComposePlaybackVideoFragment : Fragment() {
 
     private fun loadSource(sourceWrapper: SourceWrapper) {
         when {
-            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
+            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
                 loadStreamURL(
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
+            }
 
-            sourceWrapper.getStreamLink ->
+            sourceWrapper.getStreamLink -> {
                 playerViewModel.retrieveSource(
                     sourceWrapper,
                     ::handleTokenState,
                 )
+            }
 
-            sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
+            sourceWrapper.npoSourceConfig != null -> {
+                loadStreamURL(sourceWrapper.npoSourceConfig!!)
+            }
+
             else -> {
-                /** NO-OP **/
+                // NO-OP
             }
         }
     }
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
-            is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
+            is StreamRetrievalState.Success -> {
+                loadStreamURL(retrievalState.npoSourceConfig)
+            }
 
-            is StreamRetrievalState.Error ->
+            is StreamRetrievalState.Error -> {
                 player.publishEvent(
                     NPOPlayerEvent.Player.Error(
                         retrievalState.error,
                         player.isRetryPossible,
                     ),
                 )
+            }
 
             StreamRetrievalState.Loading -> {
                 // NO-OP
