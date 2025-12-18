@@ -90,7 +90,6 @@ dependencies {
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     api project(":SampleApp:shared")
 
-    implementation "nl.npo.player.library:ster-ads:$libVersionName"
     implementation "nl.npo.player.library:presentation-mobile:$libVersionName"
 
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
