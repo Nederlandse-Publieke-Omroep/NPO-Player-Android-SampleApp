@@ -266,14 +266,15 @@ class PlayerActivity : BaseActivity() {
                                     }
 
                                 attachPlayer(
-                                    player,
-                                    (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
-                                    MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
-                                    if (npoPlayerColors != null) {
-                                        CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
-                                    } else {
-                                        DefaultMobilePlayerComponents()
-                                    },
+                                    npoPlayer = player,
+                                    npoPlayerColors = (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
+                                    sceneOverlays = MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
+                                    components =
+                                        if (npoPlayerColors != null) {
+                                            CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                                        } else {
+                                            DefaultMobilePlayerComponents()
+                                        },
                                 )
                                 setUIConfig(playerUIConfig)
 
@@ -312,19 +313,26 @@ class PlayerActivity : BaseActivity() {
         }
 
         when {
-            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
+            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
                 loadStreamURL(
                     sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                 )
+            }
 
-            sourceWrapper.getStreamLink ->
+            sourceWrapper.getStreamLink -> {
                 playerViewModel.retrieveSource(
                     sourceWrapper,
                     ::handleTokenState,
                 )
+            }
 
-            sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
-            else -> finish()
+            sourceWrapper.npoSourceConfig != null -> {
+                loadStreamURL(sourceWrapper.npoSourceConfig!!)
+            }
+
+            else -> {
+                finish()
+            }
         }
     }
 
@@ -642,12 +650,15 @@ class PlayerActivity : BaseActivity() {
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
-            is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
+            is StreamRetrievalState.Success -> {
+                loadStreamURL(retrievalState.npoSourceConfig)
+            }
 
-            is StreamRetrievalState.Error ->
+            is StreamRetrievalState.Error -> {
                 handleError(retrievalState.error) {
                     playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 }
+            }
 
             StreamRetrievalState.Loading -> {
                 handleLoading()
