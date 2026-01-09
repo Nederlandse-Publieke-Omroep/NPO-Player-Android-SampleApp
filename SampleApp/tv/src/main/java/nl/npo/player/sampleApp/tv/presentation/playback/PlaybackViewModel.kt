@@ -1,14 +1,12 @@
 package nl.npo.player.sampleApp.tv.presentation.playback
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.ui.model.Cue
 import nl.npo.player.library.presentation.compose.theme.PlayerColors
+import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,11 +20,11 @@ class PlaybackViewModel
         val playerColors = _playerColors.asStateFlow()
         private val _customPlayerUI = MutableStateFlow<Boolean>(false)
         val customPlayerUI = _customPlayerUI.asStateFlow()
-        private val _subtitles = MutableStateFlow<List<Cue>>(emptyList())
-        val subtitles = _subtitles.asStateFlow()
+        private val _playerUIConfig = MutableStateFlow(NPOPlayerUIConfig())
+        val playerUIConfig = _playerUIConfig.asStateFlow()
 
         fun setPlayer(player: NPOPlayer) {
-            _player.value = player.also(::collectPlayerStates)
+            _player.value = player
         }
 
         fun setPlayerColors(colors: PlayerColors) {
@@ -34,13 +32,7 @@ class PlaybackViewModel
             _customPlayerUI.tryEmit(true)
         }
 
-        private fun collectPlayerStates(player: NPOPlayer) {
-            with(player) {
-                viewModelScope.launch {
-                    playerState.collect { state ->
-                        _subtitles.emit(state.subtitleCues)
-                    }
-                }
-            }
+        fun setPlayerUIConfig(uIConfig: NPOPlayerUIConfig) {
+            _playerUIConfig.value = uIConfig
         }
     }
