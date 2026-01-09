@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
@@ -26,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.asLiveData
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -37,6 +37,7 @@ import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
@@ -78,59 +79,53 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
             Modifier
                 .fillMaxSize(),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             if (mergedList.isEmpty()) {
                 CircularProgressIndicator(
-                    modifier =
-                        Modifier
-                            .align(Alignment.Center)
-                            .size(40.dp),
+                    modifier = Modifier.align(Alignment.Center).size(40.dp),
                     color = MaterialTheme.colorScheme.primary,
                 )
-            } else {
-                LazyColumn(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .background(Color.Transparent),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    if (mergedList.isNotEmpty()) {
-                        stickyHeader {
-                            Header(
-                                modifier = Modifier,
-                                title = stringResource(R.string.offline_header),
-                            )
-                        }
-                        itemsIndexed(
-                            items = mergedList,
-                            key = { index, item -> "offline_${item.uniqueId}_$index" },
-                        ) { _, item ->
-                            val currentState =
-                                item.npoOfflineContent?.downloadState?.asLiveData()
-                            ContentCard(
-                                image = item.imageUrl,
-                                contentTitle = item.title ?: "",
-                                accent = orange,
-                                onClick = {
-                                    viewModel.onItemClicked(
-                                        sourceWrapper = item,
-                                        id = item.uniqueId,
-                                        onClick = { context.startPlayerActivity(item) },
-                                        error = { Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show() },
-                                    )
-                                },
-                                onLongClick = { viewModel.deleteDownloadedItem(item.uniqueId, item) },
-                                trailingContent = {
-                                        onAction ->
-                                    ProgressActionIcon(
-                                        onClick = { onAction() },
-                                        downloadState = currentState,
-                                    )
+                return@Box
+            }
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                stickyHeader {
+                    Header(
+                        modifier = Modifier,
+                        title = stringResource(R.string.offline_header),
+                    )
+                }
+                itemsIndexed(
+                    items = mergedList,
+                    key = { index, item -> "offline_${item.uniqueId}_$index" },
+                ) { _, item ->
+                    val currentState = item.npoOfflineContent?.downloadState
+
+                    ContentCard(
+                        image = item.imageUrl,
+                        contentTitle = item.title.orEmpty(),
+                        accent = orange,
+                        onClick = {
+                            viewModel.onItemClicked(
+                                sourceWrapper = item,
+                                id = item.uniqueId,
+                                onClick = { context.startPlayerActivity(item) },
+                                error = {
+                                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                                 },
                             )
-                        }
-                    }
+                        },
+                        onLongClick = { viewModel.deleteDownloadedItem(item.uniqueId, item) },
+                        trailingContent = { onAction ->
+                            ProgressActionIcon(
+                                downloadState = currentState,
+                                onClick = onAction,
+                            )
+                        },
+                    )
                 }
             }
         }

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -38,6 +38,8 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val audioItems = viewModel.audioItems.collectAsState(emptyList())
     val videoItems = viewModel.videoItems.collectAsState(emptyList())
+    val audio = audioItems.value
+    val video = videoItems.value
     val isLoading = videoItems.value.isEmpty() && audioItems.value.isEmpty()
 
     Column(
@@ -45,62 +47,78 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
             Modifier
                 .fillMaxSize(),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier =
-                        Modifier
-                            .align(Alignment.Center)
-                            .size(40.dp),
+                    modifier = Modifier.align(Alignment.Center).size(40.dp),
                     color = MaterialTheme.colorScheme.primary,
                 )
-            } else {
-                LazyColumn(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    if (audioItems.value.isNotEmpty()) {
-                        stickyHeader {
-                            Header(title = stringResource(R.string.header_audio), type = AVType.AUDIO)
-                        }
+                return@Box
+            }
+            LazyColumn(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                section(
+                    items = audio,
+                    key = { index, item -> "audio_${item.uniqueId}_$index" },
+                    header = {
+                        Header(
+                            title = stringResource(R.string.header_audio),
+                            type = AVType.AUDIO,
+                        )
+                    },
+                ) { item ->
+                    ContentCard(
+                        image = item.imageUrl.orEmpty(),
+                        contentTitle = item.title.orEmpty(),
+                        contentDescription = item.testingDescription,
+                        accent = orange,
+                        onClick = { context.intentPlayerActivity(item) },
+                    )
+                }
 
-                        itemsIndexed(
-                            items = audioItems.value,
-                            key = { index, item -> "audio_${item.uniqueId}_$index" },
-                        ) { _, item ->
-                            ContentCard(
-                                image = item.imageUrl ?: "",
-                                contentTitle = item.title ?: "",
-                                contentDescription = item.testingDescription,
-                                accent = orange,
-                                onClick = { context.intentPlayerActivity(item) },
-                            )
-                        }
-                    }
-
-                    if (videoItems.value.isNotEmpty()) {
-                        stickyHeader {
-                            Header(title = stringResource(R.string.header_video), type = AVType.VIDEO)
-                        }
-                        itemsIndexed(
-                            items = videoItems.value,
-                            key = { index, item -> "video_${item.uniqueId}_$index" },
-                        ) { _, item ->
-                            ContentCard(
-                                image = item.imageUrl ?: "",
-                                contentTitle = item.title ?: "",
-                                contentDescription = item.testingDescription,
-                                accent = orange,
-                                onClick = { context.intentPlayerActivity(item) },
-                            )
-                        }
-                    }
+                section(
+                    items = video,
+                    key = { index, item -> "video_${item.uniqueId}_$index" },
+                    header = {
+                        Header(
+                            title = stringResource(R.string.header_video),
+                            type = AVType.VIDEO,
+                        )
+                    },
+                ) { item ->
+                    ContentCard(
+                        image = item.imageUrl.orEmpty(),
+                        contentTitle = item.title.orEmpty(),
+                        contentDescription = item.testingDescription,
+                        accent = orange,
+                        onClick = { context.intentPlayerActivity(item) },
+                    )
                 }
             }
         }
+    }
+}
+
+fun <T> LazyListScope.section(
+    items: List<T>,
+    key: (index: Int, item: T) -> Any,
+    header: @Composable () -> Unit,
+    itemContent: @Composable (T) -> Unit,
+) {
+    if (items.isEmpty()) return
+
+    stickyHeader { header() }
+
+    items(
+        count = items.size,
+        key = { index -> key(index, items[index]) },
+    ) { index ->
+        itemContent(items[index])
     }
 }
 

@@ -12,58 +12,56 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 
 @Composable
 fun ProgressActionIcon(
-    downloadState: LiveData<NPODownloadState>?,
+    downloadState: StateFlow<NPODownloadState>?,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    // Note: observing LiveData at item-level is intentional.
-// Each card needs to update independently when its download state changes.
-// Observing at screen-level caused missed recompositions,
-// Used subscribe here to ensure accurate progress/icon updates.
-    val currentState: NPODownloadState =
-        downloadState
-            ?.observeAsState(initial = NPODownloadState.Initializing)
-            ?.value
-            ?: NPODownloadState.Initializing
+    val state by produceState<NPODownloadState>(
+        initialValue = NPODownloadState.Initializing,
+        key1 = downloadState,
+    ) {
+        (downloadState ?: emptyFlow()).collect { value = it }
+    }
 
     Box(
         modifier = modifier.size(32.dp),
         contentAlignment = Alignment.Center,
     ) {
-        if (currentState is NPODownloadState.InProgress) {
-            CircularProgressIndicator(
-                progress = { currentState.progress / 100f },
-                strokeWidth = 2.dp,
-                modifier = Modifier.size(24.dp),
-            )
-        } else {
-            IconButton(onClick = { onClick() }) {
-                val icon =
-                    when (currentState) {
-                        is NPODownloadState.InProgress -> error("handled above")
-                        NPODownloadState.Deleting -> Icons.Default.Delete
-                        is NPODownloadState.Failed -> Icons.Default.Error
-                        NPODownloadState.Finished -> Icons.Default.PlayArrow
-                        NPODownloadState.Initializing -> Icons.Default.Download
-                        is NPODownloadState.Paused -> Icons.Default.Pause
-                    }
-                Icon(
-                    imageVector = icon,
-                    tint = Color.White,
-                    contentDescription = null,
+        when (val s = state) {
+            is NPODownloadState.InProgress -> {
+                CircularProgressIndicator(
+                    progress = { s.progress / 100f },
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(24.dp),
                 )
+            }
+            else -> {
+                IconButton(onClick = onClick) {
+                    val icon =
+                        when (s) {
+                            NPODownloadState.Deleting -> Icons.Default.Delete
+                            is NPODownloadState.Failed -> Icons.Default.Error
+                            NPODownloadState.Finished -> Icons.Default.PlayArrow
+                            NPODownloadState.Initializing -> Icons.Default.Download
+                            is NPODownloadState.Paused -> Icons.Default.Pause
+                            is NPODownloadState.InProgress -> error("handled above")
+                        }
+                    Icon(icon, contentDescription = null, tint = Color.White)
+                }
             }
         }
     }
@@ -73,7 +71,7 @@ fun ProgressActionIcon(
 @Preview
 fun PreviewIcon() {
     val downloadState =
-        MutableLiveData<NPODownloadState>().apply {
+        MutableStateFlow<NPODownloadState>(value = NPODownloadState.Initializing).apply {
             value = NPODownloadState.InProgress(0.5f)
         }
     ProgressActionIcon(
