@@ -45,6 +45,7 @@ class SettingsPreferences
             val environment = stringPreferencesKey("environment")
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
+            val isLockUiEnabled = booleanPreferencesKey("isLockUiEnabled")
         }
 
         val useExoplayer: Flow<Boolean>
@@ -105,6 +106,18 @@ class SettingsPreferences
         suspend fun setShowUi(show: Boolean) {
             dataStore.edit { prefs ->
                 prefs[Keys.showUi] = show
+            }
+        }
+
+        val isLockUiEnabled: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.isLockUiEnabled] ?: defaultSettings.isLockUiEnabled
+                }
+
+        suspend fun setIsLockUiEnabled(enabled: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.isLockUiEnabled] = enabled
             }
         }
 
