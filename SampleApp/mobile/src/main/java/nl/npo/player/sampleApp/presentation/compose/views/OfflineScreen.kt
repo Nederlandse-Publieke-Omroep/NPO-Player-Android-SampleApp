@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
@@ -37,7 +36,6 @@ import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {

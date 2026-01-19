@@ -38,8 +38,6 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val audioItems = viewModel.audioItems.collectAsState(emptyList())
     val videoItems = viewModel.videoItems.collectAsState(emptyList())
-    val audio = audioItems.value
-    val video = videoItems.value
     val isLoading = videoItems.value.isEmpty() && audioItems.value.isEmpty()
 
     Column(
@@ -63,12 +61,12 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 section(
-                    items = audio,
-                    key = { index, item -> "audio_${item.uniqueId}_$index" },
+                    items = videoItems.value,
+                    key = { index, item -> "video_${item.uniqueId}_$index" },
                     header = {
                         Header(
-                            title = stringResource(R.string.header_audio),
-                            type = AVType.AUDIO,
+                            title = stringResource(R.string.header_video),
+                            type = AVType.VIDEO,
                         )
                     },
                 ) { item ->
@@ -82,12 +80,12 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 }
 
                 section(
-                    items = video,
-                    key = { index, item -> "video_${item.uniqueId}_$index" },
+                    items = audioItems.value,
+                    key = { index, item -> "audio_${item.uniqueId}_$index" },
                     header = {
                         Header(
-                            title = stringResource(R.string.header_video),
-                            type = AVType.VIDEO,
+                            title = stringResource(R.string.header_audio),
+                            type = AVType.AUDIO,
                         )
                     },
                 ) { item ->
