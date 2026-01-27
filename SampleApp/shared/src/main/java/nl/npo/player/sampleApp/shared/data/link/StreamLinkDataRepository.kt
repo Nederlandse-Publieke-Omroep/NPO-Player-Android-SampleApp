@@ -72,7 +72,7 @@ object StreamLinkDataRepository : LinkRepository {
                 testingDescription = "Playback VOD (No DRM)",
                 uniqueId = "AT_300009512",
                 getStreamLink = true,
-                startOffset = (65.0 * 9),
+                startOffset = (60.3 * 25),
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2202469",
                 avType = AVType.VIDEO,
             ),
