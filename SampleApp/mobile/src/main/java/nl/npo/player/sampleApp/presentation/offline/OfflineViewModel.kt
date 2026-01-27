@@ -1,12 +1,17 @@
 package nl.npo.player.sampleApp.presentation.offline
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import nl.npo.player.library.domain.offline.models.NPODownloadState
+import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
@@ -22,24 +27,131 @@ class OfflineViewModel
         @URLLinkRepository private val urlLinkRepository: LinkRepository,
         @OfflineLinkRepository private val offlineLinkRepository: LinkRepository.OfflineLinkRepository,
     ) : ViewModel() {
-        private val mutableStreamLinkList = MutableLiveData<List<SourceWrapper>>()
-        val streamLinkList: LiveData<List<SourceWrapper>> = mutableStreamLinkList
-        private val mutableURLLinkList = MutableLiveData<List<SourceWrapper>>()
-        val urlLinkList: LiveData<List<SourceWrapper>> = mutableURLLinkList
-        private val mutableOfflineLinkList = MutableLiveData<List<SourceWrapper>>()
-        val offlineLinkList: LiveData<List<SourceWrapper>> = mutableOfflineLinkList
+        private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
+        val downloadEvent = _downloadEvent
+        private val mutableOfflineLinkList = MutableStateFlow<List<SourceWrapper>>(emptyList())
 
-        private val mutableMergedLinkList = MutableLiveData<List<SourceWrapper>>()
-        val mergedLinkList: LiveData<List<SourceWrapper>> = mutableMergedLinkList
+        private val streamLinkList =
+            flow {
+                emit(streamLinkRepository.getSourceList())
+            }
+        private val urlLinkList =
+            flow {
+                emit(urlLinkRepository.getSourceList())
+            }
+
+        val mergedSourceList =
+            combine(
+                streamLinkList,
+                urlLinkList,
+                mutableOfflineLinkList,
+                ::mergeList,
+            ).stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5_000),
+                emptyList(),
+            )
+
+        fun mergeList(
+            streamLinkList: List<SourceWrapper>,
+            urlLinkList: List<SourceWrapper>,
+            offlineLinkList: List<SourceWrapper>,
+        ): List<SourceWrapper> =
+            urlLinkList
+                .union(streamLinkList)
+                .filter { it.offlineDownloadAllowed }
+                .map { source ->
+                    offlineLinkList.firstOrNull { offlineSource ->
+                        source.uniqueId == offlineSource.uniqueId
+                    } ?: source
+                }
 
         init {
-            getStreamLinkListItems()
-            getUrlLinkListItems()
             getOfflineLinkListItems()
         }
 
+        fun onItemClicked(
+            sourceWrapper: SourceWrapper,
+            id: String,
+            onClick: (DownloadEvent) -> Unit,
+            error: (Throwable) -> Unit,
+        ) {
+            if (sourceWrapper.npoOfflineContent != null) {
+                val offlineContent = sourceWrapper.npoOfflineContent ?: return
+                if (sourceWrapper.uniqueId != id) return
+                when (val downloadState = offlineContent.downloadState.value) {
+                    NPODownloadState.Finished -> {
+                        onClick(
+                            DownloadEvent.Request(
+                                itemId = sourceWrapper.uniqueId,
+                                wrapper = sourceWrapper,
+                            ),
+                        )
+                    }
+
+                    is NPODownloadState.Failed -> {
+                        handleDownloadState(
+                            state = downloadState,
+                            id = id,
+                            sourceWrapper = sourceWrapper,
+                        )
+                        offlineContent.startOrResumeDownload()
+                    }
+
+                    is NPODownloadState.Paused -> {
+                        offlineContent.startOrResumeDownload()
+                    }
+
+                    is NPODownloadState.InProgress -> {
+                        offlineContent.pause()
+                    }
+
+                    is NPODownloadState.Deleting -> {
+                        onClick(
+                            DownloadEvent.Delete(
+                                sourceWrapper.uniqueId,
+                                sourceWrapper,
+                            ),
+                        )
+                    }
+                    NPODownloadState.Initializing -> {}
+                }
+            } else {
+                createOfflineContent(sourceWrapper) { throwable ->
+                    error(throwable)
+                }
+            }
+        }
+
+        private fun handleDownloadState(
+            state: NPODownloadState.Failed,
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                _downloadEvent.value =
+                    DownloadEvent.Error(
+                        itemId = id,
+                        message = state.reason.message ?: "Download failed",
+                    )
+            }
+        }
+
+        fun deleteDownloadedItem(
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                _downloadEvent.value = DownloadEvent.Delete(id, sourceWrapper = sourceWrapper)
+            }
+        }
+
+        fun dismissDownloadEventDialog() {
+            _downloadEvent.value = DownloadEvent.None
+        }
+
         override fun onCleared() {
-            mutableOfflineLinkList.value?.forEach { it.npoOfflineContent?.release() }
+            mutableOfflineLinkList.value.forEach { it.npoOfflineContent?.release() }
             super.onCleared()
         }
 
@@ -52,13 +164,13 @@ class OfflineViewModel
                     errorCallback.invoke(throwable)
                 },
             ) {
-                if (mutableOfflineLinkList.value?.indexOfFirst { it.uniqueId == sourceWrapper.uniqueId } != -1) {
+                if (mutableOfflineLinkList.value.indexOfFirst { it.uniqueId == sourceWrapper.uniqueId } != -1) {
                     // Already exists. Don't create new offline content.
                     errorCallback.invoke(Exception("Offline content already exists"))
                 } else {
                     val offlineContent = offlineLinkRepository.createOfflineContent(sourceWrapper)
                     mutableOfflineLinkList.value =
-                        mutableOfflineLinkList.value?.toMutableList()?.apply {
+                        mutableOfflineLinkList.value.toMutableList().apply {
                             val newSource =
                                 sourceWrapper.copy(
                                     npoOfflineContent = offlineContent,
@@ -66,7 +178,6 @@ class OfflineViewModel
                             add(newSource)
                         }
                 }
-                updateMergedLinkList()
             }
         }
 
@@ -75,44 +186,14 @@ class OfflineViewModel
             viewModelScope.launch {
                 offlineLinkRepository.deleteOfflineContent(npoOfflineContent)
                 mutableOfflineLinkList.value =
-                    mutableOfflineLinkList.value?.toMutableList()?.apply {
+                    mutableOfflineLinkList.value.toMutableList().apply {
                         removeIf { it.uniqueId == sourceWrapper.uniqueId }
                     }
-                updateMergedLinkList()
             }
         }
-
-        private fun getStreamLinkListItems() =
-            viewModelScope.launch {
-                mutableStreamLinkList.value = streamLinkRepository.getSourceList()
-                updateMergedLinkList()
-            }
-
-        private fun getUrlLinkListItems() =
-            viewModelScope.launch {
-                mutableURLLinkList.value = urlLinkRepository.getSourceList()
-                updateMergedLinkList()
-            }
 
         private fun getOfflineLinkListItems() =
             viewModelScope.launch {
-                mutableOfflineLinkList.value = offlineLinkRepository.getSourceList()
-                updateMergedLinkList()
+                mutableOfflineLinkList.emit(offlineLinkRepository.getSourceList())
             }
-
-        private fun updateMergedLinkList() {
-            val unionList =
-                (urlLinkList.value ?: emptyList())
-                    .union(streamLinkList.value ?: emptyList())
-                    .filter { it.offlineDownloadAllowed }
-            offlineLinkList.value?.let { offlineLinkListNotNull ->
-                mutableMergedLinkList.postValue(
-                    unionList.map { source ->
-                        offlineLinkListNotNull.firstOrNull { offlineSource ->
-                            source.uniqueId == offlineSource.uniqueId
-                        } ?: source
-                    },
-                )
-            }
-        }
     }

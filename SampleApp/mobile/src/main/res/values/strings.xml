@@ -11,6 +11,14 @@
     <string name="btn_offline_content">Go to Offline list</string>
     <string name="manual_prid_hint">Manual PRID</string>
     <string name="player_close">Terug naar vorige scherm</string>
+    <string name="alert_dialog_confirm">OK</string>
+    <string name="alert_dialog_dismiss">Cancel</string>
+    <string name="header_audio">Audio</string>
+    <string name="header_video">Video</string>
+    <string name="delete_offline_confirmation">Are you sure you want to delete the offline content for "%1$s"?</string>
+    <string name="delete_offline_title">"Delete offline content"</string>
+    <string name="offline_header">Offline</string>
+
     <!--    For testing S&A Audio Receiver-->
 <!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
     <!--    NPO Player Receiver-->

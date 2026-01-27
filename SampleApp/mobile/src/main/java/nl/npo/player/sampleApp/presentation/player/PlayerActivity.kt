@@ -26,7 +26,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -68,6 +67,7 @@ import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
+import nl.npo.player.sampleApp.presentation.compose.components.CastButton
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
@@ -162,7 +162,7 @@ class PlayerActivity : BaseActivity() {
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
-            binding.mediaRouteButton.isVisible = true
+            binding.composeCastButton.isVisible = true
         }
 
     private val retryListener: (Duration) -> Unit = {
@@ -349,10 +349,10 @@ class PlayerActivity : BaseActivity() {
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
-            binding.mediaRouteButton.isVisible = false
+            binding.composeCastButton.isVisible = false
         } else {
             backstackLost = true
-            binding.mediaRouteButton.isVisible = true
+            binding.composeCastButton.isVisible = true
         }
     }
 
@@ -421,14 +421,16 @@ class PlayerActivity : BaseActivity() {
 
     private fun ActivityPlayerBinding.setupCastButton() {
         if (!NPOCasting.isCastingEnabled || !isGooglePlayServicesAvailable()) {
-            mediaRouteButton.isVisible = false
+            composeCastButton.isVisible = false
             return
         }
 
         val castContext = CastContext.getSharedInstance(this@PlayerActivity)
         castContext.addCastStateListener(castStateListener)
-        mediaRouteButton.isVisible = true
-        CastButtonFactory.setUpMediaRouteButton(this@PlayerActivity, mediaRouteButton)
+        composeCastButton.isVisible = true
+        composeCastButton.setContent {
+            CastButton()
+        }
     }
 
     private fun playRandom() {
