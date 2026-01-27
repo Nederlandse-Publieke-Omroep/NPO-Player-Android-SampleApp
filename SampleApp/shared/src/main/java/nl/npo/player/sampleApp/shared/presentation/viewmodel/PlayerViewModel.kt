@@ -64,7 +64,10 @@ class PlayerViewModel
             isPlusUser: Boolean,
         ): String? =
             when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
-                is StreamInfoResult.Success -> tokenResult.data.token
+                is StreamInfoResult.Success -> {
+                    tokenResult.data.token
+                }
+
                 else -> {
                     null
                 }
@@ -178,9 +181,10 @@ class PlayerViewModel
                     if (settingsRepository.chapterSkippingAlwaysFeatured.first()) {
                         NPOPlayerUIConfig(
                             maximumTimeToShowChapterSkipButton = Duration.INFINITE,
+                            isLockUiEnabled = true,
                         )
                     } else {
-                        NPOPlayerUIConfig()
+                        NPOPlayerUIConfig(isLockUiEnabled = true)
                     }
 
                 callback(
