@@ -16,6 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +37,9 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     val orange = Color(0xFFFF7A00)
     val context = LocalContext.current
-    val audioItems = viewModel.audioItems.collectAsState(emptyList())
-    val videoItems = viewModel.videoItems.collectAsState(emptyList())
-    val isLoading = videoItems.value.isEmpty() && audioItems.value.isEmpty()
+    val audioItems by viewModel.audioItems.collectAsState(emptyList())
+    val videoItems by viewModel.videoItems.collectAsState(emptyList())
+    val isLoading = videoItems.isEmpty() && audioItems.isEmpty()
 
     Column(
         modifier =
@@ -61,7 +62,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 section(
-                    items = videoItems.value,
+                    items = videoItems,
                     key = { index, item -> "video_${item.uniqueId}_$index" },
                     header = {
                         Header(
@@ -80,7 +81,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 }
 
                 section(
-                    items = audioItems.value,
+                    items = audioItems,
                     key = { index, item -> "audio_${item.uniqueId}_$index" },
                     header = {
                         Header(
