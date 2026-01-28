@@ -267,8 +267,18 @@ class PlayerActivity : BaseActivity() {
 
                                 attachPlayer(
                                     npoPlayer = player,
-                                    npoPlayerColors = (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
-                                    sceneOverlays = MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
+                                    npoPlayerColors =
+                                        (
+                                            npoPlayerColors
+                                                ?: NativePlayerColors()
+                                        ).toPlayerColors(),
+                                    sceneOverlays =
+                                        MobileSceneRenderer(
+                                            NativeAdsOverlayRenderer(
+                                                adOverlay!!,
+                                                onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                            ),
+                                        ),
                                     components =
                                         if (npoPlayerColors != null) {
                                             CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
@@ -434,6 +444,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun playRandom() {
+        player?.unload()
         playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
             if (enabled) {
                 linkViewModel.streamLinkList.value
