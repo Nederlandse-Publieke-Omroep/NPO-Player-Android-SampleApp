@@ -27,6 +27,7 @@ class StreamInfoRepository
         override suspend fun createToken(
             prid: String,
             asPlusUser: Boolean,
+            ageProfile: Int,
         ): StreamInfoResult<TokenResponse> {
             val claims =
                 mapOf<String, Any>(
@@ -36,6 +37,7 @@ class StreamInfoRepository
                     "sub" to prid,
                     // An issuer should always be added to your signing. Currently only NPO Start has two different issuers so this logic only applies to NPO Start.
                     "iss" to if (asPlusUser) BuildConfig.TOKEN_ISSUER_PLUS else BuildConfig.TOKEN_ISSUER_START,
+                    "age_profile" to ageProfile,
                 )
             val environment = settingsRepository.environment.first()
             return StreamInfoResult.Success(
@@ -45,26 +47,29 @@ class StreamInfoRepository
                             .getJWTsWithClaims(
                                 claims,
                                 when (environment) {
-                                    Environment.Test ->
+                                    Environment.Test -> {
                                         if (asPlusUser) {
                                             BuildConfig.TOKEN_SIGNATURE_PLUS_TEST
                                         } else {
                                             BuildConfig.TOKEN_SIGNATURE_START_TEST
                                         }
+                                    }
 
-                                    Environment.Acceptance ->
+                                    Environment.Acceptance -> {
                                         if (asPlusUser) {
                                             BuildConfig.TOKEN_SIGNATURE_PLUS_ACC
                                         } else {
                                             BuildConfig.TOKEN_SIGNATURE_START_ACC
                                         }
+                                    }
 
-                                    Environment.Production ->
+                                    Environment.Production -> {
                                         if (asPlusUser) {
                                             BuildConfig.TOKEN_SIGNATURE_PLUS_PROD
                                         } else {
                                             BuildConfig.TOKEN_SIGNATURE_START_PROD
                                         }
+                                    }
                                 },
                             ).also { Log.d("SampleAppTest", "JWT: $it") },
                     ),
