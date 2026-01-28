@@ -68,12 +68,12 @@ object StreamLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = true,
             ),
             SourceWrapper(
-                title = "Beste Zangers - s14-e5 - Karsu",
+                title = "Beste Zangers - s17-e1 - Karin Bloemen",
                 testingDescription = "Playback VOD (No DRM)",
-                uniqueId = "AT_2160754",
+                uniqueId = "AT_300009512",
                 getStreamLink = true,
-                startOffset = (60.1 * 41),
-                imageUrl = "https://assets-start.npo.nl/resources/2023/07/03/5a718c06-b2de-4035-ac9a-4c6919a9828a.jpg?dimensions=600x600",
+                startOffset = (60.3 * 25),
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2202469",
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
@@ -285,7 +285,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "LI_RA2_837085",
                 getStreamLink = true,
                 imageUrl = "https://www.nporadio5.nl/sterrennl/images/blue-diamonds.webp",
-                avType = AVType.VIDEO,
+                avType = AVType.AUDIO,
                 isLive = true,
             ),
             SourceWrapper(

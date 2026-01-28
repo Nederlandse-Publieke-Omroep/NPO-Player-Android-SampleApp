@@ -65,6 +65,10 @@ android {
         compose = true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.3' // or newer
+    }
+
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
@@ -86,6 +90,8 @@ composeCompiler {
 }
 
 dependencies {
+
+
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     api project(":SampleApp:shared")
@@ -105,7 +111,32 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     ksp "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
+
+
+    // Compose BOM keeps all versions aligned
+    implementation platform('androidx.compose:compose-bom:2025.01.00')
+
+    // Core Compose libraries (these are what provide Column/Row/Box/etc.)
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.foundation:foundation'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.9.4'
+    implementation 'androidx.navigation:navigation-compose'
+    implementation 'androidx.compose.material:material-icons-core-android:1.7.8'
+    implementation 'androidx.compose.material:material-icons-extended'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.9.4'
+
+    implementation 'androidx.activity:activity-compose:1.9.2'
+    implementation 'io.coil-kt:coil-compose:2.6.0'
+
+    // Optional previews and debugging tools
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+
+
+
     implementation "com.google.dagger:hilt-android:$androidHilt"
+    implementation"androidx.hilt:hilt-navigation-compose:1.2.0"
     ksp "com.google.dagger:hilt-compiler:$androidHilt"
 
     //only needed if Chromecast is used

@@ -75,9 +75,9 @@
         android:visibility="gone"
         tools:visibility="visible" />
 
-    <androidx.mediarouter.app.MediaRouteButton
-        style="@style/Widget.Design.FloatingActionButton"
-        android:id="@+id/media_route_button"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composeCastButton"
+        style="@style/ShapeAppearanceOverlay.Material3.FloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/general_padding"
