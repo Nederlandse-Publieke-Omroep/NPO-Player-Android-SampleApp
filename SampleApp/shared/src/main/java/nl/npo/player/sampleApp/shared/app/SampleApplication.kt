@@ -16,7 +16,6 @@ import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
 import nl.npo.player.sampleApp.shared.domain.AnalyticsEnvironmentProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.tag.sdk.NpoTag
-import nl.npo.tag.sdk.atinternet.ATInternetPlugin
 import nl.npo.tag.sdk.govolteplugin.GovoltePlugin
 import javax.inject.Inject
 
@@ -104,10 +103,8 @@ open class SampleApplication :
                         pluginContext = pluginContext,
                         baseUrl = "https://topspin.npo.nl/",
                     ),
-                    ATInternetPlugin(pluginContext),
                 )
-            }
-            .withEnvironment(AnalyticsEnvironmentMapper.map(analyticsEnvironmentProvider.getAnalyticsEnvironment()))
+            }.withEnvironment(AnalyticsEnvironmentMapper.map(analyticsEnvironmentProvider.getAnalyticsEnvironment()))
             .withDebug(analyticsConfiguration.withDebug)
             .build()
 
