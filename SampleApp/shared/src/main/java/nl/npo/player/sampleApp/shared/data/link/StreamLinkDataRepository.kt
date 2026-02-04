@@ -21,6 +21,15 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
+                title = "Audio transcriptie test: WO_VPRO_20308566 (ALLEEN OP ACC ENVIRONMENT)",
+                testingDescription = "Audio transcriptie test",
+                uniqueId = "WO_VPRO_20308566",
+                getStreamLink = true,
+                imageUrl = "https://assets-start.npo.nl/resources/2024/07/26/ed3443af-3829-4e33-a952-c37356d87fb3.jpg?dimensions=375x375",
+                preferThisImageUrlOverStreamLink = true,
+                avType = AVType.AUDIO,
+            ),
+            SourceWrapper(
                 title = "Live NPO1: LI_NL1_4188102",
                 testingDescription = "Playback Live DVR from startpos (10 minutes offset from live)",
                 startOffset = -(10 * 60.0),
