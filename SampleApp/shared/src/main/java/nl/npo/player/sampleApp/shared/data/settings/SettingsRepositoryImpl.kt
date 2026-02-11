@@ -113,4 +113,10 @@ class SettingsRepositoryImpl
         override suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean) {
             prefs.setChapterSkippingAlwaysFeatured(enabled)
         }
+
+        override val isLockUiEnabled: Flow<Boolean> = prefs.isLockUiEnabled
+
+        override suspend fun setLockUiEnabled(allow: Boolean) {
+            prefs.setIsLockUiEnabled(allow)
+        }
     }

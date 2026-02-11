@@ -28,4 +28,5 @@ data class DefaultSettings(
     val environment: EnvironmentPref = EnvironmentPref.Production,
     val chapterSkippingEnabled: Boolean = true,
     val chapterSkippingAlwaysFeatured: Boolean = false,
+    val isLockUiEnabled: Boolean = false,
 )

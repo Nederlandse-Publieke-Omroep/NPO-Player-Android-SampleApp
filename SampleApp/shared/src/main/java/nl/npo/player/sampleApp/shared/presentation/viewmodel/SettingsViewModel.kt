@@ -68,6 +68,7 @@ class SettingsViewModel
                 SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
                 SettingsKey.PauseOnSwitchToCellularNetwork ->
                     settingsRepository.setPauseOnSwitchToCellularNetwork(value)
+                SettingsKey.LockUiEnabled -> settingsRepository.setLockUiEnabled(value)
 
                 SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
                 SettingsKey.ChapterSkippingEnabled -> settingsRepository.setChapterSkippingEnabled(value)
@@ -214,6 +215,13 @@ class SettingsViewModel
                             SettingsKey.ChapterSkippingAlwaysFeatured,
                             R.string.setting_chapter_skipping_always_featured,
                             SettingsSwitchOption(settingsRepository.chapterSkippingAlwaysFeatured.first()),
+                        ),
+                    )
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.LockUiEnabled,
+                            R.string.setting_lock_ui_enabled,
+                            SettingsSwitchOption(settingsRepository.isLockUiEnabled.first()),
                         ),
                     )
                 }
