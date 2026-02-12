@@ -57,15 +57,7 @@ open class SampleApplication :
             // Or Initialize the library with an AnalyticsConfiguration. But never both.
             NPOPlayerLibrary.initialize(
                 context = this,
-                analyticsConfig =
-                    AnalyticsConfiguration.Standalone(
-                        brand = "nl.npo.player.sample_app",
-                        brandId = brandId,
-                        platform = getPlatform(),
-                        platformVersion = BuildConfig.VERSION_NAME,
-                        withDebug = true,
-                        environment = analyticsEnvironmentProvider.getAnalyticsEnvironment(),
-                    ),
+                analyticsConfig = setupAnalyticsConfiguration(),
                 adManager = AdManagerProvider.getAdManager(this),
             ) {
                 this.environment = environment

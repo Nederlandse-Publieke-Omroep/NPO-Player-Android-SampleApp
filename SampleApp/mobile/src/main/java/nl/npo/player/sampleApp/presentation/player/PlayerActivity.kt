@@ -33,6 +33,7 @@ import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
+import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
@@ -217,10 +218,14 @@ class PlayerActivity : BaseActivity() {
         useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
-        val title = sourceWrapper.title
+        val title = sourceWrapper.title.orEmpty()
         if (player == null) {
-            logPageAnalytics(title ?: "")
-            val pageTracker = pageTracker ?: return
+            logPageAnalytics(title)
+            val pageTracker: PlayerPageTracker =
+                pageTracker?.let { PlayerTagProvider.getPageTracker(it) }
+                    ?: PlayerTagProvider.getPageTracker(
+                        PageConfiguration(title),
+                    )
 
             try {
                 player =
@@ -228,7 +233,7 @@ class PlayerActivity : BaseActivity() {
                         .getPlayer(
                             context = binding.root.context,
                             npoPlayerConfig = playerConfig,
-                            pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                            pageTracker = pageTracker,
                             useExoplayer = useExoplayer,
                         ).apply {
                             val player = this
