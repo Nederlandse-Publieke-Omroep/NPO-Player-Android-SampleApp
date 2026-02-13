@@ -49,6 +49,7 @@ import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
+import nl.npo.player.library.presentation.compose.ads.NoAdOverlayRenderer
 import nl.npo.player.library.presentation.compose.components.PlayerIcon
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.models.SettingType
@@ -279,10 +280,12 @@ class PlayerActivity : BaseActivity() {
                                         ).toPlayerColors(),
                                     sceneOverlays =
                                         MobileSceneRenderer(
-                                            NativeAdsOverlayRenderer(
-                                                adOverlay!!,
-                                                onBackAction = { onBackPressedDispatcher.onBackPressed() },
-                                            ),
+                                            adOverlay?.let {
+                                                NativeAdsOverlayRenderer(
+                                                    adOverlay,
+                                                    onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                                )
+                                            } ?: NoAdOverlayRenderer,
                                         ),
                                     components =
                                         if (npoPlayerColors != null) {
