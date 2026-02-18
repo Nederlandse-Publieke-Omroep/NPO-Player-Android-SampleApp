@@ -16,14 +16,12 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.R
 import androidx.media3.ui.PlayerNotificationManager
-import com.bitmovin.player.api.source.SourceConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
-
 
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
@@ -117,7 +115,7 @@ class PlaybackService : MediaSessionService() {
     }
     override fun onCreate() {
         super.onCreate()
-ensureChannel()
+        ensureChannel()
         startForeground(NOTIFICATION_ID, placeholderNotification())
 
         notifManager = PlayerNotificationManager.Builder(
@@ -130,24 +128,24 @@ ensureChannel()
     private fun ensurePlayer(config: PlayerBuildConfig, pageTracker: PageTracker) {
         if (corePlayer != null && currentConfig == config && sessionPlayer != null && session != null) return
 
-        // 1) Detach notification from old player
+
         notifManager.setPlayer(null)
 
-        // 2) Release old session/player
+
         session.release()
-        sessionPlayer?.release() // only if your bridge needs releasing
+        sessionPlayer?.release()
         sessionPlayer = null
         corePlayer?.destroy()   // whatever your SDK uses
         corePlayer = null
 
-        // 3) Build new SDK core player
+
         val newCore = NPOPlayerLibrary.getPlayer(
             context = applicationContext,
             pageTracker = PlayerTagProvider.getPageTracker(pageTracker) ,
             useExoplayer = config.useExoplayer
         )
 
-        // 4) Build/get Media3 bridge Player (THIS MUST EXIST)
+
         val newSessionPlayer: Player =
             NPOPlayerLibrary.getMedia3BridgePlayer( // ideal: exposed by SDK
                 core = newCore,
@@ -159,10 +157,10 @@ ensureChannel()
         sessionPlayer = newSessionPlayer
         currentConfig = config
 
-        // 5) Build MediaSession on the Media3 player
+
         session = MediaSession.Builder(this, newSessionPlayer).build()
 
-        // 6) Hook notification to the Media3 player
+
         notifManager.setPlayer(newSessionPlayer)
     }
 
