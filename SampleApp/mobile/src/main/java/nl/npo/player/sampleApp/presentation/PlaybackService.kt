@@ -117,7 +117,7 @@ class PlaybackService : MediaSessionService() {
     }
     override fun onCreate() {
         super.onCreate()
-
+ensureChannel()
         startForeground(NOTIFICATION_ID, placeholderNotification())
 
         notifManager = PlayerNotificationManager.Builder(
