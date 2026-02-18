@@ -3,10 +3,12 @@ package nl.npo.player.sampleApp.presentation.player
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
 import android.widget.Toast
@@ -22,10 +24,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.media3.common.util.UnstableApi
+import com.bitmovin.player.api.offline.OfflineSourceConfig
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -67,6 +72,7 @@ import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
+import nl.npo.player.sampleApp.presentation.PlaybackService
 import nl.npo.player.sampleApp.presentation.compose.components.CastButton
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
@@ -86,6 +92,7 @@ import kotlin.time.DurationUnit
 const val PLAYER_SOURCE = "PLAYER_SOURCE"
 const val PLAYER_OFFLINE_SOURCE = "PLAYER_OFFLINE_SOURCE"
 
+@UnstableApi
 @AndroidEntryPoint
 class PlayerActivity : BaseActivity() {
     private var player: NPOPlayer? = null
@@ -210,6 +217,107 @@ class PlayerActivity : BaseActivity() {
         super.onConfigurationChanged(newConfig)
     }
 
+    private var playbackBinder: PlaybackService.LocalBinder? = null
+    private var isBound = false
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            playbackBinder = service as PlaybackService.LocalBinder
+            isBound = true
+
+            // Attach UI to the Media3 player (if you use PlayerView)
+            playbackBinder?.getCorePlayer()?.let {
+                binding.npoVideoPlayerNative.attachPlayer(
+                    npoPlayer = it)
+            }
+            startLoading()
+            pendingPlayRequest?.invoke()
+            pendingPlayRequest = null
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            isBound = false
+            playbackBinder = null
+        }
+    }
+    override fun onStart() {
+        super.onStart()
+        // 1) Ensure the service is running as a foreground service
+        startPlayerService(this)
+
+        // 2) Bind so we can call binder methods
+        val bindIntent = Intent(this, PlaybackService::class.java)
+        bindService(bindIntent, connection, BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        binding.npoVideoPlayerNative.destroy()
+        if (isBound) unbindService(connection)
+        isBound = false
+        super.onStop()
+    }
+    private var pendingPlayRequest: (() -> Unit)? = null
+//
+
+    private fun startLoading() {
+        val pageTracker = pageTracker ?: return
+        val playerUiConfig: NPOPlayerUIConfig = NPOPlayerUIConfig()
+        val colors = NativePlayerColors()
+        val config = sourceWrapper.npoSourceConfig?.let {
+            PlayerBuildConfig(
+                it, true,playerUiConfig ,
+                colors =colors
+            )
+        }
+
+        when {
+            sourceWrapper.npoSourceConfig is OfflineSourceConfig -> {
+                if (config != null) {
+                    sourceWrapper.title?.let { playbackBinder?.loadStreamConfig(sourceWrapper, config, pageTracker, it) }
+                }
+            }
+            sourceWrapper.getStreamLink -> {
+                playerViewModel.retrieveSource(sourceWrapper) { state ->
+                    when (state) {
+                        StreamRetrievalState.Loading -> {
+                            // show loading UI if you want
+                        }
+
+                        is StreamRetrievalState.Success -> {
+//                            val resolvedConfig = state.npoSourceConfig  // (name may differ)
+//                            config?.let {
+//                                playbackBinder?.loadStreamConfig(
+//                                    sourceConfig = sourceWrapper,
+//                                    buildConfig = it,
+//                                    pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+//                                    resolvedConfig.title ?: "Title"
+//                                    )
+//                            }
+                            if (config != null) {
+                                sourceWrapper.title?.let { playbackBinder?.loadStreamConfig(sourceWrapper, config, pageTracker, it) }
+                            }
+
+                        }
+
+                        is StreamRetrievalState.Error -> {
+                            Log.e("PlayerActivity", "retrieveSource failed")
+                            // show error UI
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+            sourceWrapper.npoSourceConfig != null -> {
+                if (config != null) {
+                    sourceWrapper.title?.let { playbackBinder?.loadStreamConfig(sourceWrapper, config, pageTracker, it) }
+                }
+            }
+            else -> finish()
+        }
+    }
+
+    @androidx.annotation.OptIn(UnstableApi::class)
     private fun loadSource(
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
@@ -217,124 +325,242 @@ class PlayerActivity : BaseActivity() {
         useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
-        val title = sourceWrapper.title
-        if (player == null) {
-            logPageAnalytics(title ?: "")
-            val pageTracker = pageTracker ?: return
+        val title = sourceWrapper.title.orEmpty()
+        if (title.isNotEmpty()) logPageAnalytics(title)
 
-            try {
-                player =
-                    NPOPlayerLibrary
-                        .getPlayer(
-                            context = binding.root.context,
-                            npoPlayerConfig = playerConfig,
-                            pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                            useExoplayer = useExoplayer,
-                        ).apply {
-                            val player = this
+        val rawPageTracker = pageTracker ?: return
 
-                            val defaultPipHandler =
-                                DefaultNPOPictureInPictureHandler(
-                                    this@PlayerActivity,
-                                    player,
-                                ).also {
-                                    pipHandler = it
-                                }
+        val tracker = pageTracker ?: return
 
-                            eventEmitter.addListener(onPlayPauseListener)
-                            setupPlayerNotification(
-                                NOTIFICATION_CHANNEL_ID,
-                                R.string.app_name,
-                                R.drawable.ic_launcher_foreground,
-                                NOTIFICATION_ID,
-                            )
-                            attachToLifecycle(lifecycle)
-                            changePageTracker(this, title.orEmpty())
-                            setTokenRefreshCallback(retryListener)
-                            setPlayNextListener { action ->
-                                when (action) {
-                                    is PlayNextListenerResult.Triggered -> playRandom()
-                                }
-                            }
-
-                            binding.npoVideoPlayerNative.apply {
-                                val adOverlay =
-                                    if (playerViewModel.isSterUIEnabled.value) {
-                                        player.adManager.supplyDefaultAdsOverlayViewClass()
-                                    } else {
-                                        null
-                                    }
-
-                                attachPlayer(
-                                    npoPlayer = player,
-                                    npoPlayerColors = (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
-                                    sceneOverlays = MobileSceneRenderer(NativeAdsOverlayRenderer(adOverlay!!)),
-                                    components =
-                                        if (npoPlayerColors != null) {
-                                            CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
-                                        } else {
-                                            DefaultMobilePlayerComponents()
-                                        },
-                                )
-                                setUIConfig(playerUIConfig)
-
-                                setFullScreenHandler(fullScreenHandler)
-                                enablePictureInPictureSupport(defaultPipHandler)
-
-                                playerViewModel.hasCustomSettings {
-                                    setSettingsOverride(
-                                        listOf(
-                                            object : SettingType.Custom {
-                                                override val id: String = "custom_settings"
-                                                override val label: String = "Open custom settings"
-                                            },
-                                        ),
-                                    )
-                                    setCustomSettingsClickListener { showSettings() }
-                                }
-                            }
-                        }
-            } catch (e: NPOPlayerException.PlayerInitializationException) {
-                AlertDialog
-                    .Builder(this)
-                    .setTitle("Error")
-                    .setMessage("Player Analytics not initialized correctly. ${e.message}")
-                    .setCancelable(false)
-                    .setPositiveButton(
-                        "Ok",
-                    ) { _, _ -> finish() }
-                    .show()
-                return
+        val buildConfig = sourceWrapper.let {
+            sourceWrapper.npoSourceConfig?.let { it1 ->
+                PlayerBuildConfig(
+                    playerConfig = it1,
+                    useExoplayer = useExoplayer,
+                    uiConfig = playerUIConfig,
+                    colors = npoPlayerColors
+                )
             }
-        } else {
-            val player = player ?: return
-            // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
-            changePageTracker(player, title ?: "")
         }
 
-        when {
-            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
-                loadStreamURL(
-                    sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
-                )
-            }
+        val doLoadAndPlay: () -> Unit = {
+            buildConfig?.let { playbackBinder?.ensurePlayer(it, tracker) }
+            playbackBinder?.getCorePlayer()?.let { binding.npoVideoPlayerNative.attachPlayer(it) }
 
-            sourceWrapper.getStreamLink -> {
-                playerViewModel.retrieveSource(
-                    sourceWrapper,
-                    ::handleTokenState,
-                )
-            }
+            // 2) Now load media depending on source type
+            when {
+                sourceWrapper.npoSourceConfig is OfflineSourceConfig -> {
+                    if (buildConfig != null) {
+                        playbackBinder?.loadStreamConfig(
+                            sourceConfig = sourceWrapper,
+                            buildConfig = buildConfig,
+                            pageTracker = tracker,
+                            title = sourceWrapper.title.orEmpty()
+                        )
+                    }
+                }
 
-            sourceWrapper.npoSourceConfig != null -> {
-                loadStreamURL(sourceWrapper.npoSourceConfig!!)
-            }
+                sourceWrapper.getStreamLink -> {
+                    playerViewModel.retrieveSource(sourceWrapper) { state ->
+                        when (state) {
+                            StreamRetrievalState.Loading -> Unit
+                            is StreamRetrievalState.Error -> {
+                                // show error
+                            }
+                            is StreamRetrievalState.Success -> {
+                                // Use the config FROM THE STATE
+                                if (buildConfig != null) {
+                                    playbackBinder?.loadStreamConfig(
+                                        sourceConfig = sourceWrapper, // adjust field name
+                                        buildConfig = buildConfig,
+                                        pageTracker = tracker,
+                                        title = sourceWrapper.title.orEmpty()
+                                    )
+                                }
+                            }
 
-            else -> {
-                finish()
+                            else -> {}
+                        }
+                    }
+                }
+
+                sourceWrapper.npoSourceConfig != null -> {
+                    if (buildConfig != null) {
+                        playbackBinder?.loadStreamConfig(
+                            sourceConfig = sourceWrapper,
+                            buildConfig = buildConfig,
+                            pageTracker = tracker,
+                            title = sourceWrapper.title.orEmpty()
+                        )
+                    }
+                }
             }
+        }
+
+        if (isBound && playbackBinder != null) {
+            doLoadAndPlay()
+        } else {
+            pendingPlayRequest = doLoadAndPlay
+        }
+
+    }
+
+    private var currentlyAttachedCore: NPOPlayer? = null
+
+    @androidx.annotation.OptIn(UnstableApi::class)
+    private fun attachIfNeeded() {
+        val core = playbackBinder?.getCorePlayer() ?: return
+        if (currentlyAttachedCore !== core) {
+            binding.npoVideoPlayerNative.attachPlayer(core)
+            currentlyAttachedCore = core
         }
     }
+
+//    @OptIn(UnstableApi::class)
+//    private fun loadSource(
+//        sourceWrapper: SourceWrapper,
+//        playerConfig: NPOPlayerConfig,
+//        npoPlayerColors: NativePlayerColors?,
+//        useExoplayer: UseExoplayer,
+//        playerUIConfig: NPOPlayerUIConfig,
+//    ) {
+//        val title = sourceWrapper.title
+//        if (player == null) {
+//            logPageAnalytics(title ?: "")
+//            val pageTracker = pageTracker ?: return
+//            try {
+//                player =
+//                    NPOPlayerLibrary
+//                        .getPlayer(
+//                            context = binding.root.context,
+//                            npoPlayerConfig = playerConfig,
+//                            pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+//                            useExoplayer = useExoplayer,
+//                        ).apply {
+//                            val player = this
+//
+//                            val defaultPipHandler =
+//                                DefaultNPOPictureInPictureHandler(
+//                                    this@PlayerActivity,
+//                                    player,
+//                                ).also {
+//                                    pipHandler = it
+//                                }
+//
+//                            eventEmitter.addListener(onPlayPauseListener)
+//
+//                            startPlayerService(this@PlayerActivity)
+//
+//
+//                            attachToLifecycle(lifecycle)
+//                            changePageTracker(this, title.orEmpty())
+//                            setTokenRefreshCallback(retryListener)
+//                            setPlayNextListener { action ->
+//                                when (action) {
+//                                    is PlayNextListenerResult.Triggered -> playRandom()
+//                                }
+//                            }
+//
+//                            binding.npoVideoPlayerNative.apply {
+//                                val adOverlay =
+//                                    if (playerViewModel.isSterUIEnabled.value) {
+//                                        player.adManager.supplyDefaultAdsOverlayViewClass()
+//                                    } else {
+//                                        null
+//                                    }
+//
+//                                attachPlayer(
+//                                    npoPlayer = player,
+//                                    npoPlayerColors = (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
+//                                    sceneOverlays = MobileSceneRenderer(NativeAdsOverlayRenderer(
+//                                        adOverlay!!,
+//                                        onBackAction = {}
+//                                    )),
+//                                    components =
+//                                        if (npoPlayerColors != null) {
+//                                            CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+//                                        } else {
+//                                            DefaultMobilePlayerComponents()
+//                                        },
+//                                )
+//                                setUIConfig(playerUIConfig)
+//
+//                                setFullScreenHandler(fullScreenHandler)
+//                                enablePictureInPictureSupport(defaultPipHandler)
+//
+//                                playerViewModel.hasCustomSettings {
+//                                    setSettingsOverride(
+//                                        listOf(
+//                                            object : SettingType.Custom {
+//                                                override val id: String = "custom_settings"
+//                                                override val label: String = "Open custom settings"
+//                                            },
+//                                        ),
+//                                    )
+//                                    setCustomSettingsClickListener { showSettings() }
+//                                }
+//                            }
+//                        }
+//            } catch (e: NPOPlayerException.PlayerInitializationException) {
+//                AlertDialog
+//                    .Builder(this)
+//                    .setTitle("Error")
+//                    .setMessage("Player Analytics not initialized correctly. ${e.message}")
+//                    .setCancelable(false)
+//                    .setPositiveButton(
+//                        "Ok",
+//                    ) { _, _ -> finish() }
+//                    .show()
+//                return
+//            }
+//        } else {
+//            val player = player ?: return
+//            // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
+//            changePageTracker(player, title ?: "")
+//        }
+//
+//        when {
+//            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+//                loadStreamURL(
+//                    sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+//                )
+//            }
+//
+//            sourceWrapper.getStreamLink -> {
+//                playerViewModel.retrieveSource(
+//                    sourceWrapper,
+//                    ::handleTokenState,
+//                )
+//            }
+//
+//            sourceWrapper.npoSourceConfig != null -> {
+//                loadStreamURL(sourceWrapper.npoSourceConfig!!)
+//            }
+//
+//            else -> {
+//                finish()
+//            }
+//        }
+//    }
+
+
+    @OptIn(UnstableApi::class)
+    fun startPlayerService(context: Context) {
+        val intent = Intent(context, PlaybackService::class.java)
+        ContextCompat.startForegroundService(context, intent)
+    }
+
+
+//    override fun onStart() {
+//        super.onStart()
+//        val player = interactor.getOrCreatePlayer(config, useExoplayer, pageTracker)
+//        binding.playerView.player = player
+//    }
+//
+//    override fun onStop() {
+//        binding.playerView.player = null
+//        super.onStop()
+//    }
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()

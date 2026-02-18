@@ -92,6 +92,8 @@ composeCompiler {
 dependencies {
 
 
+    implementation 'androidx.media3:media3-session:1.9.2'
+    implementation 'androidx.media3:media3-ui:1.9.2'
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "nl.npo.player.library:npo-player-android:$libVersionName"
     api project(":SampleApp:shared")
@@ -111,6 +113,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     ksp "androidx.lifecycle:lifecycle-compiler:$androidxLifecycle"
+    implementation "androidx.media3:media3-common-ktx:1.9.2"
 
 
     // Compose BOM keeps all versions aligned
