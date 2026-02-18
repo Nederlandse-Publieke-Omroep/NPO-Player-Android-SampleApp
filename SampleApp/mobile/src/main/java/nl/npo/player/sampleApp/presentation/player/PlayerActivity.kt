@@ -35,38 +35,28 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
-import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
-import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOPlaybackSpeed
 import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOFullScreenHandler
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
-import nl.npo.player.library.ext.attachToLifecycle
-import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.components.PlayerIcon
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
-import nl.npo.player.library.presentation.compose.models.SettingType
 import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
-import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
 import nl.npo.player.library.presentation.mobile.compose.components.MobilePlayerTopBar
-import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
-import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
@@ -273,7 +263,7 @@ class PlayerActivity : BaseActivity() {
         when {
             sourceWrapper.npoSourceConfig is OfflineSourceConfig -> {
                 if (config != null) {
-                    sourceWrapper.title?.let { playbackBinder?.loadStreamConfig(sourceWrapper, config, pageTracker, it) }
+                    playbackBinder?.loadAndPlay(sourceWrapper.npoSourceConfig!!, config, PlayerTagProvider.getPageTracker(pageTracker))
                 }
             }
             sourceWrapper.getStreamLink -> {
@@ -284,17 +274,14 @@ class PlayerActivity : BaseActivity() {
                         }
 
                         is StreamRetrievalState.Success -> {
-//                            val resolvedConfig = state.npoSourceConfig  // (name may differ)
-//                            config?.let {
-//                                playbackBinder?.loadStreamConfig(
-//                                    sourceConfig = sourceWrapper,
-//                                    buildConfig = it,
-//                                    pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-//                                    resolvedConfig.title ?: "Title"
-//                                    )
-//                            }
-                            if (config != null) {
-                                sourceWrapper.title?.let { playbackBinder?.loadStreamConfig(sourceWrapper, config, pageTracker, it) }
+                            val resolvedConfig = state.npoSourceConfig  // (name may differ)
+                            config?.let {
+                                playbackBinder?.loadStreamConfig(
+                                    sourceConfig = sourceWrapper,
+                                    buildConfig = it,
+                                    pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
+                                    resolvedConfig.title ?: "Title"
+                                    )
                             }
 
                         }
@@ -310,7 +297,7 @@ class PlayerActivity : BaseActivity() {
             }
             sourceWrapper.npoSourceConfig != null -> {
                 if (config != null) {
-                    sourceWrapper.title?.let { playbackBinder?.loadStreamConfig(sourceWrapper, config, pageTracker, it) }
+                    playbackBinder?.loadAndPlay(sourceWrapper.npoSourceConfig!!, config, PlayerTagProvider.getPageTracker(pageTracker))
                 }
             }
             else -> finish()
@@ -329,8 +316,7 @@ class PlayerActivity : BaseActivity() {
         if (title.isNotEmpty()) logPageAnalytics(title)
 
         val rawPageTracker = pageTracker ?: return
-
-        val tracker = pageTracker ?: return
+        val tracker = PlayerTagProvider.getPageTracker(rawPageTracker)
 
         val buildConfig = sourceWrapper.let {
             sourceWrapper.npoSourceConfig?.let { it1 ->
@@ -344,7 +330,6 @@ class PlayerActivity : BaseActivity() {
         }
 
         val doLoadAndPlay: () -> Unit = {
-            buildConfig?.let { playbackBinder?.ensurePlayer(it, tracker) }
             playbackBinder?.getCorePlayer()?.let { binding.npoVideoPlayerNative.attachPlayer(it) }
 
             // 2) Now load media depending on source type
