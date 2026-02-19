@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -27,11 +26,8 @@ import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.sampleApp.presentation.player.PageTracker
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerBuildConfig
-import nl.npo.player.sampleApp.shared.data.settings.SettingsPreferences.Keys.useExoplayer
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import kotlin.jvm.java
 
@@ -40,10 +36,6 @@ class PlaybackService : MediaSessionService() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-//    private lateinit var session: MediaSession
-//    private lateinit var notifManager: PlayerNotificationManager
-//    private lateinit var config: SourceWrapper
-//    private var player: NPOPlayer? = null
 
 
     private var corePlayer: NPOPlayer? = null
@@ -75,16 +67,16 @@ class PlaybackService : MediaSessionService() {
 
             ensurePlayer(buildConfig, pageTracker)
 
-            val p = corePlayer
-            if (p == null) {
+            val player = corePlayer
+            if (player == null) {
                 Log.e("PlaybackService", "loadStreamConfig(): corePlayer is NULL after ensurePlayer")
                 return
             }
 
             // THE MOMENT OF TRUTH
             runCatching {
-                sourceConfig.npoSourceConfig?.let { p.load(it) }
-                p.play()
+                sourceConfig.npoSourceConfig?.let { player.load(it) }
+                player.play()
             }.onFailure {
                 Log.e("PlaybackService", "loadStreamConfig(): load/play failed", it)
             }
@@ -100,7 +92,7 @@ class PlaybackService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
         ensureChannel()
-
+        startForeground(NOTIFICATION_ID, placeholderNotification() )
         notifManager =
             PlayerNotificationManager.Builder(this, NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
                 .setMediaDescriptionAdapter(object : PlayerNotificationManager.MediaDescriptionAdapter {
@@ -140,48 +132,43 @@ class PlaybackService : MediaSessionService() {
                 })
                 .build()
 
-
         notifManager.setPlayer(null)
-
 
     }
 
     private fun ensurePlayer(config: PlayerBuildConfig, pageTracker: PlayerPageTracker) {
         if (corePlayer != null && currentConfig == config && sessionPlayer != null && session != null) return
 
-        // Keep old references
         val oldSession = session
-        val oldSessionPlayer = sessionPlayer
+        val oldPlayer = sessionPlayer
         val oldCore = corePlayer
 
-        // 1) Build NEW first (no null window)
+        // Build NEW first
         val newCore = NPOPlayerLibrary.getPlayer(
             context = applicationContext,
             pageTracker = pageTracker,
             useExoplayer = config.useExoplayer
         )
-
-        val newSessionPlayer: Player = NPOPlayerLibrary.getMedia3BridgePlayer(
+        val newSessionPlayer = NPOPlayerLibrary.getMedia3BridgePlayer(
             core = newCore,
             scope = serviceScope,
             looper = Looper.getMainLooper()
         )
-
         val newSession = MediaSession.Builder(this, newSessionPlayer).build()
 
-        // 2) Swap references
+        // Swap references
         corePlayer = newCore
         sessionPlayer = newSessionPlayer
         session = newSession
         currentConfig = config
 
-        // 3) Point notification to NEW player (still no null)
+        // Attach notification to NEW player (no gap)
         notifManager.setPlayer(newSessionPlayer)
 
-        // 4) Only now release old things
-        runCatching { oldSession?.release() }
-        runCatching { oldSessionPlayer?.release() }  // only if needed/valid
-        runCatching { oldCore?.destroy() }
+        // Release old AFTER swap
+        oldSession?.release()
+        oldPlayer?.release()
+        oldCore?.destroy()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session

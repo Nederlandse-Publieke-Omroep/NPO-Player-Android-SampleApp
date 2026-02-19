@@ -312,35 +312,65 @@ class PlayerActivity : BaseActivity() {
         useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
+
         val title = sourceWrapper.title.orEmpty()
         if (title.isNotEmpty()) logPageAnalytics(title)
 
-        val rawPageTracker = pageTracker ?: return
-        val tracker = PlayerTagProvider.getPageTracker(rawPageTracker)
+        val pt = pageTracker ?: run {
+            Log.e("PlayerActivity", "pageTracker is null -> cannot start")
+            return
+        }
+        val tracker = PlayerTagProvider.getPageTracker(pt)
 
-        val buildConfig = sourceWrapper.let {
-            sourceWrapper.npoSourceConfig?.let { it1 ->
-                PlayerBuildConfig(
-                    playerConfig = it1,
-                    useExoplayer = useExoplayer,
-                    uiConfig = playerUIConfig,
-                    colors = npoPlayerColors
-                )
-            }
+        val config = sourceWrapper.npoSourceConfig?.let {
+            PlayerBuildConfig(
+                playerConfig = it,
+                useExoplayer = useExoplayer,
+                uiConfig = playerUIConfig,
+                colors = npoPlayerColors
+            )
         }
 
         val doLoadAndPlay: () -> Unit = {
-            playbackBinder?.getCorePlayer()?.let { binding.npoVideoPlayerNative.attachPlayer(it) }
+            val binder = playbackBinder
+            if (binder == null) {
+                Log.e("PlayerActivity", "Service binder is null inside doLoadAndPlay")
 
-            // 2) Now load media depending on source type
+            }
+
+
+
+            binder?.getCorePlayer()?.let { core ->
+                if (currentlyAttachedCore !== core) {
+                    binding.npoVideoPlayerNative.attachPlayer(core)
+                    currentlyAttachedCore = core
+                }
+            } ?: run {
+                Log.e("PlayerActivity", "corePlayer is null after ensurePlayer")
+
+            }
+
             when {
-                sourceWrapper.npoSourceConfig is OfflineSourceConfig -> {
-                    if (buildConfig != null) {
-                        playbackBinder?.loadStreamConfig(
-                            sourceConfig = sourceWrapper,
-                            buildConfig = buildConfig,
+                sourceWrapper.npoOfflineContent is OfflineSourceConfig -> {
+                    val offlineConfig = sourceWrapper
+                    if (config != null) {
+                        binder?.loadStreamConfig(
+                            sourceConfig = offlineConfig,
+                            buildConfig = config,
                             pageTracker = tracker,
-                            title = sourceWrapper.title.orEmpty()
+                            title = title
+                        )
+                    }
+                }
+
+                sourceWrapper.npoSourceConfig != null -> {
+                    val directConfig = sourceWrapper
+                    if (config != null) {
+                        binder?.loadStreamConfig(
+                            sourceConfig = directConfig,
+                            buildConfig = config,
+                            pageTracker = tracker,
+                            title = title
                         )
                     }
                 }
@@ -348,36 +378,40 @@ class PlayerActivity : BaseActivity() {
                 sourceWrapper.getStreamLink -> {
                     playerViewModel.retrieveSource(sourceWrapper) { state ->
                         when (state) {
-                            StreamRetrievalState.Loading -> Unit
-                            is StreamRetrievalState.Error -> {
-                                // show error
+                            StreamRetrievalState.Loading -> {
+                                Log.d("PlayerActivity", "retrieveSource: Loading")
                             }
-                            is StreamRetrievalState.Success -> {
-                                // Use the config FROM THE STATE
-                                if (buildConfig != null) {
-                                    playbackBinder?.loadStreamConfig(
-                                        sourceConfig = sourceWrapper, // adjust field name
-                                        buildConfig = buildConfig,
+
+                            is StreamRetrievalState.Error -> {
+                                Log.e("PlayerActivity", "retrieveSource: Error", )
+                                // show error UI if you want
+                            }
+
+                            else -> {
+                                // Your fetchAndMergeSource(item) returns some state here.
+                                // We must extract a SourceConfig from it.
+                                val resolvedConfig = extractSourceConfig(state)
+                                if (resolvedConfig == null) {
+                                    Log.e("PlayerActivity", "retrieveSource: no SourceConfig in state=$state")
+                                    return@retrieveSource
+                                }
+
+                                if (config != null) {
+                                    binder?.loadStreamConfig(
+                                        sourceConfig = sourceWrapper,
+                                        buildConfig = config,
                                         pageTracker = tracker,
-                                        title = sourceWrapper.title.orEmpty()
+                                        title = title
                                     )
                                 }
                             }
-
-                            else -> {}
                         }
                     }
                 }
 
-                sourceWrapper.npoSourceConfig != null -> {
-                    if (buildConfig != null) {
-                        playbackBinder?.loadStreamConfig(
-                            sourceConfig = sourceWrapper,
-                            buildConfig = buildConfig,
-                            pageTracker = tracker,
-                            title = sourceWrapper.title.orEmpty()
-                        )
-                    }
+                else -> {
+                    Log.e("PlayerActivity", "No playable source: $sourceWrapper")
+                    // show error UI, don’t crash
                 }
             }
         }
@@ -387,7 +421,19 @@ class PlayerActivity : BaseActivity() {
         } else {
             pendingPlayRequest = doLoadAndPlay
         }
+    }
 
+    private fun extractSourceConfig(state: StreamRetrievalState): NPOSourceConfig? {
+        // TEMP: log to learn what state you get on success
+        Log.d("PlayerActivity", "extractSourceConfig: ${state::class.java.simpleName} -> $state")
+
+        return when (state) {
+            // Replace with your actual success state(s)
+            is StreamRetrievalState.Success -> state.npoSourceConfig
+
+            // If your success state is named differently, change it after you see logs
+            else -> null
+        }
     }
 
     private var currentlyAttachedCore: NPOPlayer? = null
