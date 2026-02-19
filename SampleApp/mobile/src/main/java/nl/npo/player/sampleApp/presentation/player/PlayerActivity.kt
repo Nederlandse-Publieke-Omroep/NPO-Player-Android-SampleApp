@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -47,13 +48,16 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.components.PlayerIcon
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
+import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
 import nl.npo.player.library.presentation.mobile.compose.components.MobilePlayerTopBar
+import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
@@ -132,7 +136,6 @@ class PlayerActivity : BaseActivity() {
             }
 
             override fun onSourceLoad(source: NPOSourceConfig) {
-                // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
                 if (!NPOCasting.isCastingConnected()) player?.seek(10000.0.seconds)
 
                 binding.btnPlayPause.isVisible = false
@@ -158,7 +161,7 @@ class PlayerActivity : BaseActivity() {
         }
 
     private val castStateListener: CastStateListener =
-        CastStateListener { state ->
+        CastStateListener {
             binding.composeCastButton.isVisible = true
         }
 
@@ -215,12 +218,13 @@ class PlayerActivity : BaseActivity() {
             playbackBinder = service as PlaybackService.LocalBinder
             isBound = true
 
-            // Attach UI to the Media3 player (if you use PlayerView)
+
             playbackBinder?.getCorePlayer()?.let {
                 binding.npoVideoPlayerNative.attachPlayer(
                     npoPlayer = it)
             }
             startLoading()
+
             pendingPlayRequest?.invoke()
             pendingPlayRequest = null
         }
@@ -232,10 +236,9 @@ class PlayerActivity : BaseActivity() {
     }
     override fun onStart() {
         super.onStart()
-        // 1) Ensure the service is running as a foreground service
+
         startPlayerService(this)
 
-        // 2) Bind so we can call binder methods
         val bindIntent = Intent(this, PlaybackService::class.java)
         bindService(bindIntent, connection, BIND_AUTO_CREATE)
     }
@@ -251,7 +254,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun startLoading() {
         val pageTracker = pageTracker ?: return
-        val playerUiConfig: NPOPlayerUIConfig = NPOPlayerUIConfig()
+        val playerUiConfig = NPOPlayerUIConfig()
         val colors = NativePlayerColors()
         val config = sourceWrapper.npoSourceConfig?.let {
             PlayerBuildConfig(
@@ -259,7 +262,7 @@ class PlayerActivity : BaseActivity() {
                 colors =colors
             )
         }
-
+        setupPlayerView(colors)
         when {
             sourceWrapper.npoSourceConfig is OfflineSourceConfig -> {
                 if (config != null) {
@@ -270,11 +273,10 @@ class PlayerActivity : BaseActivity() {
                 playerViewModel.retrieveSource(sourceWrapper) { state ->
                     when (state) {
                         StreamRetrievalState.Loading -> {
-                            // show loading UI if you want
                         }
 
                         is StreamRetrievalState.Success -> {
-                            val resolvedConfig = state.npoSourceConfig  // (name may differ)
+                            val resolvedConfig = state.npoSourceConfig
                             config?.let {
                                 playbackBinder?.loadStreamConfig(
                                     sourceConfig = sourceWrapper,
@@ -288,7 +290,6 @@ class PlayerActivity : BaseActivity() {
 
                         is StreamRetrievalState.Error -> {
                             Log.e("PlayerActivity", "retrieveSource failed")
-                            // show error UI
                         }
 
                         else -> {}
@@ -316,10 +317,7 @@ class PlayerActivity : BaseActivity() {
         val title = sourceWrapper.title.orEmpty()
         if (title.isNotEmpty()) logPageAnalytics(title)
 
-        val pt = pageTracker ?: run {
-            Log.e("PlayerActivity", "pageTracker is null -> cannot start")
-            return
-        }
+        val pt = pageTracker ?: return
         val tracker = PlayerTagProvider.getPageTracker(pt)
 
         val config = sourceWrapper.npoSourceConfig?.let {
@@ -337,18 +335,8 @@ class PlayerActivity : BaseActivity() {
                 Log.e("PlayerActivity", "Service binder is null inside doLoadAndPlay")
 
             }
+            setupPlayerView(npoPlayerColors)
 
-
-
-            binder?.getCorePlayer()?.let { core ->
-                if (currentlyAttachedCore !== core) {
-                    binding.npoVideoPlayerNative.attachPlayer(core)
-                    currentlyAttachedCore = core
-                }
-            } ?: run {
-                Log.e("PlayerActivity", "corePlayer is null after ensurePlayer")
-
-            }
 
             when {
                 sourceWrapper.npoOfflineContent is OfflineSourceConfig -> {
@@ -378,41 +366,41 @@ class PlayerActivity : BaseActivity() {
                 sourceWrapper.getStreamLink -> {
                     playerViewModel.retrieveSource(sourceWrapper) { state ->
                         when (state) {
+                            StreamRetrievalState.NotStarted -> {
+                                Log.d("PlayerActivity", "retrieveSource: notStarted")
+                            }
+
                             StreamRetrievalState.Loading -> {
                                 Log.d("PlayerActivity", "retrieveSource: Loading")
                             }
 
+                            is StreamRetrievalState.Success -> {
+                                Log.d("PlayerActivity", "retrieveSource: sucess")
+                            }
+
                             is StreamRetrievalState.Error -> {
-                                Log.e("PlayerActivity", "retrieveSource: Error", )
-                                // show error UI if you want
+                                Log.e("PlayerActivity", "retrieveSource: Error",)
                             }
 
                             else -> {
-                                // Your fetchAndMergeSource(item) returns some state here.
-                                // We must extract a SourceConfig from it.
-                                val resolvedConfig = extractSourceConfig(state)
-                                if (resolvedConfig == null) {
-                                    Log.e("PlayerActivity", "retrieveSource: no SourceConfig in state=$state")
-                                    return@retrieveSource
-                                }
-
-                                if (config != null) {
-                                    binder?.loadStreamConfig(
-                                        sourceConfig = sourceWrapper,
-                                        buildConfig = config,
-                                        pageTracker = tracker,
-                                        title = title
-                                    )
-                                }
+                                Log.e("PlayerActivity", "No playable source: $sourceWrapper")
                             }
                         }
-                    }
-                }
+                            config?.let {
+                                binder?.loadStreamConfig(
+                                    sourceConfig = sourceWrapper,
+                                    buildConfig = it,
+                                    pageTracker = tracker,
+                                    title = title
+                                )
+                            }
 
-                else -> {
-                    Log.e("PlayerActivity", "No playable source: $sourceWrapper")
-                    // show error UI, don’t crash
-                }
+
+                        }
+                    }
+
+
+
             }
         }
 
@@ -424,14 +412,11 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun extractSourceConfig(state: StreamRetrievalState): NPOSourceConfig? {
-        // TEMP: log to learn what state you get on success
+
         Log.d("PlayerActivity", "extractSourceConfig: ${state::class.java.simpleName} -> $state")
 
         return when (state) {
-            // Replace with your actual success state(s)
             is StreamRetrievalState.Success -> state.npoSourceConfig
-
-            // If your success state is named differently, change it after you see logs
             else -> null
         }
     }
@@ -444,6 +429,40 @@ class PlayerActivity : BaseActivity() {
         if (currentlyAttachedCore !== core) {
             binding.npoVideoPlayerNative.attachPlayer(core)
             currentlyAttachedCore = core
+        }
+    }
+
+    private fun setupPlayerView( npoPlayerColors: NativePlayerColors?) {
+        val player = playbackBinder?.getCorePlayer()
+        if (player != null) {
+            val adOverlay =
+                if (playerViewModel.isSterUIEnabled.value) {
+                    player.adManager.supplyDefaultAdsOverlayViewClass()
+                } else {
+                    null
+                }
+
+            binding.npoVideoPlayerNative.attachPlayer( player,
+                npoPlayerColors = (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
+                                    sceneOverlays = MobileSceneRenderer(
+                                        NativeAdsOverlayRenderer(
+                                            adOverlay!!,
+                                            onBackAction = {}
+                                        )),
+                                    components =
+                                        if (npoPlayerColors != null) {
+                                            CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                                        } else {
+                                            DefaultMobilePlayerComponents()
+                                        },
+                                )
+
+//                                setUIConfig(playerUIConfig)
+//
+//                                setFullScreenHandler(fullScreenHandler)
+//                                enablePictureInPictureSupport(defaultPipHandler)
+
+
         }
     }
 

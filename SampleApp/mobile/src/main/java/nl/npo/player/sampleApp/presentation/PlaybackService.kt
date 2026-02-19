@@ -26,6 +26,8 @@ import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.ext.attachToLifecycle
+import nl.npo.player.library.ext.mediaSession
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerBuildConfig
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
@@ -33,11 +35,7 @@ import kotlin.jvm.java
 
 @UnstableApi
 class PlaybackService : MediaSessionService() {
-
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
-
-
     private var corePlayer: NPOPlayer? = null
     private var sessionPlayer: Player? = null // Media3 bridge
     private var session: MediaSession? = null
@@ -65,15 +63,13 @@ class PlaybackService : MediaSessionService() {
         ) {
             Log.d("PlaybackService", "loadStreamConfig() title=$title type=${sourceConfig::class.java.simpleName}")
 
-            ensurePlayer(buildConfig, pageTracker)
+
 
             val player = corePlayer
             if (player == null) {
-                Log.e("PlaybackService", "loadStreamConfig(): corePlayer is NULL after ensurePlayer")
+                ensurePlayer(buildConfig, pageTracker)
                 return
             }
-
-            // THE MOMENT OF TRUTH
             runCatching {
                 sourceConfig.npoSourceConfig?.let { player.load(it) }
                 player.play()
@@ -121,7 +117,6 @@ class PlaybackService : MediaSessionService() {
                         notification: Notification,
                         ongoing: Boolean
                     ) {
-                        // replace placeholder with real media notification
                         startForeground(notificationId, notification)
                     }
 
@@ -139,36 +134,15 @@ class PlaybackService : MediaSessionService() {
     private fun ensurePlayer(config: PlayerBuildConfig, pageTracker: PlayerPageTracker) {
         if (corePlayer != null && currentConfig == config && sessionPlayer != null && session != null) return
 
-        val oldSession = session
-        val oldPlayer = sessionPlayer
-        val oldCore = corePlayer
-
-        // Build NEW first
         val newCore = NPOPlayerLibrary.getPlayer(
             context = applicationContext,
             pageTracker = pageTracker,
             useExoplayer = config.useExoplayer
         )
-        val newSessionPlayer = NPOPlayerLibrary.getMedia3BridgePlayer(
-            core = newCore,
-            scope = serviceScope,
-            looper = Looper.getMainLooper()
-        )
-        val newSession = MediaSession.Builder(this, newSessionPlayer).build()
 
-        // Swap references
         corePlayer = newCore
-        sessionPlayer = newSessionPlayer
-        session = newSession
         currentConfig = config
-
-        // Attach notification to NEW player (no gap)
-        notifManager.setPlayer(newSessionPlayer)
-
-        // Release old AFTER swap
-        oldSession?.release()
-        oldPlayer?.release()
-        oldCore?.destroy()
+        session = newCore.mediaSession
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
@@ -198,7 +172,7 @@ class PlaybackService : MediaSessionService() {
 //
     private fun placeholderNotification(): Notification {
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.media3_notification_small_icon) // pick an actual small icon
+            .setSmallIcon(R.drawable.media3_notification_small_icon)
             .setContentTitle("Preparing playback")
             .setContentText("Starting…")
             .setOngoing(true)
