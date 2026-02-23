@@ -292,7 +292,16 @@ class PlayerActivity : BaseActivity() {
 
             when {
                 sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
-                    repository.loadOffline(sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig)
+                    repository.loadStreamConfig(
+                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                    )
+                    binding.apply {
+                        loadingIndicator.isVisible = false
+                        retryBtn.isVisible = false
+                    }
+
+                    //loadStreamConfig(sourceWrapper.npoSourceConfig!!)
+                   // playbackBinder?.getService()?.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
                 }
 
                 sourceWrapper.getStreamLink -> {
@@ -303,6 +312,11 @@ class PlayerActivity : BaseActivity() {
 
                 sourceWrapper.npoSourceConfig != null -> {
                     repository.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
+                    binding.apply {
+                        loadingIndicator.isVisible = false
+                        retryBtn.isVisible = false
+                    }
+                   // playbackBinder?.getService()?.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
                 }
 
                 else -> finish()
@@ -804,6 +818,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
         player?.let {
+
             playerViewModel.loadStream(
                 npoPlayer = it,
                 npoSourceConfig = npoSourceConfig,

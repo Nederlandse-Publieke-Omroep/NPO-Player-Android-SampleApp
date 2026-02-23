@@ -2,25 +2,16 @@ package nl.npo.player.sampleApp.presentation.player
 
 import android.content.Context
 import android.util.Log
-import com.bitmovin.player.api.offline.OfflineSourceConfig
-import com.bitmovin.player.api.source.SourceConfig
-import com.google.android.datatransport.runtime.scheduling.SchedulingConfigModule_ConfigFactory.config
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.sync.Mutex
-import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.ext.mediaSession
-import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
-import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -75,7 +66,8 @@ class PlayerRepositoryImpl @Inject constructor(
     }
 
     override fun loadStreamConfig(config: NPOSourceConfig) {
-            player.value?.load(config)
+        player.value?.load(config)
+        player.value?.play()
     }
 
 
