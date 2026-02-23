@@ -25,26 +25,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.util.UnstableApi
 import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.offline.OfflineSourceConfig
-import com.bitmovin.player.ui.DefaultPictureInPictureHandler
+import com.google.android.datatransport.runtime.scheduling.SchedulingConfigModule_ConfigFactory.config
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOCasting
-import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.common.model.PlayerListener
@@ -59,7 +58,6 @@ import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
-import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.components.PlayerIcon
@@ -75,7 +73,6 @@ import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRender
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.notifications.NPONotificationManager
-import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
@@ -217,11 +214,10 @@ class PlayerActivity : BaseActivity() {
             this,
             Intent(this, PlaybackService::class.java)
         )
-
         bindService(
             Intent(this, PlaybackService::class.java),
             connection,
-            Context.BIND_AUTO_CREATE
+            BIND_AUTO_CREATE
         )
     }
 
@@ -255,7 +251,7 @@ class PlayerActivity : BaseActivity() {
     }
 
 
-    private var currentlyAttachedCore: NPOPlayer? = null // or whatever your type is
+    private var currentlyAttachedPlayer: NPOPlayer? = null // or whatever your type is
     private var attachJob: Job? = null
 
     private fun loadSource(
@@ -267,15 +263,13 @@ class PlayerActivity : BaseActivity() {
     ) {
         val title = sourceWrapper.title.orEmpty()
 
-        // 1) Make sure the service + player exist (in the service)
-        //    This should NOT return the player; it just triggers creation in the service layer.
         lifecycleScope.launch {
             logPageAnalytics(title)
             val pageTracker = pageTracker ?: return@launch
 
             try {
                 repository.ensurePlayer(
-                    context = applicationContext,
+                    context = applicationContext, // ✅ not binding.root.context
                     playerConfig = playerConfig,
                     pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                     useExoplayer = useExoplayer,
@@ -292,32 +286,26 @@ class PlayerActivity : BaseActivity() {
                 return@launch
             }
 
-            // 2) Ensure we’re observing the player and attach UI once when it becomes available
             ensureAttachedOnce(playerColors, playerUIConfig, title)
 
-            // 3) Now load the stream (delegate to repo/service)
+            repository.player.filterNotNull().first()
 
             when {
                 sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
-                    loadStreamURL(
-                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
-                    )
+                    repository.loadOffline(sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig)
                 }
 
                 sourceWrapper.getStreamLink -> {
-                    playerViewModel.retrieveSource(
-                        sourceWrapper,
-                        ::handleTokenState,
-                    )
+                    playerViewModel.retrieveSource(sourceWrapper) { tokenState ->
+                        handleTokenState(tokenState)
+                    }
                 }
 
                 sourceWrapper.npoSourceConfig != null -> {
-                    loadStreamURL(sourceWrapper.npoSourceConfig!!)
+                    repository.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
                 }
 
-                else -> {
-                    finish()
-                }
+                else -> finish()
             }
         }
     }
@@ -330,78 +318,81 @@ class PlayerActivity : BaseActivity() {
         if (attachJob != null) return
 
         attachJob = lifecycleScope.launch {
-            repository.player
-                .filterNotNull()
-                .collect { core ->
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repository.player
+                    .filterNotNull()
+                    .collect { player ->
 
-                    // Prevent re-attaching on every emission
-                    if (currentlyAttachedCore === core) return@collect
-                    currentlyAttachedCore = core
+                        if (currentlyAttachedPlayer === player) return@collect
+                        currentlyAttachedPlayer = player
 
-                    // Page tracker switching (now that we have a player)
-                    changePageTracker(core, title)
-
-                    // Pip handler etc that needs Activity
+                        // Pip handler etc that needs Activity
 //                    val defaultPipHandler =
 //                        DefaultPictureInPictureHandler(
 //                            this@PlayerActivity,
 //                            core.,
 //                        ).also { pipHandler = it }
 
-                    core.eventEmitter.addListener(onPlayPauseListener)
-                    core.attachToLifecycle(lifecycle)
-                    core.setTokenRefreshCallback(retryListener)
-                    core.setPlayNextListener { action ->
-                        when (action) {
-                            is PlayNextListenerResult.Triggered -> playRandom()
-                        }
-                    }
+                        player.eventEmitter.addListener(onPlayPauseListener)
 
-                    binding.npoVideoPlayerNative.apply {
-                        val adOverlay =
-                            if (playerViewModel.isSterUIEnabled.value) {
-                                core.adManager.supplyDefaultAdsOverlayViewClass()
-                            } else {
-                                null
+                        player.attachToLifecycle(lifecycle)
+
+                        changePageTracker(player, title.orEmpty())
+
+                        player.setTokenRefreshCallback(retryListener)
+                        player.setPlayNextListener { action ->
+                            when (action) {
+                                is PlayNextListenerResult.Triggered -> playRandom()
                             }
+                        }
 
-                        attachPlayer(
-                            npoPlayer = core,
-                            npoPlayerColors = (playerColors ?: NativePlayerColors()).toPlayerColors(),
-                            sceneOverlays =
-                                MobileSceneRenderer(
-                                    NativeAdsOverlayRenderer(
-                                        requireNotNull(adOverlay) {
-                                            "Ster UI enabled but adOverlay is null"
-                                        },
-                                        onBackAction = { onBackPressedDispatcher.onBackPressed() },
-                                    ),
-                                ),
-                            components =
-                                if (playerColors != null) {
-                                    CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                        binding.npoVideoPlayerNative.apply {
+                            val adOverlay =
+                                if (playerViewModel.isSterUIEnabled.value) {
+                                    player.adManager.supplyDefaultAdsOverlayViewClass()
                                 } else {
-                                    DefaultMobilePlayerComponents()
-                                },
-                        )
+                                    null
+                                }
 
-                        setUIConfig(playerUIConfig)
-                        setFullScreenHandler(fullScreenHandler)
-                       //enablePictureInPictureSupport(defaultPipHandler)
-
-                        playerViewModel.hasCustomSettings {
-                            setSettingsOverride(
-                                listOf(
-                                    object : SettingType.Custom {
-                                        override val id: String = "custom_settings"
-                                        override val label: String = "Open custom settings"
+                            attachPlayer(
+                                npoPlayer = player,
+                                npoPlayerColors = (playerColors
+                                    ?: NativePlayerColors()).toPlayerColors(),
+                                sceneOverlays =
+                                    MobileSceneRenderer(
+                                        NativeAdsOverlayRenderer(
+                                            requireNotNull(adOverlay) {
+                                                "Ster UI enabled but adOverlay is null"
+                                            },
+                                            onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                        ),
+                                    ),
+                                components =
+                                    if (playerColors != null) {
+                                        CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                                    } else {
+                                        DefaultMobilePlayerComponents()
                                     },
-                                ),
                             )
-                            setCustomSettingsClickListener { showSettings() }
+
+                            setUIConfig(playerUIConfig)
+                            setFullScreenHandler(fullScreenHandler)
+                            //enablePictureInPictureSupport(defaultPipHandler)
+
+                            playerViewModel.hasCustomSettings {
+                                setSettingsOverride(
+                                    listOf(
+                                        object : SettingType.Custom {
+                                            override val id: String = "custom_settings"
+                                            override val label: String = "Open custom settings"
+                                        },
+                                    ),
+                                )
+                                setCustomSettingsClickListener { showSettings() }
+                            }
                         }
                     }
-                }
+            }
         }
     }
 
@@ -861,7 +852,8 @@ class PlayerActivity : BaseActivity() {
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
             is StreamRetrievalState.Success -> {
-                loadStreamURL(retrievalState.npoSourceConfig)
+                repository.loadStreamConfig(retrievalState.npoSourceConfig)
+                //loadStreamURL(retrievalState.npoSourceConfig)
             }
 
             is StreamRetrievalState.Error -> {

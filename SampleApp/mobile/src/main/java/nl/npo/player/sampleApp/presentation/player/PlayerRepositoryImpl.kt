@@ -2,6 +2,8 @@ package nl.npo.player.sampleApp.presentation.player
 
 import android.content.Context
 import android.util.Log
+import com.bitmovin.player.api.offline.OfflineSourceConfig
+import com.bitmovin.player.api.source.SourceConfig
 import com.google.android.datatransport.runtime.scheduling.SchedulingConfigModule_ConfigFactory.config
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -42,10 +44,12 @@ class PlayerRepositoryImpl @Inject constructor(
         useExoplayer: Boolean,
         playerUIConfig: NPOPlayerUIConfig,
         pageTracker: PlayerPageTracker,
-    ): NPOPlayer {
+    ): NPOPlayer? {
             val current = _player.value
             val shouldRebuild =
                 current == null || lastConfig != playerConfig || lastUseExo != useExoplayer
+
+            if (!shouldRebuild) return null
 
             factory.create(
                 context = appContext,
@@ -60,7 +64,9 @@ class PlayerRepositoryImpl @Inject constructor(
 
             lastConfig = playerConfig
             lastUseExo = useExoplayer
-return player.value!!
+
+
+        return player.value ?: current
 
     }
 
@@ -69,10 +75,27 @@ return player.value!!
     }
 
     override fun loadStreamConfig(config: NPOSourceConfig) {
-        TODO("Not yet implemented")
+            player.value?.load(config)
+    }
+
+
+     fun loadStream(config: NPOSourceConfig) {
+        val core = _player.value
+        if (core == null) {
+            //pendingSource = config
+            return
+        }
+        core.load(config)
+        core.play()
     }
 
     override fun loadOffline(config: NPOOfflineSourceConfig) {
-        TODO("Not yet implemented")
+        val core = _player.value
+        if (core == null) {
+            //pendingOffline = config
+            return
+        }
+        core.load(config)
+        core.play()
     }
 }

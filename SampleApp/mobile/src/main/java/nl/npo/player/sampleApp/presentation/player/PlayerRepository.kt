@@ -19,7 +19,7 @@ interface PlayerRepository {
                                   npoPlayerColors: NativePlayerColors?,
                                   useExoplayer: Boolean,
                                   playerUIConfig: NPOPlayerUIConfig,
-                                  pageTracker: PlayerPageTracker): NPOPlayer
+                                  pageTracker: PlayerPageTracker): NPOPlayer?
     suspend fun release()
 
     fun loadStreamConfig(config: NPOSourceConfig)
