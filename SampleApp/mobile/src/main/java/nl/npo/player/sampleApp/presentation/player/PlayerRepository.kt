@@ -22,6 +22,6 @@ interface PlayerRepository {
                                   pageTracker: PlayerPageTracker): NPOPlayer?
     suspend fun release()
 
-    fun loadStreamConfig(config: NPOSourceConfig)
+    fun loadStreamConfig( config: NPOSourceConfig)
     fun loadOffline(config: NPOOfflineSourceConfig)
 }
