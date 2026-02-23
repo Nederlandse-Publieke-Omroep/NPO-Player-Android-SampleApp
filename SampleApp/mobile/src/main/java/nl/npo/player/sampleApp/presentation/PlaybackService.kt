@@ -4,12 +4,12 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
@@ -18,99 +18,105 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.R
 import androidx.media3.ui.PlayerNotificationManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import nl.npo.player.library.NPOPlayerLibrary
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
-import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.model.NPOSourceConfig
-import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.ext.mediaSession
-import nl.npo.player.sampleApp.presentation.player.PlayerActivity
+import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
+import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.sampleApp.presentation.player.PlayerBuildConfig
+import nl.npo.player.sampleApp.presentation.player.PlayerRepository
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import javax.inject.Inject
 import kotlin.jvm.java
 
+@AndroidEntryPoint
 @UnstableApi
 class PlaybackService : MediaSessionService() {
+    @Inject lateinit var repo: PlayerRepository
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var corePlayer: NPOPlayer? = null
+
+    private var lastTracker: PlayerPageTracker? = null
+
     private var sessionPlayer: Player? = null // Media3 bridge
     private var session: MediaSession? = null
     private lateinit var notifManager: PlayerNotificationManager
     private var currentConfig: PlayerBuildConfig? = null
 
     inner class LocalBinder : Binder() {
-        fun getCorePlayer(): NPOPlayer? = corePlayer
+        fun service(): PlaybackService = this@PlaybackService
 
         fun loadAndPlay(
-            sourceConfig: NPOSourceConfig,
-            config: PlayerBuildConfig,
+            sourceWrapper: SourceWrapper,
+            context: Context,
+            playerConfig: NPOPlayerConfig,
+            npoPlayerColors: NativePlayerColors?,
+            useExoplayer: Boolean,
+            playerUIConfig: NPOPlayerUIConfig,
             pageTracker: PlayerPageTracker
+
         ) {
-            ensurePlayer(config, pageTracker)
-            corePlayer?.load(sourceConfig)
-            corePlayer?.play()
+            serviceScope.launch {
+                repo.player.filterNotNull().first().apply {
+                    sourceWrapper.npoSourceConfig?.let { load(it) }
+                    play()
+                }
+            }
         }
 
         fun loadStreamConfig(
-            sourceConfig: SourceWrapper,
-            buildConfig: PlayerBuildConfig,
+            sourceWrapper: SourceWrapper,
+            context: Context,
+            playerConfig: NPOPlayerConfig,
+            npoPlayerColors: NativePlayerColors?,
+            useExoplayer: Boolean,
+            playerUIConfig: NPOPlayerUIConfig,
             pageTracker: PlayerPageTracker,
             title: String
         ) {
-            Log.d("PlaybackService", "loadStreamConfig() title=$title type=${sourceConfig::class.java.simpleName}")
+            Log.d("PlaybackService", "loadStreamConfig() title=$title type=${sourceWrapper::class.java.simpleName}")
 
-
-
-            val player = corePlayer
-            if (player == null) {
-                ensurePlayer(buildConfig, pageTracker)
-                return
-            }
-            runCatching {
-                sourceConfig.npoSourceConfig?.let { player.load(it) }
-                player.play()
-            }.onFailure {
-                Log.e("PlaybackService", "loadStreamConfig(): load/play failed", it)
+            serviceScope.launch {
+                val player = repo.player.filterNotNull().first()
+                runCatching {
+                    sourceWrapper.npoSourceConfig?.let { player.load(it) }
+                    player.play()
+                }.onFailure {
+                    Log.e("PlaybackService", "loadStreamConfig(): load/play failed", it)
+                }
             }
         }
     }
 
     private val binder = LocalBinder()
 
-    override fun onBind(intent: Intent?): IBinder {
+    override fun onBind(intent: Intent?): IBinder? {
         super.onBind(intent)
-        return binder
+       return  binder
     }
+
+    override fun onDestroy() {
+        serviceScope.launch { repo.release() }
+        super.onDestroy()
+    }
+
     override fun onCreate() {
         super.onCreate()
+
         ensureChannel()
-        startForeground(NOTIFICATION_ID, placeholderNotification() )
+
+        // Start foreground immediately to satisfy Android’s timing rules.
+        startForeground(NOTIFICATION_ID, placeholderNotification())
+
         notifManager =
             PlayerNotificationManager.Builder(this, NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
-                .setMediaDescriptionAdapter(object : PlayerNotificationManager.MediaDescriptionAdapter {
-                    override fun getCurrentContentTitle(player: Player) =
-                        corePlayer?.lastLoadedSource?.title ?: "Playing"
-
-                    override fun createCurrentContentIntent(player: Player): PendingIntent? =
-                        PendingIntent.getActivity(
-                            this@PlaybackService,
-                            0,
-                            Intent(this@PlaybackService, PlayerActivity::class.java),
-                            PendingIntent.FLAG_IMMUTABLE
-                        )
-
-                    override fun getCurrentContentText(player: Player) =
-                        corePlayer?.lastLoadedSource?.description
-
-                    override fun getCurrentLargeIcon(
-                        player: Player,
-                        callback: PlayerNotificationManager.BitmapCallback
-                    ): Bitmap? = null
-                })
                 .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
                     override fun onNotificationPosted(
                         notificationId: Int,
@@ -125,39 +131,32 @@ class PlaybackService : MediaSessionService() {
                         stopSelf()
                     }
                 })
+                .setMediaDescriptionAdapter(mediaDescriptionAdapter())
                 .build()
 
-        notifManager.setPlayer(null)
+        serviceScope.launch {
+            repo.player
+                .filterNotNull()
+                .collectLatest { core ->
 
+                    val providedSession = core.mediaSession
+                        ?: run {
+                            Log.e("PlaybackService", "core player does not provide MediaSession")
+                            return@collectLatest
+                        }
+
+                    session = providedSession
+
+                    notifManager.setMediaSessionToken(providedSession.platformToken )
+
+                    notifManager.setPlayer(providedSession.player)
+                }
+        }
     }
 
-    private fun ensurePlayer(config: PlayerBuildConfig, pageTracker: PlayerPageTracker) {
-        if (corePlayer != null && currentConfig == config && sessionPlayer != null && session != null) return
-
-        val newCore = NPOPlayerLibrary.getPlayer(
-            context = applicationContext,
-            pageTracker = pageTracker,
-            useExoplayer = config.useExoplayer
-        )
-
-        corePlayer = newCore
-        currentConfig = config
-        session = newCore.mediaSession
-    }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
 
-    override fun onDestroy() {
-        runCatching { notifManager.setPlayer(null) }
-        runCatching { session?.release() }
-        session = null
-        runCatching { sessionPlayer?.release() }
-        sessionPlayer = null
-        runCatching { corePlayer?.destroy() }
-        corePlayer = null
-        serviceScope.cancel()
-        super.onDestroy()
-    }
 
        private fun ensureChannel() {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -179,7 +178,61 @@ class PlaybackService : MediaSessionService() {
             .setOnlyAlertOnce(true)
             .build()
     }
+
+
+    @UnstableApi
+    private fun mediaDescriptionAdapter(): PlayerNotificationManager.MediaDescriptionAdapter {
+        return object : PlayerNotificationManager.MediaDescriptionAdapter {
+
+            override fun getCurrentContentTitle(player: Player): CharSequence {
+                val md = player.mediaMetadata
+                return md.title
+                    ?: md.displayTitle
+                    ?: "Playing"
+            }
+
+            override fun getCurrentContentText(player: Player): CharSequence? {
+                val md = player.mediaMetadata
+                return md.artist
+                    ?: md.albumArtist
+                    ?: md.subtitle
+            }
+
+            override fun getCurrentSubText(player: Player): CharSequence? {
+                val md = player.mediaMetadata
+                // optional: show album or extra line
+                return md.albumTitle
+            }
+
+            override fun createCurrentContentIntent(player: Player): PendingIntent? {
+                // Open your app when tapping the notification
+                val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return null
+                return PendingIntent.getActivity(
+                    this@PlaybackService,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            }
+
+            override fun getCurrentLargeIcon(
+                player: Player,
+                callback: PlayerNotificationManager.BitmapCallback
+            ): Bitmap? {
+                // Easiest: return null (no large icon). Notification will still work.
+                // If you DO have a Bitmap already available synchronously, return it here.
+
+                // Example if you store a cached bitmap somewhere:
+                // return artworkCache.currentBitmap
+
+                return null
+            }
+        }
+    }
+
 }
+
+
 private const val NOTIFICATION_CHANNEL_ID = "playback"
 private const val NOTIFICATION_ID = 1001
 //
