@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,12 +15,17 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
+import androidx.media3.common.util.NotificationUtil
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.R
+import androidx.media3.session.SessionToken
 import androidx.media3.ui.PlayerNotificationManager
 import androidx.transition.Visibility
+import com.bitmovin.player.api.PlayerConfig
+import com.google.android.datatransport.runtime.scheduling.persistence.EventStoreModule_PackageNameFactory.packageName
 import com.google.android.gms.common.wrappers.Wrappers.packageManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -29,16 +35,20 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
+import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.ext.mediaSession
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
+import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerBuildConfig
 import nl.npo.player.sampleApp.presentation.player.PlayerRepository
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import java.lang.runtime.ObjectMethods.bootstrap
 import javax.inject.Inject
 import kotlin.jvm.java
 
@@ -47,132 +57,66 @@ import kotlin.jvm.java
 class PlaybackService : MediaSessionService() {
 
     @Inject lateinit var repo: PlayerRepository
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
-    private var lastTracker: PlayerPageTracker? = null
-
-    private var sessionPlayer: Player? = null // Media3 bridge
     private var session: MediaSession? = null
-    private lateinit var notifManager: PlayerNotificationManager
-    private var currentConfig: PlayerBuildConfig? = null
 
 
-    fun loadStreamConfig(config: NPOSourceConfig) {
-        Log.d("PlaybackService", "Service loading stream: $config")
-         repo.player.value?.load(config)
-            repo.player.value?.play()
-
-    }
-
-    fun loadOffline(config: NPOOfflineSourceConfig) {
-        Log.d("PlaybackService", "Service loading offline: $config")
-        repo.player.value?.load(config)
-        repo.player.value?.play()
-    }
-    inner class LocalBinder : Binder() {
-        fun getService(): PlaybackService = this@PlaybackService
-        fun loadStreamConfig(config: NPOSourceConfig) = this@PlaybackService.loadStreamConfig(config)
-        fun loadOffline(config: NPOOfflineSourceConfig) = this@PlaybackService.loadOffline(config)
-
-        fun loadAndPlay(
-            sourceWrapper: SourceWrapper,
-            context: Context,
-            playerConfig: NPOPlayerConfig,
-            npoPlayerColors: NativePlayerColors?,
-            useExoplayer: Boolean,
-            playerUIConfig: NPOPlayerUIConfig,
-            pageTracker: PlayerPageTracker
-
-        ) {
-            serviceScope.launch {
-                repo.player.filterNotNull().first().apply {
-                    sourceWrapper.npoSourceConfig?.let { load(it) }
-                    play()
-                }
-            }
-        }
-
-        fun loadStreamConfig(
-            sourceWrapper: SourceWrapper,
-            context: Context,
-            playerConfig: NPOPlayerConfig,
-            npoPlayerColors: NativePlayerColors?,
-            useExoplayer: Boolean,
-            playerUIConfig: NPOPlayerUIConfig,
-            pageTracker: PlayerPageTracker,
-            title: String
-        ) {
-            Log.d("PlaybackService", "loadStreamConfig() title=$title type=${sourceWrapper::class.java.simpleName}")
-
-            serviceScope.launch {
-                val player = repo.player.filterNotNull().first()
-                runCatching {
-                    sourceWrapper.npoSourceConfig?.let { player.load(it) }
-                    player.play()
-                }.onFailure {
-                    Log.e("PlaybackService", "loadStreamConfig(): load/play failed", it)
-                }
-            }
-        }
-    }
-
-    private val binder = LocalBinder()
 
     override fun onBind(intent: Intent?): IBinder? {
-        super.onBind(intent)
-       return  binder
+        Log.d("DEBUG_INFO", "onBind action=${intent?.action}")
+      return super.onBind(intent)
     }
 
     override fun onDestroy() {
-        serviceScope.launch { repo.release() }
         super.onDestroy()
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        ensureChannel()
+       val player = repo.ensurePlayer(applicationContext)
 
-        startForeground(NOTIFICATION_ID, placeholderNotification())
+//        ensureChannel()
+//
+//        // Start foreground immediately to satisfy Android’s timing rules.
+//        startForeground(NOTIFICATION_ID, placeholderNotification())
+//
+//        notifManager =
+//            PlayerNotificationManager.Builder(this, NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
+//                .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
+//                    override fun onNotificationPosted(
+//                        notificationId: Int,
+//                        notification: Notification,
+//                        ongoing: Boolean
+//                    ) {
+//                        startForeground(notificationId, notification)
+//                    }
+//
+//                    override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+//                        stopForeground(STOP_FOREGROUND_REMOVE)
+//                        stopSelf()
+//
+//                    }
+//                })
+//                .setMediaDescriptionAdapter(mediaDescriptionAdapter())
+//                .build()
 
-        notifManager =
-            PlayerNotificationManager.Builder(this, NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
-                .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
-                    override fun onNotificationPosted(
-                        notificationId: Int,
-                        notification: Notification,
-                        ongoing: Boolean
-                    ) {
-                        startForeground(notificationId, notification)
-                    }
+//                 serviceScope.launch {
+//                  repo.player.filterNotNull().collectLatest {
+//                     session = it.mediaSession
+//                 }
 
-                    override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-                        stopForeground(STOP_FOREGROUND_REMOVE)
-                        stopSelf()
-                    }
-                })
-                .setMediaDescriptionAdapter(mediaDescriptionAdapter())
-                .build()
+        session = player.mediaSession
 
-        serviceScope.launch {
-            repo.player
-                .filterNotNull()
-                .collectLatest { core ->
-                    val providedSession = core.mediaSession
-                        ?: run {
-                            Log.e("PlaybackService", "core player does not provide MediaSession")
-                            return@collectLatest
-                        }
 
-                    session = providedSession
-                    notifManager.setMediaSessionToken(providedSession.platformToken)
-                    notifManager.setPlayer(providedSession.player)
-                }
-        }
+
+
     }
 
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
+         return session
+    }
+
 
 
        private fun ensureChannel() {
@@ -185,6 +129,17 @@ class PlaybackService : MediaSessionService() {
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
     }
+
+//    fun Context.ensurePlaybackNotificationChannel() {
+//        if (android.os.Build.VERSION.SDK_INT < 26) return
+//
+//        val channel = android.app.NotificationChannel(
+//            "1001", NOTIFICATION_CHANNEL_ID,
+//            android.app.NotificationManager.IMPORTANCE_LOW
+//        )
+//        val nm = getSystemService(android.app.NotificationManager::class.java)
+//        nm.createNotificationChannel(channel)
+//    }
 //
     private fun placeholderNotification(): Notification {
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
@@ -242,9 +197,9 @@ class PlaybackService : MediaSessionService() {
 
 }
 
-
-private const val NOTIFICATION_CHANNEL_ID = "playback"
-private const val NOTIFICATION_ID = 1001
+private const val NOTIFICATION_CHANNEL_ID = "NPO-PlayerSampleApp"
+private const val NOTIFICATION_ID = 1
+private const val MEDIA_SESSION_TAG = "npo-player-mediaSession"
 //
 //
 //

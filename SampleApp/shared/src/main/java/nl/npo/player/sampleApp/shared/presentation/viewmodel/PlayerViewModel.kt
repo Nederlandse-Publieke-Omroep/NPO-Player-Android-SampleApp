@@ -3,6 +3,9 @@ package nl.npo.player.sampleApp.shared.presentation.viewmodel
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.session.MediaController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -96,7 +99,7 @@ class PlayerViewModel
             return source.copy(
                 overrideStartOffset = sourceWrapper.startOffset,
                 overrideImageUrl = sourceWrapper.getImageUrl(source),
-                overrideAutoPlay = autoPlay,
+                overrideAutoPlay = false,
 //                overrideMetadata =
 //                    source.metadata
 //                        ?.toMutableMap()
@@ -148,18 +151,18 @@ class PlayerViewModel
 
         fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, UseExoplayer, NPOPlayerUIConfig) -> Unit) {
             viewModelScope.launch {
-                val playerConfig =
-                    NPOPlayerConfig(
-                        shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
-                        shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
-                        bufferConfig = NPOBufferConfig(),
-                        allowedToSkipFollowingChapterTypes =
-                            if (settingsRepository.chapterSkippingEnabled.first()) {
-                                listOf(
-                                    StreamChapterType.IDENT,
-                                    StreamChapterType.INTRO,
-                                    StreamChapterType.RECAP,
-                                    StreamChapterType.CREDITS,
+                val playerConfig = NPOPlayerConfig(
+                    shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
+                    shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
+                    bufferConfig = NPOBufferConfig(),
+                    allowedToSkipFollowingChapterTypes =
+                        if (settingsRepository.chapterSkippingEnabled.first()) {
+                            listOf(
+                                StreamChapterType.IDENT,
+                                StreamChapterType.INTRO,
+                                StreamChapterType.RECAP,
+                                StreamChapterType.CREDITS,
+
                                 )
                             } else {
                                 emptyList()

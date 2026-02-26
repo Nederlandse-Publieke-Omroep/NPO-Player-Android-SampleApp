@@ -21,17 +21,13 @@ class NPOPlayerFactoryImpl @Inject constructor(
     @ApplicationContext private val appContext: Context,
 ) : NPOPlayerFactory {
 
-    private val sdk: NPOPlayerLibrary = NPOPlayerLibrary
-
     override fun create(
         context: Context,
         playerConfig: NPOPlayerConfig,
-        npoPlayerColors: NativePlayerColors?,
         useExoplayer: Boolean,
-        playerUIConfig: NPOPlayerUIConfig,
         pageTracker: PlayerPageTracker,
     ): NPOPlayer {
-        return sdk.getPlayer(
+        return NPOPlayerLibrary.getPlayer(
             context = appContext,
             pageTracker = (pageTracker),
             npoPlayerConfig = playerConfig,

@@ -32,16 +32,23 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
+import com.bitmovin.media3.common.MediaItem
 import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.offline.OfflineSourceConfig
 import com.google.android.datatransport.runtime.scheduling.SchedulingConfigModule_ConfigFactory.config
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
@@ -66,6 +73,7 @@ import nl.npo.player.library.presentation.compose.models.SettingType
 import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
+import nl.npo.player.library.presentation.exoplayer.toMediaItem
 import nl.npo.player.library.presentation.extension.getMessage
 import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
 import nl.npo.player.library.presentation.mobile.compose.components.MobilePlayerTopBar
@@ -84,6 +92,8 @@ import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
 import nl.npo.player.sampleApp.shared.app.PlayerApplication
+import nl.npo.player.sampleApp.shared.data.settings.SettingsPreferences
+import nl.npo.player.sampleApp.shared.data.settings.SettingsPreferences.Keys.useExoplayer
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -91,6 +101,7 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import nl.npo.tag.sdk.tracker.PageTracker
+import okio.`-DeprecatedOkio`.source
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -107,7 +118,7 @@ class PlayerActivity : BaseActivity() {
     private lateinit var sourceWrapper: SourceWrapper
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val linkViewModel by viewModels<LinksViewModel>()
-    private var npoNotificationManager: NPONotificationManager? = null
+    //private var npoNotificationManager: NPONotificationManager? = null
     private var backstackLost = false
     private var pipHandler: NPOPictureInPictureHandler? = null
 
@@ -141,6 +152,7 @@ class PlayerActivity : BaseActivity() {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_play)
                 }
+
             }
 
             override fun onSourceError(
@@ -152,17 +164,17 @@ class PlayerActivity : BaseActivity() {
 
             override fun onSourceLoad(source: NPOSourceConfig) {
                 // NOTE: This is not done to actually seek, but to make sure that if an app does this it won't crash. An error should be broadcasted through `onPlayerError`
-                if (!NPOCasting.isCastingConnected()) player?.seek(10000.0.seconds)
+                if (!NPOCasting.isCastingConnected()) repository.player.value?.seek(10000.0.seconds)
 
                 binding.btnPlayPause.isVisible = false
             }
 
             override fun onCanStartPlayingBecauseSwitchedToWiFi() {
-                player?.play()
+                repository.player.value?.play()
             }
 
             override fun onCanStartPlayingBecauseResumingAfterCasting() {
-                player?.play()
+                repository.player.value?.play()
             }
 
             override fun onPlayerError(
@@ -176,20 +188,6 @@ class PlayerActivity : BaseActivity() {
             }
         }
 
-    private var isBound = false
-    private var playbackBinder: PlaybackService.LocalBinder? = null
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            playbackBinder = service as PlaybackService.LocalBinder
-            isBound = true
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            isBound = false
-            playbackBinder = null
-        }
-    }
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
@@ -210,16 +208,45 @@ class PlayerActivity : BaseActivity() {
         binding.setupViews()
         setObservers()
         loadSourceWrapperFromIntent(intent)
-        ContextCompat.startForegroundService(
-            this,
-            Intent(this, PlaybackService::class.java)
-        )
-        bindService(
-            Intent(this, PlaybackService::class.java),
-            connection,
-            BIND_AUTO_CREATE
-        )
+        //connectController()
+
+       // startService(Intent(applicationContext, PlaybackService::class.java))
     }
+
+    override fun onStart() {
+        super.onStart()
+        if (controllerFuture == null) connectController()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        controllerFuture?.let { MediaController.releaseFuture(it) }
+        controllerFuture = null
+    }
+
+    private var controllerFuture: ListenableFuture<MediaController>? = null
+    private var controller: MediaController? = null
+
+    private fun connectController() {
+
+        val token = SessionToken(
+            this,
+            ComponentName(this, PlaybackService::class.java)
+        )
+        controllerFuture = MediaController.Builder(this, token).buildAsync()
+
+        val future = controllerFuture!!
+
+        future.addListener({
+            try {
+
+              controller = future.get()
+            } catch (t: Throwable) {
+                Log.d("DEBUG_INFO", "❌ Controller FAILED", t)
+            }
+        }, MoreExecutors.directExecutor())
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -254,6 +281,8 @@ class PlayerActivity : BaseActivity() {
     private var currentlyAttachedPlayer: NPOPlayer? = null // or whatever your type is
     private var attachJob: Job? = null
 
+
+
     private fun loadSource(
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
@@ -268,14 +297,7 @@ class PlayerActivity : BaseActivity() {
             val pageTracker = pageTracker ?: return@launch
 
             try {
-                repository.ensurePlayer(
-                    context = applicationContext, // ✅ not binding.root.context
-                    playerConfig = playerConfig,
-                    pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                    useExoplayer = useExoplayer,
-                    npoPlayerColors = playerColors,
-                    playerUIConfig = playerUIConfig,
-                )
+
             } catch (e: NPOPlayerException.PlayerInitializationException) {
                 AlertDialog.Builder(this@PlayerActivity)
                     .setTitle("Error")
@@ -286,45 +308,30 @@ class PlayerActivity : BaseActivity() {
                 return@launch
             }
 
-            ensureAttachedOnce(playerColors, playerUIConfig, title)
-
-            repository.player.filterNotNull().first()
+            ensureAttachedOnce(sourceWrapper,playerColors, playerUIConfig, title)
 
             when {
                 sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
-                    repository.loadStreamConfig(
-                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
-                    )
-                    binding.apply {
-                        loadingIndicator.isVisible = false
-                        retryBtn.isVisible = false
-                    }
-
-                    //loadStreamConfig(sourceWrapper.npoSourceConfig!!)
-                   // playbackBinder?.getService()?.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
+                    repository.loadOffline(sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig)
                 }
 
-                sourceWrapper.getStreamLink -> {
+                sourceWrapper.getStreamLink ->
                     playerViewModel.retrieveSource(sourceWrapper) { tokenState ->
                         handleTokenState(tokenState)
                     }
-                }
 
                 sourceWrapper.npoSourceConfig != null -> {
                     repository.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
-                    binding.apply {
-                        loadingIndicator.isVisible = false
-                        retryBtn.isVisible = false
-                    }
-                   // playbackBinder?.getService()?.loadStreamConfig(sourceWrapper.npoSourceConfig!!)
                 }
 
                 else -> finish()
             }
+
         }
     }
 
     private fun ensureAttachedOnce(
+        sourceWrapper: SourceWrapper,
         playerColors: NativePlayerColors?,
         playerUIConfig: NPOPlayerUIConfig,
         title: String,
@@ -392,7 +399,11 @@ class PlayerActivity : BaseActivity() {
                             setUIConfig(playerUIConfig)
                             setFullScreenHandler(fullScreenHandler)
                             //enablePictureInPictureSupport(defaultPipHandler)
+                            val bla = sourceWrapper.npoSourceConfig ?: return@collect
 
+                            controller?.setMediaItem(bla.toMediaItem())
+                            controller?.prepare()
+                            controller?.play()
                             playerViewModel.hasCustomSettings {
                                 setSettingsOverride(
                                     listOf(
@@ -443,7 +454,7 @@ class PlayerActivity : BaseActivity() {
 //                                }
 //
 //                            eventEmitter.addListener(onPlayPauseListener)
-////                            setupPlayerNotification(
+  //                          setupPlayerNotification(
 ////                                NOTIFICATION_CHANNEL_ID,
 ////                                R.string.app_name,
 ////                                R.drawable.ic_launcher_foreground,
@@ -550,7 +561,7 @@ class PlayerActivity : BaseActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (player?.isPlaying != true) return
+        if (repository.player.value?.isPlaying != true) return
 
         pipHandler?.enterPictureInPicture()
     }
@@ -586,26 +597,27 @@ class PlayerActivity : BaseActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        player?.apply {
+        repository.player.value?.apply {
             eventEmitter.addListener(onPlayPauseListener)
         }
     }
 
     override fun onPause() {
         super.onPause()
-        player?.apply {
+        repository.player.value?.apply {
             eventEmitter.removeListener(onPlayPauseListener)
         }
     }
 
     override fun onDestroy() {
-        player?.apply {
+        repository.player.value?.apply {
             if (!NPOCasting.isCastingConnected()) destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
         binding.npoVideoPlayerNative.destroy()
+        lifecycleScope.launch { repository.release() }
 
-        npoNotificationManager?.setPlayer(null)
+       // npoNotificationManager?.setPlayer(null)
         if (isGooglePlayServicesAvailable()) {
             CastContext
                 .getSharedInstance(this@PlayerActivity)
@@ -614,6 +626,7 @@ class PlayerActivity : BaseActivity() {
         super.onDestroy()
     }
 
+
     private fun ActivityPlayerBinding.setupViews() {
         setupCastButton()
 
@@ -621,11 +634,12 @@ class PlayerActivity : BaseActivity() {
             playRandom()
         }
         btnPlayPause.setOnClickListener {
-            player?.apply {
+            repository.player.value?.apply {
                 if (isPlaying) {
                     pause()
                 } else {
                     play()
+
                 }
             }
         }
@@ -646,7 +660,7 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun playRandom() {
-        player?.unload()
+        repository.player.value?.unload()
         playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
             if (enabled) {
                 linkViewModel.streamLinkList.value
@@ -694,40 +708,40 @@ class PlayerActivity : BaseActivity() {
         )
 
     private fun subtitleSettings(): PlayerSettings? {
-        val tracks = player?.availableSubtitleTracks ?: return null
+        val tracks = repository.player.value?.availableSubtitleTracks ?: return null
         return if (tracks.isNotEmpty() && !(tracks.size == 1 && tracks.contains(NPOSubtitleTrack.OFF))) PlayerSettings.SUBTITLES else null
     }
 
     private fun audioQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableAudioQualities?.size ?: 0) > 1) {
+        if ((repository.player.value?.availableAudioQualities?.size ?: 0) > 1) {
             PlayerSettings.AUDIO_QUALITIES
         } else {
             null
         }
 
     private fun audioTrackSettings(): PlayerSettings? =
-        if ((player?.availableAudioTracks?.size ?: 0) > 0) {
+        if ((repository.player.value?.availableAudioTracks?.size ?: 0) > 0) {
             PlayerSettings.AUDIO_TRACKS
         } else {
             null
         }
 
     private fun videoQualitiesSettings(): PlayerSettings? =
-        if ((player?.availableVideoQualities?.size ?: 0) > 1) {
+        if ((repository.player.value?.availableVideoQualities?.size ?: 0) > 1) {
             PlayerSettings.VIDEO_QUALITIES
         } else {
             null
         }
 
     private fun showSubtitleDialog() {
-        player?.availableSubtitleTracks?.let { npoSubtitleTracks ->
+        repository.player.value?.availableSubtitleTracks?.let { npoSubtitleTracks ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     npoSubtitleTracks.map { it.label ?: it.id }.toTypedArray(),
-                    npoSubtitleTracks.indexOf(player?.selectedSubtitleTrack),
+                    npoSubtitleTracks.indexOf(repository.player.value?.selectedSubtitleTrack),
                 ) { dialog, which ->
-                    player?.setSelectedSubtitleTrack(npoSubtitleTracks[which])
+                    repository.player.value?.setSelectedSubtitleTrack(npoSubtitleTracks[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -735,14 +749,14 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showAudioTracksDialog() {
-        player?.availableAudioTracks?.let { audioTracks ->
+        repository.player.value?.availableAudioTracks?.let { audioTracks ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     audioTracks.map { it.label ?: it.id }.toTypedArray(),
-                    audioTracks.indexOf(player?.selectedAudioTrack),
+                    audioTracks.indexOf(repository.player.value?.selectedAudioTrack),
                 ) { dialog, which ->
-                    player?.setSelectedAudioTrack(audioTracks[which])
+                    repository.player.value?.setSelectedAudioTrack(audioTracks[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -750,14 +764,14 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showAudioQualityDialog() {
-        player?.availableAudioQualities?.let { npoAudioQualities ->
+        repository.player.value?.availableAudioQualities?.let { npoAudioQualities ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     npoAudioQualities.map { it.label ?: it.id }.toTypedArray(),
-                    npoAudioQualities.indexOf(player?.selectedAudioQuality),
+                    npoAudioQualities.indexOf(repository.player.value?.selectedAudioQuality),
                 ) { dialog, which ->
-                    player?.setSelectedAudioQuality(npoAudioQualities[which])
+                    repository.player.value?.setSelectedAudioQuality(npoAudioQualities[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -765,14 +779,14 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun showVideoQualityDialog() {
-        player?.availableVideoQualities?.let { videoQualities ->
+        repository.player.value?.availableVideoQualities?.let { videoQualities ->
             AlertDialog
                 .Builder(this)
                 .setSingleChoiceItems(
                     videoQualities.map { it.label ?: it.id }.toTypedArray(),
-                    videoQualities.indexOf(player?.selectedVideoQuality),
+                    videoQualities.indexOf(repository.player.value?.selectedVideoQuality),
                 ) { dialog, which ->
-                    player?.setSelectedVideoQuality(videoQualities[which])
+                    repository.player.value?.setSelectedVideoQuality(videoQualities[which])
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -786,11 +800,11 @@ class PlayerActivity : BaseActivity() {
                 .setSingleChoiceItems(
                     speeds.map { "${it.name} (${it.value}x)" }.toTypedArray(),
                     speeds.indexOf(
-                        speeds.firstOrNull { it.value == player?.playbackSpeed?.speed }
+                        speeds.firstOrNull { it.value == repository.player.value?.playbackSpeed?.speed }
                             ?: PlaybackSpeeds.NORMAL,
                     ),
                 ) { dialog, which ->
-                    player?.setPlaybackSpeed(NPOPlaybackSpeed(speeds[which].value))
+                    repository.player.value?.setPlaybackSpeed(NPOPlaybackSpeed(speeds[which].value))
                     dialog.dismiss()
                 }.create()
                 .show()
@@ -815,20 +829,19 @@ class PlayerActivity : BaseActivity() {
             },
         )
     }
-
-    private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
-        player?.let {
-
-            playerViewModel.loadStream(
-                npoPlayer = it,
-                npoSourceConfig = npoSourceConfig,
-            )
-        }
-        binding.apply {
-            loadingIndicator.isVisible = false
-            retryBtn.isVisible = false
-        }
-    }
+//
+//    private fun loadStreamURL(npoSourceConfig: NPOSourceConfig) {
+//        player?.let {
+//            playerViewModel.loadStream(
+//                npoPlayer = it,
+//                npoSourceConfig = npoSourceConfig,
+//            )
+//        }
+//        binding.apply {
+//            loadingIndicator.isVisible = false
+//            retryBtn.isVisible = false
+//        }
+//    }
 
     private fun handleError(
         error: NPOPlayerError,
@@ -838,7 +851,7 @@ class PlayerActivity : BaseActivity() {
             PlayerActivity::class.simpleName,
             "Loading stream in player failed with result:${error.getMessage(this@PlayerActivity)}",
         )
-        player?.setError(error)
+        repository.player.value?.setError(error)
         binding.loadingIndicator.isVisible = false
 
         with(binding.retryBtn) {
@@ -876,7 +889,6 @@ class PlayerActivity : BaseActivity() {
                     playerViewModel.retrieveSource(sourceWrapper, ::handleTokenState)
                 }
             }
-
             StreamRetrievalState.Loading -> {
                 handleLoading()
             }
