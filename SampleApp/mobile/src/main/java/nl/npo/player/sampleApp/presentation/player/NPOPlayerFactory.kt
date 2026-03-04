@@ -11,7 +11,7 @@ interface NPOPlayerFactory {
     fun create(
         context: Context,
         playerConfig: NPOPlayerConfig,
-               useExoplayer: Boolean,
+        useExoplayer: Boolean,
         pageTracker: PlayerPageTracker,
     ): NPOPlayer
 }

@@ -208,14 +208,13 @@ class PlayerActivity : BaseActivity() {
         binding.setupViews()
         setObservers()
         loadSourceWrapperFromIntent(intent)
-        //connectController()
 
        // startService(Intent(applicationContext, PlaybackService::class.java))
     }
 
     override fun onStart() {
         super.onStart()
-        if (controllerFuture == null) connectController()
+        connectController()
     }
 
     override fun onStop() {
@@ -233,13 +232,11 @@ class PlayerActivity : BaseActivity() {
             this,
             ComponentName(this, PlaybackService::class.java)
         )
-        controllerFuture = MediaController.Builder(this, token).buildAsync()
-
-        val future = controllerFuture!!
-
+        val future = MediaController.Builder(this, token).buildAsync().also {
+            controllerFuture = it
+        }
         future.addListener({
             try {
-
               controller = future.get()
             } catch (t: Throwable) {
                 Log.d("DEBUG_INFO", "❌ Controller FAILED", t)
@@ -328,6 +325,7 @@ class PlayerActivity : BaseActivity() {
             }
 
         }
+
     }
 
     private fun ensureAttachedOnce(
@@ -337,6 +335,7 @@ class PlayerActivity : BaseActivity() {
         title: String,
     ) {
         if (attachJob != null) return
+
 
         attachJob = lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -399,11 +398,7 @@ class PlayerActivity : BaseActivity() {
                             setUIConfig(playerUIConfig)
                             setFullScreenHandler(fullScreenHandler)
                             //enablePictureInPictureSupport(defaultPipHandler)
-                            val bla = sourceWrapper.npoSourceConfig ?: return@collect
 
-                            controller?.setMediaItem(bla.toMediaItem())
-                            controller?.prepare()
-                            controller?.play()
                             playerViewModel.hasCustomSettings {
                                 setSettingsOverride(
                                     listOf(
@@ -880,7 +875,13 @@ class PlayerActivity : BaseActivity() {
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
             is StreamRetrievalState.Success -> {
+                controller?.setMediaItem(retrievalState.npoSourceConfig.toMediaItem())
+                controller?.prepare()
+                controller?.play()
                 repository.loadStreamConfig(retrievalState.npoSourceConfig)
+                player.apply {
+                    binding.loadingIndicator.isVisible = false
+                }
                 //loadStreamURL(retrievalState.npoSourceConfig)
             }
 

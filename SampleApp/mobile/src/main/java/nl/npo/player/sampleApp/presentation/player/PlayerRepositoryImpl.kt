@@ -3,6 +3,7 @@ package nl.npo.player.sampleApp.presentation.player
 import android.content.Context
 import android.util.Log
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import com.bitmovin.player.api.PlayerConfig
 import com.google.android.datatransport.runtime.scheduling.SchedulingConfigModule_ConfigFactory.config
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -51,46 +52,19 @@ class PlayerRepositoryImpl @Inject constructor(
             ?.pageTrackerBuilder()
             ?.withPageName("playbackservice")
             ?.build()
-//    override fun getPlayer(
-//        context: Context,
-//        playerConfig: NPOPlayerConfig,
-//        npoPlayerColors: NativePlayerColors?,
-//        useExoplayer: Boolean,
-//        playerUIConfig: NPOPlayerUIConfig,
-//        pageTracker: PlayerPageTracker,
-//    ): NPOPlayer {
-//        if(player.value != null) return player.value!!
-//
-//        return factory.create(
-//            context = appContext,
-//            playerConfig = playerConfig,
-//            npoPlayerColors = npoPlayerColors,
-//            useExoplayer = useExoplayer,
-//            playerUIConfig,
-//            pageTracker
-//        ).also {
-//            _player.value = it
-//        }
-//    }
-
-    //create player in service ,
-    // trigger load source
 
     override fun provideBootstrap(b: PlayerConfiguration) {
         bootstrap = b
     }
 
-    override  fun ensurePlayer(context: Context): NPOPlayer {
+    override  fun ensurePlayer(
+        context: Context
+    ): NPOPlayer {
         val current = _player.value
         val currentSession = _session.value
         val pageTracker = pageTracker ?: return player.value!!
         if (current != null ) return current
         if (currentSession != null ) return  current!!
-
-
-//        val b = bootstrap ?: defaultBootstrap()
-//
-//       val playerTracker = b.pageTracker ?: return current
 
       val player =  factory.create(
                 context = appContext,
@@ -99,21 +73,12 @@ class PlayerRepositoryImpl @Inject constructor(
                 pageTracker = PlayerTagProvider.getPageTracker(pageTracker)
                 ).apply {
                     _player.value = this
-                    _session.value = this.mediaSession
+
             }.apply { Log.d("DEBUG_INFO", "player created = $this, mediasession=${this.mediaSession}") }
 
 
         return player
 
-    }
-    private fun defaultBootstrap(): PlayerConfiguration {
-        return PlayerConfiguration(
-            playerConfig = NPOPlayerConfig(),
-            npoPlayerColors = NativePlayerColors(),
-            useExoplayer = true,
-            playerUIConfig = NPOPlayerUIConfig(),
-            pageTracker = null,
-        )
     }
 
     override suspend fun release() {
