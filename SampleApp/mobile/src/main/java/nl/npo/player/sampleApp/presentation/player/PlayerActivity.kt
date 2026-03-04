@@ -160,6 +160,7 @@ class PlayerActivity : BaseActivity() {
                 retryPossible: Boolean,
             ) {
                 binding.btnPlayPause.isVisible = false
+                repository.player.value?.setError(error, false )
             }
 
             override fun onSourceLoad(source: NPOSourceConfig) {
