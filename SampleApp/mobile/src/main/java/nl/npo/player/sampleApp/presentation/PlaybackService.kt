@@ -41,12 +41,15 @@ import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.ext.mediaSession
+import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
+import nl.npo.player.sampleApp.presentation.player.NPOPlayerFactory
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.presentation.player.PlayerBuildConfig
 import nl.npo.player.sampleApp.presentation.player.PlayerRepository
+import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import java.lang.runtime.ObjectMethods.bootstrap
 import javax.inject.Inject
@@ -60,7 +63,6 @@ class PlaybackService : MediaSessionService() {
     private var session: MediaSession? = null
 
 
-
     override fun onBind(intent: Intent?): IBinder? {
         Log.d("DEBUG_INFO", "onBind action=${intent?.action}")
       return super.onBind(intent)
@@ -72,10 +74,12 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
+        val pageTracker = repo.pageTracker ?: return
+        val player = repo.ensurePlayer(applicationContext, PlayerTagProvider.getPageTracker(pageTracker))
 
-       val player = repo.ensurePlayer(applicationContext)
+        session = player.mediaSession
 
-//        ensureChannel()
+        //        ensureChannel()
 //
 //        // Start foreground immediately to satisfy Android’s timing rules.
 //        startForeground(NOTIFICATION_ID, placeholderNotification())
@@ -104,11 +108,6 @@ class PlaybackService : MediaSessionService() {
 //                  repo.player.filterNotNull().collectLatest {
 //                     session = it.mediaSession
 //                 }
-
-        session = player.mediaSession
-
-
-
 
     }
 

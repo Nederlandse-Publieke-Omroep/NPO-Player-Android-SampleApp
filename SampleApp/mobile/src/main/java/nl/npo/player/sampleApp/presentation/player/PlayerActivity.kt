@@ -209,13 +209,13 @@ class PlayerActivity : BaseActivity() {
         binding.setupViews()
         setObservers()
         loadSourceWrapperFromIntent(intent)
-
+        connectController()
        // startService(Intent(applicationContext, PlaybackService::class.java))
     }
 
     override fun onStart() {
         super.onStart()
-        connectController()
+
     }
 
     override fun onStop() {
@@ -228,7 +228,6 @@ class PlayerActivity : BaseActivity() {
     private var controller: MediaController? = null
 
     private fun connectController() {
-
         val token = SessionToken(
             this,
             ComponentName(this, PlaybackService::class.java)
@@ -236,6 +235,7 @@ class PlayerActivity : BaseActivity() {
         val future = MediaController.Builder(this, token).buildAsync().also {
             controllerFuture = it
         }
+
         future.addListener({
             try {
               controller = future.get()

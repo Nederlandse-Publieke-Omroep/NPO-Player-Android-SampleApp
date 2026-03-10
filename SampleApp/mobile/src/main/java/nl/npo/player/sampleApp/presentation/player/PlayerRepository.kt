@@ -13,13 +13,15 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.presentation.compose.theme.NativePlayerColors
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
+import nl.npo.tag.sdk.tracker.PageTracker
 
 interface PlayerRepository {
     val player: StateFlow<NPOPlayer?>
     val session: StateFlow<MediaSession?>
+    val pageTracker: PageTracker?
 
 
-    fun ensurePlayer(context: Context): NPOPlayer
+    fun ensurePlayer(context: Context, pageTracker: PlayerPageTracker,): NPOPlayer
     suspend fun release()
     fun provideBootstrap(b: PlayerConfiguration)
     fun loadStreamConfig(config: NPOSourceConfig)

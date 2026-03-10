@@ -46,7 +46,7 @@ class PlayerRepositoryImpl @Inject constructor(
     private val _session = MutableStateFlow<MediaSession?>(null)
     override val session: StateFlow<MediaSession?> = _session
 
-    val pageTracker =
+   override val pageTracker =
         (appContext as PlayerApplication)
             .npoTag
             ?.pageTrackerBuilder()
@@ -58,29 +58,25 @@ class PlayerRepositoryImpl @Inject constructor(
     }
 
     override  fun ensurePlayer(
-        context: Context
+        context: Context,
+        pageTracker: PlayerPageTracker,
     ): NPOPlayer {
-        val current = _player.value
-        val currentSession = _session.value
-        val pageTracker = pageTracker ?: return player.value!!
-        if (current != null ) return current
-        if (currentSession != null ) return  current!!
+   Log.d("DEBUG_INFO", "player created = $this, mediasession")
 
-      val player =  factory.create(
-                context = appContext,
-                playerConfig = NPOPlayerConfig(),
-                useExoplayer = true,
-                pageTracker = PlayerTagProvider.getPageTracker(pageTracker)
-                ).apply {
-                    _player.value = this
-
-            }.apply { Log.d("DEBUG_INFO", "player created = $this, mediasession=${this.mediaSession}") }
-
-
-        return player
-
+        return ensurePlayerAndSession(pageTracker)
     }
 
+    fun ensurePlayerAndSession(pageTracker: PlayerPageTracker): NPOPlayer {
+        val createdPlayer =  factory.create(
+            context = appContext,
+            playerConfig = NPOPlayerConfig(),
+            useExoplayer = true,
+            pageTracker = pageTracker
+
+        )
+        _player.value = createdPlayer
+        return createdPlayer
+    }
 
 
     override suspend fun release() {
