@@ -56,16 +56,14 @@ class LinksViewModel
 
         val audioItems =
             combinedList.map {
-                it.filter {
-                        sourceWrapper ->
-                    sourceWrapper.avType == AVType.AUDIO
+                it.filter { sourceWrapper ->
+                    sourceWrapper.avType != AVType.VIDEO
                 }
             }
 
         val videoItems =
             combinedList.map {
-                it.filter {
-                        sourceWrapper ->
+                it.filter { sourceWrapper ->
                     sourceWrapper.avType == AVType.VIDEO
                 }
             }

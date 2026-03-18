@@ -31,6 +31,7 @@ import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.data.extensions.copy
 import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
@@ -116,6 +117,9 @@ class PlayerActivity : BaseActivity() {
                 binding.btnPlayPause.apply {
                     isVisible = !fullScreenHandler.isFullscreen
                     setImageResource(android.R.drawable.ic_media_pause)
+
+                    Log.d("SampleAppTest", "AVType: ${player?.lastLoadedSource?.avType}")
+                    Log.d("SampleAppTest", "StreamType: ${player?.playerState?.value?.streamType}")
                 }
             }
 
@@ -452,22 +456,24 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun playRandom() {
-        player?.unload()
-        playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
-            if (enabled) {
-                linkViewModel.streamLinkList.value
-            } else {
-                linkViewModel.streamLinkList.value?.union(
-                    linkViewModel.urlLinkList.value ?: emptyList(),
-                )
-            } // ?.filter { it.avType != player?.lastLoadedSource?.avType }
-                ?.random()
-                ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer, playerUIConfig ->
-                        loadSource(newSource, config, npoPlayerColors, useExoplayer, playerUIConfig)
-                    }
-                }
-        }
+        val lastLoadedSource = player!!.lastLoadedSource!!.copy(overrideAVType = null)
+        player?.load(lastLoadedSource)
+//        loadSourceWrapperFromIntent(intent)
+//        playerViewModel.onlyStreamLinkRandomEnabled { enabled ->
+//            if (enabled) {
+//                linkViewModel.streamLinkList.value
+//            } else {
+//                linkViewModel.streamLinkList.value?.union(
+//                    linkViewModel.urlLinkList.value ?: emptyList(),
+//                )
+//            }?.filter { it.uniqueId == "RCRST1_0451500797159_v1773737185" }
+//                ?.random()
+//                ?.let { newSource ->
+//                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer, playerUIConfig ->
+//                        loadSource(newSource, config, npoPlayerColors, useExoplayer, playerUIConfig)
+//                    }
+//                }
+//        }
     }
 
     private fun showSettings() {

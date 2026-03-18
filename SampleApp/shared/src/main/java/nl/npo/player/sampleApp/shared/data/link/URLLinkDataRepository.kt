@@ -50,6 +50,16 @@ object URLLinkDataRepository : LinkRepository {
                     ),
             ),
             SourceWrapper(
+                title = "NOS Journaal",
+                testingDescription = "Custom URL playback",
+                streamUrl = "https://npo-nl-ams-p29-am3.cdn.streamgate.nl/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzM5MDkzMjgsInVyaSI6IlwvYW9kXC9ucG9cL21wM1wvcHJkXC9SQ1JTVDFfMDQ1MTUwMDc5NzE1OSIsInZpZXdlciI6InZpZXdlciIsInJpZCI6ImYwNmQyMTkifQ.VQLRFCTEDf0Js5N2jIPdZm6dTTuzIT2SknyJY7u5R4A/aod/npo/mp3/prd/RCRST1_0451500797159/RCRST1_0451500797159_v1773737185.mp3",
+                uniqueId = "",
+                isLive = null,
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                imageUrl = "https://podcast.npo.nl/data/thumb/anne.300.1568c637575040b86689f72716ca9a16.jpg",
+            ),
+            SourceWrapper(
                 title = "ANNE+GIJS",
                 testingDescription = "Custom URL playback",
                 streamUrl = "https://podcast.npo.nl/file/anne/29506/annegijs.mp3",
