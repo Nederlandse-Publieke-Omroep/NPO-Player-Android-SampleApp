@@ -8,6 +8,16 @@
     tools:context=".presentation.SelectNPOTagTypeActivity">
 
     <TextView
+        android:id="@+id/appVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
         android:id="@+id/tvExplanation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
