@@ -20,7 +20,6 @@
     <string name="delete_offline_title">"Delete offline content"</string>
     <string name="offline_header">Offline</string>
 
-
     <!--    For testing S&A Audio Receiver-->
 <!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
     <!--    NPO Player Receiver-->
