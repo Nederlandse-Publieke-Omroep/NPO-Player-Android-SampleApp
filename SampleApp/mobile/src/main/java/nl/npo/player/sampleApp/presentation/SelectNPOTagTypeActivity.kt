@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
+import nl.npo.player.sampleApp.BuildConfig
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivitySelectNpotagTypeBinding
 import nl.npo.player.sampleApp.presentation.cast.CastOptionsProvider
@@ -32,6 +33,7 @@ class SelectNPOTagTypeActivity : BaseActivity() {
 
     private fun setupViews() {
         binding.apply {
+            appVersion.text = getString(R.string.app_version, BuildConfig.VERSION_NAME)
             tvExplanation.text =
                 getString(
                     R.string.npo_tag_selection_explanation,
