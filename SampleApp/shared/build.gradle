@@ -73,8 +73,8 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "androidx.core:core-ktx:$androidXCore"
+    implementation "androidx.appcompat:appcompat:$androidXAppCompat"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
@@ -86,16 +86,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
 
     //only needed if Chromecast is used
-    implementation 'androidx.mediarouter:mediarouter:1.7.0'  //only needed if Chromecast is used
+    implementation 'androidx.mediarouter:mediarouter:1.8.1'  //only needed if Chromecast is used
 
     // Token generation
-    def jsonWebTokenVersion = "0.11.5"
+    def jsonWebTokenVersion = "0.13.0"
     api "io.jsonwebtoken:jjwt-api:$jsonWebTokenVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jsonWebTokenVersion"
     runtimeOnly("io.jsonwebtoken:jjwt-orgjson:$jsonWebTokenVersion")
 
     // Preferences
-    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    implementation "androidx.datastore:datastore-preferences:1.2.1"
 
     // Debug network
     debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
