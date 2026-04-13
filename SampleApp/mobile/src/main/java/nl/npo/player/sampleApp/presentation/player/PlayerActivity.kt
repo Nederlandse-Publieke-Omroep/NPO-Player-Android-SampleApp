@@ -372,6 +372,7 @@ class PlayerActivity : BaseActivity() {
             backstackLost = true
             binding.composeCastButton.isVisible = true
         }
+        pipHandler?.onPictureInPictureModeChanged(isInPictureInPictureMode)
     }
 
     override fun finish() {
