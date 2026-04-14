@@ -372,6 +372,33 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2070960",
                 avType = AVType.VIDEO,
             ),
+            SourceWrapper(
+                title = "short 1",
+                testingDescription = "1",
+                uniqueId = "WO_ZAPP_20324347",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl = "",
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "short 2",
+                testingDescription = "2",
+                uniqueId = "WO_NPO_20330607",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl = "",
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "short 3",
+                testingDescription = "3",
+                uniqueId = "WO_NPO_20324419",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl = "",
+                avType = AVType.VIDEO,
+            ),
         )
     }
 
