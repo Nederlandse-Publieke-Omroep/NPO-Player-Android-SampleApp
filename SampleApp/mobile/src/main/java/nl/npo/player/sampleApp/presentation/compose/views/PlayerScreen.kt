@@ -152,6 +152,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun <T> LazyListScope.section(
     items: List<T>,
     key: (index: Int, item: T) -> Any,
