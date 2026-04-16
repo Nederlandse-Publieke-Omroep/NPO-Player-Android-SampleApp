@@ -397,7 +397,9 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "WO_NPO_20324419",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
-                imageUrl = "https://assets.production.zapp.nl/attachments/series/000/002/042/block/Pestvlogs_S02E01_STILL010.png?1706264939",
+                imageUrl =
+                    "https://assets.production.zapp.nl/attachments/series/000/002/042/block/" +
+                        "Pestvlogs_S02E01_STILL010.png?1706264939",
                 avType = AVType.VIDEO,
             ),
         )
