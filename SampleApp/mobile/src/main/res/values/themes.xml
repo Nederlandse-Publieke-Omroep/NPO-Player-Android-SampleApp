@@ -12,6 +12,7 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="mediaRouteTheme">@style/CustomMediaRouterTheme</item>
     </style>
 
     <style name="Theme.NPOPlayer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -28,10 +29,18 @@
         <item name="android:windowTranslucentStatus">true</item>
 
         <!-- Customize your theme here. -->
+        <item name="mediaRouteTheme">@style/CustomMediaRouterTheme</item>
     </style>
 
 
     <!-- Following styles can be used to style the cast widgets -->
+    <style name="CustomMediaRouterTheme" parent="Theme.MediaRouter.Light">
+        <item name="mediaRouteButtonStyle">@style/CustomMediaRouteButtonStyle</item>
+    </style>
+    <style name="CustomMediaRouteButtonStyle" parent="Widget.MediaRouter.MediaRouteButton">
+        <item name="mediaRouteButtonTint">#ffffff</item>
+    </style>
+
     <style name="CustomCastExpandedController" parent="CastExpandedController" />
 
     <style name="CustomCastIntroOverlay" parent="CastIntroOverlay">
