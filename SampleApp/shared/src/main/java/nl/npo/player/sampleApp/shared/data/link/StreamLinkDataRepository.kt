@@ -372,6 +372,45 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2070960",
                 avType = AVType.VIDEO,
             ),
+            SourceWrapper(
+                title = "short 1",
+                testingDescription = "WO_ZAPP_20324347",
+                uniqueId = "WO_ZAPP_20324347",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2486139",
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "short 2",
+                testingDescription = "WO_NPO_20330607",
+                uniqueId = "WO_NPO_20330607",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
+                imageUrl = "https://images.poms.omroep.nl/image/s460x260%5E/c460x260/2220054.jpg",
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "short 3",
+                testingDescription = "WO_NPO_20324419",
+                uniqueId = "WO_NPO_20324419",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl =
+                    "https://assets.production.zapp.nl/attachments/series/000/002/042/block/" +
+                        "Pestvlogs_S02E01_STILL010.png?1706264939",
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "Ffukkie slim - Jarig",
+                testingDescription = "4:3 content - VPRO_1123901",
+                uniqueId = "VPRO_1123901",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
+                avType = AVType.VIDEO,
+            ),
         )
     }
 

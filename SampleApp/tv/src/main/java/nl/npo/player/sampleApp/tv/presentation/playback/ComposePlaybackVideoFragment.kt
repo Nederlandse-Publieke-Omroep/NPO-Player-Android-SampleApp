@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -49,6 +50,8 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.tv.BaseActivity
 import nl.npo.player.sampleApp.tv.R
 import nl.npo.player.sampleApp.tv.presentation.selection.PlayerActivity.Companion.getSourceWrapper
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 /** Handles video playback with media controls. */
 @AndroidEntryPoint
@@ -58,6 +61,13 @@ class ComposePlaybackVideoFragment : Fragment() {
     private val playbackViewModel by viewModels<PlaybackViewModel>()
     private lateinit var sourceWrapper: SourceWrapper
     private lateinit var player: NPOPlayer
+
+    private val retryListener: (Duration) -> Unit = {
+        playerViewModel.retrieveSource(
+            sourceWrapper.copy(startOffset = it.toDouble(DurationUnit.SECONDS)),
+            ::handleTokenState,
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +132,7 @@ class ComposePlaybackVideoFragment : Fragment() {
         Row {
             val topbarInfo by playerState.collectStreamInfoAsState()
             Box(
+                contentAlignment = Alignment.Center,
                 modifier =
                     Modifier
                         .weight(1f),
@@ -191,6 +202,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                         attachToLifecycle(lifecycle)
 
                         updatePageTracker(PlayerTagProvider.getPageTracker(pageTracker))
+                        setTokenRefreshCallback(retryListener)
                         playbackViewModel.setPlayer(this)
                         if (npoPlayerColors != null) {
                             playbackViewModel.setPlayerColors(npoPlayerColors.toPlayerColors())
@@ -208,6 +220,7 @@ class ComposePlaybackVideoFragment : Fragment() {
     }
 
     private fun loadSource(sourceWrapper: SourceWrapper) {
+        this.sourceWrapper = sourceWrapper
         when {
             sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
                 loadStreamURL(
