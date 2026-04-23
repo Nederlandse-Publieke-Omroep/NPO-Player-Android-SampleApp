@@ -82,6 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/general_padding"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_above="@id/btnSwitchStreams"
         android:mediaRouteTypes="user"
         android:visibility="visible" />
