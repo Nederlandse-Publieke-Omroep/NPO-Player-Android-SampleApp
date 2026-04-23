@@ -3,6 +3,7 @@ package nl.npo.player.sampleApp.shared.data.settings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.player.ui.model.PlayNext
+import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
@@ -100,6 +101,13 @@ class SettingsRepositoryImpl
 
         override suspend fun setEnvironment(type: Environment) {
             prefs.setEnvironment(type.toPref())
+        }
+
+        override val ageProfile: Flow<AgeProfileInt>
+            get() = prefs.ageProfile
+
+        override suspend fun setAgeProfile(ageProfile: AgeProfileInt) {
+            prefs.setAgeProfile(ageProfile)
         }
 
         override val chapterSkippingEnabled: Flow<Boolean> = prefs.chapterSkippingEnabled

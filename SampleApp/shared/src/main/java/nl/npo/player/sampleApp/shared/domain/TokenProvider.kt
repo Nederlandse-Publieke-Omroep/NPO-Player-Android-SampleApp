@@ -7,6 +7,5 @@ interface TokenProvider {
     suspend fun createToken(
         prid: String,
         asPlusUser: Boolean = true,
-        ageProfile: Int = 18,
     ): StreamInfoResult<TokenResponse>
 }

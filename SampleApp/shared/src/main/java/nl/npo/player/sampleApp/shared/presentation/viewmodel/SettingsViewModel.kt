@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.shared.R
+import nl.npo.player.sampleApp.shared.data.model.AgeProfilePref
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.PlayNextPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
@@ -58,25 +59,58 @@ class SettingsViewModel
             value: Boolean,
         ) {
             when (key) {
-                SettingsKey.Exoplayer -> settingsRepository.setUseExoplayer(value)
-                SettingsKey.CustomSettings -> settingsRepository.setShowCustomSettings(value)
-                SettingsKey.ShowUi -> settingsRepository.setShowUi(value)
-                SettingsKey.AutoPlayEnabled -> settingsRepository.setAutoPlayEnabled(value)
-                SettingsKey.OnlyStreamLinkRandomEnabled -> settingsRepository.setOnlyStreamLinkRandomEnabled(value)
+                SettingsKey.Exoplayer -> {
+                    settingsRepository.setUseExoplayer(value)
+                }
 
-                SettingsKey.SterUiEnabled -> settingsRepository.setSterUiEnabled(value)
-                SettingsKey.PauseWhenBecomingNoisy -> settingsRepository.setPauseWhenBecomingNoisy(value)
-                SettingsKey.PauseOnSwitchToCellularNetwork ->
+                SettingsKey.CustomSettings -> {
+                    settingsRepository.setShowCustomSettings(value)
+                }
+
+                SettingsKey.ShowUi -> {
+                    settingsRepository.setShowUi(value)
+                }
+
+                SettingsKey.AutoPlayEnabled -> {
+                    settingsRepository.setAutoPlayEnabled(value)
+                }
+
+                SettingsKey.OnlyStreamLinkRandomEnabled -> {
+                    settingsRepository.setOnlyStreamLinkRandomEnabled(value)
+                }
+
+                SettingsKey.SterUiEnabled -> {
+                    settingsRepository.setSterUiEnabled(value)
+                }
+
+                SettingsKey.PauseWhenBecomingNoisy -> {
+                    settingsRepository.setPauseWhenBecomingNoisy(value)
+                }
+
+                SettingsKey.PauseOnSwitchToCellularNetwork -> {
                     settingsRepository.setPauseOnSwitchToCellularNetwork(value)
+                }
 
-                SettingsKey.EnableCasting -> settingsRepository.setEnableCasting(value)
-                SettingsKey.ChapterSkippingEnabled -> settingsRepository.setChapterSkippingEnabled(value)
-                SettingsKey.ChapterSkippingAlwaysFeatured -> settingsRepository.setChapterSkippingAlwaysFeatured(value)
+                SettingsKey.EnableCasting -> {
+                    settingsRepository.setEnableCasting(value)
+                }
+
+                SettingsKey.ChapterSkippingEnabled -> {
+                    settingsRepository.setChapterSkippingEnabled(value)
+                }
+
+                SettingsKey.ChapterSkippingAlwaysFeatured -> {
+                    settingsRepository.setChapterSkippingAlwaysFeatured(value)
+                }
+
                 SettingsKey.Styling,
                 SettingsKey.Environment,
                 SettingsKey.UserType,
                 SettingsKey.ShouldPlayNext,
-                -> Unit
+                SettingsKey.AgeProfile,
+                -> {
+                    Unit
+                }
             }
         }
 
@@ -86,6 +120,7 @@ class SettingsViewModel
                 is StylingPref -> settingsRepository.setStyling(value.toDomain())
                 is UserTypePref -> settingsRepository.setUserType(value.toDomain())
                 is EnvironmentPref -> settingsRepository.setEnvironment(value.toDomain())
+                is AgeProfilePref -> settingsRepository.setAgeProfile(value.toDomain())
             }
         }
 
@@ -198,6 +233,15 @@ class SettingsViewModel
                             R.string.setting_environment,
                             settingsRepository.environment.first().toPref(),
                             EnvironmentPref.entries,
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Picker(
+                            SettingsKey.AgeProfile,
+                            R.string.setting_age_profile,
+                            settingsRepository.ageProfile.first().toPref(),
+                            AgeProfilePref.entries,
                         ),
                     )
 
