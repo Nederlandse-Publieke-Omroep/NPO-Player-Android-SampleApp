@@ -219,6 +219,7 @@ class PlayerActivity : BaseActivity() {
         useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
+        this.sourceWrapper = sourceWrapper
         val title = sourceWrapper.title.orEmpty()
         if (player == null) {
             logPageAnalytics(title)
@@ -368,9 +369,13 @@ class PlayerActivity : BaseActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             binding.composeCastButton.isVisible = false
+            hideButtons(alsoRetryButton = true)
         } else {
             backstackLost = true
             binding.composeCastButton.isVisible = true
+            if (!fullScreenHandler.isFullscreen) {
+                showButtons()
+            }
         }
     }
 
@@ -707,6 +712,21 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun hideButtons(alsoRetryButton: Boolean = false) {
+        binding.apply {
+            btnSwitchStreams.isVisible = false
+            btnPlayPause.isVisible = false
+            if (alsoRetryButton) retryBtn.isVisible = false
+        }
+    }
+
+    private fun showButtons() {
+        binding.apply {
+            btnSwitchStreams.isVisible = true
+            btnPlayPause.isVisible = true
+        }
+    }
+
     private val fullScreenHandler =
         object : NPOFullScreenHandler {
             private var fullscreen = false
@@ -719,10 +739,7 @@ class PlayerActivity : BaseActivity() {
             override fun onFullscreenExitRequested() {
                 fullscreen = false
                 runOnUiThread {
-                    binding.apply {
-                        btnSwitchStreams.isVisible = true
-                        btnPlayPause.isVisible = true
-                    }
+                    showButtons()
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                     doSystemUiVisibility(fullscreen)
                 }
@@ -731,10 +748,7 @@ class PlayerActivity : BaseActivity() {
             override fun onFullscreenRequested() {
                 fullscreen = true
                 runOnUiThread {
-                    binding.apply {
-                        btnSwitchStreams.isVisible = false
-                        btnPlayPause.isVisible = false
-                    }
+                    hideButtons()
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                     doSystemUiVisibility(fullscreen)
                 }

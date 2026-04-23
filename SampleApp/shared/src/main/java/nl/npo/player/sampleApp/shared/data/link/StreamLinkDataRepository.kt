@@ -402,6 +402,15 @@ object StreamLinkDataRepository : LinkRepository {
                         "Pestvlogs_S02E01_STILL010.png?1706264939",
                 avType = AVType.VIDEO,
             ),
+            SourceWrapper(
+                title = "Ffukkie slim - Jarig",
+                testingDescription = "4:3 content - VPRO_1123901",
+                uniqueId = "VPRO_1123901",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
+                imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
+                avType = AVType.VIDEO,
+            ),
         )
     }
 
