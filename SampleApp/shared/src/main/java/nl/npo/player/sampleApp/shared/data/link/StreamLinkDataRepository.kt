@@ -374,32 +374,32 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "short 1",
-                testingDescription = "WO_ZAPP_20324347",
-                uniqueId = "WO_ZAPP_20324347",
+                testingDescription = "WO_ZAPP_20338724",
+                uniqueId = "WO_ZAPP_20338724",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
-                imageUrl = "https://images.poms.omroep.nl/image/s512/2486139",
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2276727",
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "short 2",
-                testingDescription = "WO_NPO_20330607",
-                uniqueId = "WO_NPO_20330607",
+                testingDescription = "WO_ZAPP_20338725",
+                uniqueId = "WO_ZAPP_20338725",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 preferThisImageUrlOverStreamLink = true,
-                imageUrl = "https://images.poms.omroep.nl/image/s460x260%5E/c460x260/2220054.jpg",
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2299180",
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
                 title = "short 3",
-                testingDescription = "WO_NPO_20324419",
-                uniqueId = "WO_NPO_20324419",
+                testingDescription = "WO_ZAPP_20338667",
+                uniqueId = "WO_ZAPP_20338667",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 imageUrl =
-                    "https://assets.production.zapp.nl/attachments/series/000/002/042/block/" +
-                        "Pestvlogs_S02E01_STILL010.png?1706264939",
+                    "https://assets.production.zapp.nl/attachments/series/000/002/060/" +
+                        "cover/Recordbrekers_2026_NPO_Zapp.jpg?1761818775",
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
