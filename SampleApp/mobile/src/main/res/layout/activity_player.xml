@@ -10,7 +10,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/btnSwitchStreams">
+        android:layout_above="@id/btnSwitchStreams"
+        android:id="@+id/npo_video_player_parent">
 
         <nl.npo.player.library.presentation.mobile.view.NPOVideoPlayerView
             android:keepScreenOn="true"
