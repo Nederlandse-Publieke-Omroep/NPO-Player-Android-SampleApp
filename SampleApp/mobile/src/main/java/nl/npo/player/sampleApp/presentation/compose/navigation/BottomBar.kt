@@ -24,6 +24,7 @@ fun BottomBar(navController: NavHostController) {
                 when (item.destination) {
                     is Destinations.Player -> current?.hasRoute<Destinations.Player>() == true
                     is Destinations.OfflineList -> current?.hasRoute<Destinations.OfflineList>() == true
+                    is Destinations.Preload -> current?.hasRoute<Destinations.Preload>() == true
                 }
 
             NavigationBarItem(

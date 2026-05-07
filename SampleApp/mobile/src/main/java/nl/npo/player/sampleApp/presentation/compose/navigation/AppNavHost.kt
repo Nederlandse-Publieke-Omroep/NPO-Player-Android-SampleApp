@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import nl.npo.player.sampleApp.presentation.compose.navigation.model.Destinations
 import nl.npo.player.sampleApp.presentation.compose.views.OfflineScreen
 import nl.npo.player.sampleApp.presentation.compose.views.PlayerScreen
+import nl.npo.player.sampleApp.presentation.compose.views.PreloadScreen
 
 @Composable
 fun AppNavHost(
@@ -26,6 +27,10 @@ fun AppNavHost(
 
         composable<Destinations.OfflineList> {
             OfflineScreen()
+        }
+
+        composable<Destinations.Preload> {
+            PreloadScreen()
         }
     }
 }
