@@ -259,7 +259,7 @@ class PlayerActivity : BaseActivity() {
                                 NOTIFICATION_ID,
                             )
                             attachToLifecycle(lifecycle)
-                            changePageTracker(this, title.orEmpty())
+                            changePageTracker(this, title)
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
                                 when (action) {

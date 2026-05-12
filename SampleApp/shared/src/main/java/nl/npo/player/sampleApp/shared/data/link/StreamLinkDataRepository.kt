@@ -378,8 +378,10 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "WO_ZAPP_20338724",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2276727",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "short 2",
@@ -390,6 +392,7 @@ object StreamLinkDataRepository : LinkRepository {
                 preferThisImageUrlOverStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2299180",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "short 3",
@@ -397,10 +400,12 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "WO_ZAPP_20338667",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
                 imageUrl =
                     "https://assets.production.zapp.nl/attachments/series/000/002/060/" +
                         "cover/Recordbrekers_2026_NPO_Zapp.jpg?1761818775",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "Ffukkie slim - Jarig",

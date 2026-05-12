@@ -81,56 +81,12 @@ class PlayerViewModel
 
             return try {
                 val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
-                val mergedSource = mergeSourceWrapperWithSource(sourceWrapper, source)
+                val mergedSource = sourceWrapper.mergeSourceWrapperWithSource(source, settingsRepository)
                 StreamRetrievalState.Success(mergedSource, sourceWrapper)
             } catch (e: NPOPlayerException) {
                 StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper)
             }
         }
-
-        private suspend fun mergeSourceWrapperWithSource(
-            sourceWrapper: SourceWrapper,
-            source: NPOSourceConfig,
-        ): NPOSourceConfig {
-            val autoPlay = settingsRepository.autoPlayEnabled.first()
-            return source.copy(
-                overrideStartOffset = sourceWrapper.startOffset,
-                overrideImageUrl = sourceWrapper.getImageUrl(source),
-                overrideAutoPlay = autoPlay,
-//                overrideMetadata =
-//                    source.metadata
-//                        ?.toMutableMap()
-//                        ?.apply {
-//                            set(
-//                                "appletest",
-//                                "true",
-//                            )
-//                        },
-                // We add this so the Cast Receiver shows the debug log when casting.
-                overrideTitle =
-                    if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
-                        sourceWrapper.title
-                    } else {
-                        source.title
-                    },
-                overrideDescription =
-                    if (sourceWrapper.overrideStreamLinkTitleAndDescription) {
-                        "SampleApp override description: ${sourceWrapper.testingDescription}"
-                    } else {
-                        source.description
-                    },
-                overrideNicamContentDescription =
-                    sourceWrapper.overrideNicamContentDescription
-                        ?: source.nicamContentDescription,
-            )
-        }
-
-        private fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? =
-            if (preferThisImageUrlOverStreamLink) {
-                imageUrl ?: npoSourceConfig.imageUrl
-            } else {
-                npoSourceConfig.imageUrl ?: imageUrl
-            }
 
         fun loadStream(
             npoPlayer: NPOPlayer,
@@ -229,4 +185,46 @@ class PlayerViewModel
                 }
             }
         }
+    }
+
+internal suspend fun SourceWrapper.mergeSourceWrapperWithSource(
+    source: NPOSourceConfig,
+    settingsRepository: SettingsRepository,
+): NPOSourceConfig {
+    val autoPlay = settingsRepository.autoPlayEnabled.first()
+    return source.copy(
+        overrideStartOffset = startOffset,
+        overrideImageUrl = getImageUrl(source),
+        overrideAutoPlay = autoPlay,
+//                overrideMetadata =
+//                    source.metadata
+//                        ?.toMutableMap()
+//                        ?.apply {
+//                            set(
+//                                "appletest",
+//                                "true",
+//                            )
+//                        },
+        // We add this so the Cast Receiver shows the debug log when casting.
+        overrideTitle =
+            if (overrideStreamLinkTitleAndDescription) {
+                title
+            } else {
+                source.title
+            },
+        overrideDescription =
+            if (overrideStreamLinkTitleAndDescription) {
+                "SampleApp override description: $testingDescription"
+            } else {
+                source.description
+            },
+        overrideNicamContentDescription = overrideNicamContentDescription ?: source.nicamContentDescription,
+    )
+}
+
+internal fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? =
+    if (preferThisImageUrlOverStreamLink) {
+        imageUrl ?: npoSourceConfig.imageUrl
+    } else {
+        npoSourceConfig.imageUrl ?: imageUrl
     }
