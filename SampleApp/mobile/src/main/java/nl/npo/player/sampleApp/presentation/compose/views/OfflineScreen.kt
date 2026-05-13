@@ -26,6 +26,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -36,6 +41,7 @@ import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
@@ -57,14 +63,13 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
             val msg =
                 context.getString(
                     R.string.delete_offline_confirmation,
-                    downloadEvent.sourceWrapper.title,
+                    downloadEvent,
                 )
             CustomAlertDialog(
                 dialogTitle = stringResource(R.string.delete_offline_title),
                 dialogDescription = msg,
                 onConfirm = {
                     viewModel.deleteOfflineContent(downloadEvent.sourceWrapper)
-                    viewModel.dismissDownloadEventDialog()
                 },
                 onDismiss = viewModel::dismissDownloadEventDialog,
             )
@@ -100,8 +105,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     items = mergedList,
                     key = { index, item -> "offline_${item.uniqueId}_$index" },
                 ) { _, item ->
-                    val currentState = item.npoOfflineContent?.downloadState
-
+                    val downloadState = item.npoOfflineContent?.downloadState
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
@@ -118,8 +122,9 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         },
                         onLongClick = { viewModel.deleteDownloadedItem(item.uniqueId, item) },
                         trailingContent = { onAction ->
+
                             ProgressActionIcon(
-                                downloadState = currentState,
+                                downloadState = downloadState,
                                 onClick = onAction,
                             )
                         },
@@ -138,7 +143,7 @@ fun Context.startPlayerActivity(wrapper: SourceWrapper) {
                 sourceWrapper =
                     wrapper.copy(
                         npoOfflineContent = null,
-                        npoSourceConfig = wrapper.npoOfflineContent?.getOfflineSource(),
+                        npoSourceConfig = wrapper.npoOfflineContent?.getOfflineSource() ?: wrapper.npoSourceConfig,
                     ),
             ),
         ),

@@ -72,6 +72,9 @@
         <service
             android:name="nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService"
             android:foregroundServiceType="dataSync" />
+<!--        <service-->
+<!--            android:name=".presentation.model.AppDownloadService"-->
+<!--            android:foregroundServiceType="dataSync" />-->
 
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"

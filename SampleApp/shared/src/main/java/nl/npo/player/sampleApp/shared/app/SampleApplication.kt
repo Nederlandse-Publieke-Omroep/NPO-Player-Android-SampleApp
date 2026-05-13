@@ -3,9 +3,14 @@ package nl.npo.player.sampleApp.shared.app
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
+import androidx.annotation.OptIn
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.data.offline.exoplayer.NPODownloadService
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.library.npotag.model.AnalyticsConfiguration
@@ -33,6 +38,7 @@ open class SampleApplication :
 
     override fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
 
+    @OptIn(UnstableApi::class)
     override suspend fun initiatePlayerLibrary(withNPOTag: Boolean) {
         isPlayerInitiatedYetInternal = true
         val list = listOf(ChuckerInterceptor.Builder(this).build())
@@ -67,6 +73,7 @@ open class SampleApplication :
             }
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
+        Log.d("OfflineDownload", "Creating notification channel: ${NPODownloadService.DOWNLOAD_NOTIFICATION_CHANNEL_ID}")
     }
 
     private suspend fun setupAnalyticsConfiguration(): AnalyticsConfiguration.Standalone =
