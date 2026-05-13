@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.asFlow
-import androidx.media3.common.util.UnstableApi
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.state.PlaybackState
 import nl.npo.player.library.presentation.PlayerUI

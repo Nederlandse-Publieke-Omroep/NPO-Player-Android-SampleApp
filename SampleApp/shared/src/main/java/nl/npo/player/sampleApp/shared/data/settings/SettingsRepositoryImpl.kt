@@ -121,4 +121,10 @@ class SettingsRepositoryImpl
         override suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean) {
             prefs.setChapterSkippingAlwaysFeatured(enabled)
         }
+
+        override val usePreloadManagerShorts: Flow<Boolean> = prefs.usePreLoadManagerShorts
+
+        override suspend fun setUsePreloadManagerShorts(usePreloadManager: Boolean) {
+            prefs.setUsePreLoadManagerShorts(usePreloadManager)
+        }
     }

@@ -52,13 +52,19 @@ class ShortsViewModel
         private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
         val preloadManager: Flow<NPOPreloadManager?> =
-            combine(player, sourceConfig.asFlow()) { npoPlayer, npoSourceConfigList ->
-                return@combine if (npoPlayer != null) {
+            combine(
+                player,
+                sourceConfig.asFlow(),
+                settingsRepository.usePreloadManagerShorts,
+            ) { npoPlayer, npoSourceConfigList, usePreLoadManager ->
+                return@combine if (usePreLoadManager && npoPlayer != null) {
 
                     val loader = NPOPlayerLibrary.getPreloadManager(npoPlayer)
                     loader.setSources(npoSourceConfigList)
                     loader
                 } else {
+                    val oldPreloadManager = preloadManager.first()
+                    oldPreloadManager?.release()
                     null
                 }
             }
@@ -131,12 +137,14 @@ class ShortsViewModel
 
         fun setCurrentPageIndex(index: Int) {
             viewModelScope.launch {
-                val loader = preloadManager.first() ?: return@launch
-                withContext(Dispatchers.Main) {
-                    loader.play(index)
+                if (settingsRepository.usePreloadManagerShorts.first()) {
+                    val loader = preloadManager.first() ?: return@launch
+                    withContext(Dispatchers.Main) {
+                        loader.play(index)
+                    }
+                } else {
+                    player.first()?.load(sourceConfig.value!![index])
                 }
-                // TODO: Make settings option to load directly instead of loading through the pre-loader
-//                player.first()?.load(sourceConfig.value!![index])
             }
         }
 
