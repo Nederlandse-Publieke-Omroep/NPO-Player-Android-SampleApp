@@ -24,8 +24,8 @@ import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.player.preload.NPOPreloadManager
 import nl.npo.player.library.domain.streamLink.model.StreamChapterType
-import nl.npo.player.library.general.NPOPreloadManager
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
