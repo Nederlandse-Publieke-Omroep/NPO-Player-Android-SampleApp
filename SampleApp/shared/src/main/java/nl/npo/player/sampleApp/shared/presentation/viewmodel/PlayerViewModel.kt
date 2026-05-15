@@ -81,7 +81,10 @@ class PlayerViewModel
 
             return try {
                 val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
-                val mergedSource = sourceWrapper.mergeSourceWrapperWithSource(source, settingsRepository)
+                val mergedSource =
+                    sourceWrapper
+                        .mergeSourceWrapperWithSource(source)
+                        .copy(overrideAutoPlay = settingsRepository.autoPlayEnabled.first())
                 StreamRetrievalState.Success(mergedSource, sourceWrapper)
             } catch (e: NPOPlayerException) {
                 StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper)
@@ -187,15 +190,10 @@ class PlayerViewModel
         }
     }
 
-internal suspend fun SourceWrapper.mergeSourceWrapperWithSource(
-    source: NPOSourceConfig,
-    settingsRepository: SettingsRepository,
-): NPOSourceConfig {
-    val autoPlay = settingsRepository.autoPlayEnabled.first()
-    return source.copy(
+internal suspend fun SourceWrapper.mergeSourceWrapperWithSource(source: NPOSourceConfig): NPOSourceConfig =
+    source.copy(
         overrideStartOffset = startOffset,
         overrideImageUrl = getImageUrl(source),
-        overrideAutoPlay = autoPlay,
 //                overrideMetadata =
 //                    source.metadata
 //                        ?.toMutableMap()
@@ -218,9 +216,10 @@ internal suspend fun SourceWrapper.mergeSourceWrapperWithSource(
             } else {
                 source.description
             },
-        overrideNicamContentDescription = overrideNicamContentDescription ?: source.nicamContentDescription,
+        overrideNicamContentDescription =
+            overrideNicamContentDescription
+                ?: source.nicamContentDescription,
     )
-}
 
 internal fun SourceWrapper.getImageUrl(npoSourceConfig: NPOSourceConfig): String? =
     if (preferThisImageUrlOverStreamLink) {

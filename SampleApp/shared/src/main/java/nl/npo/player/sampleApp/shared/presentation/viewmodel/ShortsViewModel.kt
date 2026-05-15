@@ -51,20 +51,39 @@ class ShortsViewModel
         val sourceConfig: LiveData<List<NPOSourceConfig>> = mutableSourceConfig
         private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
+        private var currentPreloadManager: NPOPreloadManager? = null
         val preloadManager: Flow<NPOPreloadManager?> =
             combine(
                 player,
                 sourceConfig.asFlow(),
                 settingsRepository.usePreloadManagerShorts,
             ) { npoPlayer, npoSourceConfigList, usePreLoadManager ->
+                val oldPreloadManager = currentPreloadManager
                 return@combine if (usePreLoadManager && npoPlayer != null) {
+                    if (oldPreloadManager != null) {
+                        val sourceWrapperListSize = mutableSourceWrapperList.value?.size ?: 0
+                        npoSourceConfigList
+                            .subList(
+                                npoSourceConfigList.size - sourceWrapperListSize,
+                                npoSourceConfigList.size,
+                            ).forEachIndexed { index, config ->
+                                oldPreloadManager.addSource(
+                                    config,
+                                    index + npoSourceConfigList.size - sourceWrapperListSize,
+                                )
+                            }
 
-                    val loader = NPOPlayerLibrary.getPreloadManager(npoPlayer)
-                    loader.setSources(npoSourceConfigList)
-                    loader
+                        currentPreloadManager = oldPreloadManager
+                        oldPreloadManager
+                    } else {
+                        val loader = NPOPlayerLibrary.getPreloadManager(npoPlayer)
+                        loader.setSources(npoSourceConfigList)
+                        currentPreloadManager = loader
+                        loader
+                    }
                 } else {
-                    val oldPreloadManager = preloadManager.first()
                     oldPreloadManager?.release()
+                    currentPreloadManager = null
                     null
                 }
             }
@@ -73,8 +92,6 @@ class ShortsViewModel
             viewModelScope.launch {
                 mutableSourceWrapperList.asFlow().collect { list ->
                     val mutableList = list.toMutableList()
-                    mutableList.addAll(list)
-                    mutableList.addAll(list)
                     mutableSourceConfig.postValue(
                         mutableList.mapNotNull { sourceWrapper ->
                             fetchSourceConfig(sourceWrapper)
@@ -139,12 +156,26 @@ class ShortsViewModel
             viewModelScope.launch {
                 if (settingsRepository.usePreloadManagerShorts.first()) {
                     val loader = preloadManager.first() ?: return@launch
+
+                    extendSourceConfigListIfNeeded(index)
+
                     withContext(Dispatchers.Main) {
                         loader.play(index)
                     }
                 } else {
                     player.first()?.load(sourceConfig.value!![index])
                 }
+            }
+        }
+
+        private fun extendSourceConfigListIfNeeded(index: Int) {
+            val sourceConfigList = mutableSourceConfig.value
+            if (sourceConfigList != null && index + 2 >= sourceConfigList.size) {
+                val sourceWrapperListSize = mutableSourceWrapperList.value?.size ?: return
+                val subList = sourceConfigList.subList(0, sourceWrapperListSize)
+                val mutableSourceConfigList = sourceConfigList.toMutableList()
+                mutableSourceConfigList.addAll(subList)
+                mutableSourceConfig.postValue(mutableSourceConfigList.toList())
             }
         }
 
@@ -175,7 +206,7 @@ class ShortsViewModel
 
             return try {
                 val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
-                sourceWrapper.mergeSourceWrapperWithSource(source, settingsRepository)
+                sourceWrapper.mergeSourceWrapperWithSource(source).copy(overrideAutoPlay = true)
             } catch (e: NPOPlayerException) {
                 e.printStackTrace()
                 null

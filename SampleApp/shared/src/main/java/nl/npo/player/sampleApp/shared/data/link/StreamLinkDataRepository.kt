@@ -385,9 +385,10 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "short 2",
-                testingDescription = "WO_ZAPP_20338725",
+                testingDescription = "WO_ZAPP_20338725 - 20 seconds startOffset",
                 uniqueId = "WO_ZAPP_20338725",
                 getStreamLink = true,
+                startOffset = 20.0,
                 offlineDownloadAllowed = false,
                 preferThisImageUrlOverStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2299180",

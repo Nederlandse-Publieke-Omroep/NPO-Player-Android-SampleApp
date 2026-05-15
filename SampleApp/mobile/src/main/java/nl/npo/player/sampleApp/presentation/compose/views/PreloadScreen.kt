@@ -56,11 +56,13 @@ fun PreloadScreen(viewModel: ShortsViewModel = hiltViewModel()) {
     }
 
     if (sourceConfigs.isEmpty()) {
-        CircularProgressIndicator(
-            modifier = Modifier.width(64.dp),
-            color = MaterialTheme.colorScheme.secondary,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+                modifier = Modifier.width(64.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        }
     } else {
         val pagerState =
             rememberPagerState(
@@ -108,6 +110,7 @@ fun ShortVideo(
     playerUIState: NPOPlayerUIState,
     npoSourceConfig: NPOSourceConfig,
 ) {
+    val playerState by playerUIState.playerState.collectAsState()
     val playbackState by playerUIState.collectPlaybackStateAsState()
 
     val progressState by playerUIState.progressState.collectAsState()
@@ -154,7 +157,7 @@ fun ShortVideo(
                 },
         )
 
-        if (playbackState.isBefore(PlaybackState.Playing)) {
+        if (playbackState.isBefore(PlaybackState.Playing) || playerState.currentSource?.uniqueId != npoSourceConfig.uniqueId) {
             Poster(npoSourceConfig.imageUrl)
         }
 //            PlayerUI.Overlay(
