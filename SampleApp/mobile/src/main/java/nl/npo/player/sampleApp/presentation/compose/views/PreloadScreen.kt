@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
@@ -31,10 +32,16 @@ import nl.npo.player.library.presentation.PlayerUI
 import nl.npo.player.library.presentation.compose.Poster
 import nl.npo.player.library.presentation.compose.components.seekbar.Seekbar
 import nl.npo.player.library.presentation.compose.components.seekbar.SeekbarState
+import nl.npo.player.library.presentation.compose.renderers.Components
 import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.compose.state.collectPlaybackStateAsState
 import nl.npo.player.library.presentation.compose.state.rememberNPOPlayerUIState
 import nl.npo.player.library.presentation.compose.theme.NPOPlayerTheme
+import nl.npo.player.library.presentation.compose.theme.PlayerColors
+import nl.npo.player.library.presentation.compose.theme.PlayerTypography
+import nl.npo.player.library.presentation.mobile.compose.PlayPauseButton
+import nl.npo.player.library.presentation.mobile.compose.components.DefaultMobilePlayerComponents
+import nl.npo.player.library.presentation.mobile.compose.theme.mobile
 import nl.npo.player.library.presentation.model.NPOPlayerUIAction
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.ShortsViewModel
 import kotlin.time.Duration
@@ -82,23 +89,27 @@ fun PreloadScreen(viewModel: ShortsViewModel = hiltViewModel()) {
                 state = pagerState,
             )
 
-        VerticalPager(
-            state = pagerState,
-            modifier =
-                Modifier
-                    .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            flingBehavior = fling,
-            key = { index ->
-                sourceConfigs[index].uniqueId
-            },
-        ) { pagerIndex ->
+        NPOPlayerTheme(PlayerTypography.mobile(), PlayerColors.mobile(), LocalIndication.current) {
+            Components.Provide(DefaultMobilePlayerComponents()) {
+                VerticalPager(
+                    state = pagerState,
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    flingBehavior = fling,
+                    key = { index ->
+                        sourceConfigs[index].uniqueId
+                    },
+                ) { pagerIndex ->
 
-            val npoSourceConfig = sourceConfigs[pagerIndex]
-            if (currentPageIndex == pagerIndex) {
-                ShortVideo(playerUIState, npoSourceConfig)
-            } else {
-                Poster(npoSourceConfig.imageUrl)
+                    val npoSourceConfig = sourceConfigs[pagerIndex]
+                    if (currentPageIndex == pagerIndex) {
+                        ShortVideo(playerUIState, npoSourceConfig)
+                    } else {
+                        Poster(npoSourceConfig.imageUrl)
+                    }
+                }
             }
         }
     }
@@ -148,6 +159,14 @@ fun ShortVideo(
                 .fillMaxSize(),
     ) {
         PlayerUI.Surface(modifier = Modifier, playerUIState)
+        PlayPauseButton(
+            npoSourceConfig.title.orEmpty(),
+            playbackState = playbackState,
+            visible = true,
+            modifier = Modifier.align(Alignment.Center),
+            onPlay = { playerUIState.handleAction(NPOPlayerUIAction.OnPlayer.Play) },
+            onPause = { playerUIState.handleAction(NPOPlayerUIAction.OnPlayer.Pause) },
+        )
         Seekbar(
             modifier = Modifier.align(Alignment.BottomCenter),
             state = seekbarState,
@@ -160,13 +179,5 @@ fun ShortVideo(
         if (playbackState.isBefore(PlaybackState.Playing) || playerState.currentSource?.uniqueId != npoSourceConfig.uniqueId) {
             Poster(npoSourceConfig.imageUrl)
         }
-//            PlayerUI.Overlay(
-//                modifier = Modifier.fillMaxSize(),
-//                state = playerState,
-//                components = DefaultMobilePlayerComponents(),
-//                sceneOverlays = MobileSceneRenderer(NoAdOverlayRenderer),
-//                typography = PlayerTypography.mobile(),
-//                npoPlayerColors = NativePlayerColors().toPlayerColors(),
-//            )
     }
 }
