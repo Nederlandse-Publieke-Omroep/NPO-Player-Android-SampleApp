@@ -26,11 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -63,7 +59,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
             val msg =
                 context.getString(
                     R.string.delete_offline_confirmation,
-                    downloadEvent,
+                    downloadEvent.sourceWrapper.title,
                 )
             CustomAlertDialog(
                 dialogTitle = stringResource(R.string.delete_offline_title),

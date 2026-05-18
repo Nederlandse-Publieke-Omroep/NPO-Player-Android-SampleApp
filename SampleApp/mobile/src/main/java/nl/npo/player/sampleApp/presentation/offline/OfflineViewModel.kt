@@ -176,40 +176,6 @@ constructor(
         super.onCleared()
     }
 
-//    @OptIn(UnstableApi::class)
-//    fun createOfflineContent(
-//        sourceWrapper: SourceWrapper,
-//        onCreated: (NPOOfflineContent) -> Unit = {},
-//        errorCallback: (Throwable) -> Unit,
-//        ) {
-//        viewModelScope.launch(
-//            CoroutineExceptionHandler { _, throwable ->
-//                errorCallback.invoke(throwable)
-//            },
-//        ) {
-//            val existingItem = mutableOfflineLinkList.value.firstOrNull {
-//                it.uniqueId == sourceWrapper.uniqueId
-//            }
-//            if (existingItem?.npoOfflineContent != null) {
-//                errorCallback(Exception("Offline content already exists"))
-//                return@launch
-//
-//            } else {
-//                val offlineContent = offlineLinkRepository.createOfflineContent(sourceWrapper)
-//                onCreated(offlineContent)
-//                mutableOfflineLinkList.value =
-//                    mutableOfflineLinkList.value.toMutableList().apply {
-//                        val newSource =
-//                            sourceWrapper.copy(
-//                                npoOfflineContent = offlineContent,
-//                            )
-//                        add(newSource)
-//                    }
-//            }
-//        }
-//    }
-
-
     @OptIn(UnstableApi::class)
     fun createOfflineContent(
         sourceWrapper: SourceWrapper,
@@ -247,14 +213,6 @@ constructor(
 
                     }
                 }
-            Log.d(
-                "DEUG_OFFLINE",
-                "after create: " +
-                        mutableOfflineLinkList.value.map {
-                            "${it.uniqueId}: offline=${it.npoOfflineContent != null}"
-
-                        }
-            )
         }
     }
 
