@@ -17,8 +17,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +29,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.flow.map
+import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -45,6 +52,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     val mergedList by viewModel.mergedSourceList.collectAsState()
     val context = LocalContext.current
     val downloadEvent by viewModel.downloadEvent.collectAsState()
+
 
     when (downloadEvent) {
         is DownloadEvent.Error -> {
@@ -102,6 +110,8 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     key = { index, item -> "offline_${item.uniqueId}_$index" },
                 ) { _, item ->
                     val downloadState = item.npoOfflineContent?.downloadState
+
+                    // Compose
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),

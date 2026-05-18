@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 
 @OptIn(UnstableApi::class)
@@ -37,7 +38,7 @@ fun ProgressActionIcon(
     onClick: () -> Unit,
 ) {
     val state by downloadState
-        ?.collectAsState(initial = NPODownloadState.Initializing)
+        ?.collectAsStateWithLifecycle()
         ?: remember {
             mutableStateOf<NPODownloadState>(NPODownloadState.Initializing)
         }
@@ -48,19 +49,10 @@ fun ProgressActionIcon(
     ) {
         when (val s = state) {
             is NPODownloadState.InProgress -> {
-                if (s.progress <= 1f) {
-                    CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(24.dp),
-                    )
-                } else {
                     CircularProgressIndicator(
                         progress = { s.progress / 100f },
                         strokeWidth = 2.dp,
-                        modifier = Modifier.size(24.dp),
-                    )
-
-                }
+                        modifier = Modifier.size(24.dp),)
             } else -> {
                 IconButton(onClick = onClick) {
                     val icon =

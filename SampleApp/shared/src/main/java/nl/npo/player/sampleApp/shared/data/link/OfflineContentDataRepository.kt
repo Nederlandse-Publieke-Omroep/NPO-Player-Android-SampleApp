@@ -80,12 +80,12 @@ class OfflineContentDataRepository
             npoOfflineContent.delete()
         }
 
-        private fun NPOSourceConfig.isDownloadDisallowed(): Boolean = (isLiveStream == true || avType == AVType.VIDEO)
+        private fun NPOSourceConfig.isDownloadDisallowed(): Boolean = (isLiveStream == true )
 
         private fun NPOSourceConfig.getDownloadNotAllowedReason(): String =
             when {
                 isLiveStream == true -> "A live stream can't be downloaded"
-                avType == AVType.VIDEO -> "(NPO StreamLink) Video's aren't allowed to be downloaded"
+//                avType == AVType.VIDEO -> "(NPO StreamLink) Video's aren't allowed to be downloaded"
                 else -> "Unknown reason"
             }
     }
