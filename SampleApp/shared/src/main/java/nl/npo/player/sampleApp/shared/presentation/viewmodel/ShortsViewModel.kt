@@ -25,6 +25,7 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.preload.NPOPreloadManager
+import nl.npo.player.library.domain.player.preload.play
 import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
@@ -76,7 +77,7 @@ class ShortsViewModel
                         currentPreloadManager = oldPreloadManager
                         oldPreloadManager
                     } else {
-                        val loader = NPOPlayerLibrary.getPreloadManager(npoPlayer)
+                        val loader = NPOPlayerLibrary.getPreloadManager()
                         loader.setSources(npoSourceConfigList)
                         currentPreloadManager = loader
                         loader
@@ -160,7 +161,7 @@ class ShortsViewModel
                     extendSourceConfigListIfNeeded(index)
 
                     withContext(Dispatchers.Main) {
-                        loader.play(index)
+                        player.value?.let { loader.play(index, it) }
                     }
                 } else {
                     player.first()?.load(sourceConfig.value!![index])

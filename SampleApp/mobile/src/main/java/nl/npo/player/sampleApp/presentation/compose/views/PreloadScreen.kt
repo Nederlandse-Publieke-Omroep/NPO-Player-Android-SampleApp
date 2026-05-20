@@ -176,7 +176,7 @@ fun ShortVideo(
                 },
         )
 
-        if (playbackState.isBefore(PlaybackState.Playing) || playerState.currentSource?.uniqueId != npoSourceConfig.uniqueId) {
+        if (playbackState.isBefore(PlaybackState.Ready) || playerState.currentSource?.uniqueId != npoSourceConfig.uniqueId) {
             Poster(npoSourceConfig.imageUrl)
         }
     }

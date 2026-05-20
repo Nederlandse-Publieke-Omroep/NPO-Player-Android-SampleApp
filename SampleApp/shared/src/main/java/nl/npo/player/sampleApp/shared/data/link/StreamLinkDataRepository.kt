@@ -417,6 +417,16 @@ object StreamLinkDataRepository : LinkRepository {
                 imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
                 avType = AVType.VIDEO,
             ),
+            SourceWrapper(
+                title = "Live Regio content: LI_REGIO_NHTV",
+                testingDescription = "Playback Live DVR (No-DRM)",
+                uniqueId = "LI_REGIO_NHTV",
+                getStreamLink = true,
+                imageUrl = "https://images.seeklogo.com/logo-png/48/1/nh-nieuws-logo-png_seeklogo-485183.png",
+                preferThisImageUrlOverStreamLink = true,
+                avType = AVType.VIDEO,
+                isLive = true,
+            ),
         )
     }
 
