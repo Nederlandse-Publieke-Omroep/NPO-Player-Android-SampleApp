@@ -23,6 +23,7 @@ import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOBufferConfig
+import nl.npo.player.library.domain.player.model.NPORepeatMode
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.preload.NPOPreloadManager
 import nl.npo.player.library.domain.player.preload.play
@@ -148,6 +149,7 @@ class ShortsViewModel
                                     }
                                 }
                             }
+                            player.setRepeatMode(NPORepeatMode.ONE)
                         },
                 )
             }
