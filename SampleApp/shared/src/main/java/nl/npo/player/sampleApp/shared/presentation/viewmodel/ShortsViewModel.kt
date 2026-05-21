@@ -10,9 +10,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.npo.player.library.NPOPlayerLibrary
@@ -33,7 +35,9 @@ import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
-import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
+import nl.npo.player.sampleApp.shared.domain.annotation.ACCShortsStreamLinkRepository
+import nl.npo.player.sampleApp.shared.domain.annotation.ShortsStreamLinkRepository
+import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.domain.model.StreamInfoResult
 import nl.npo.player.sampleApp.shared.domain.model.UserType
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
@@ -43,7 +47,8 @@ import javax.inject.Inject
 class ShortsViewModel
     @Inject
     constructor(
-        @StreamLinkRepository private val streamLinkRepository: LinkRepository,
+        @ShortsStreamLinkRepository private val prodShortsStreamLinkRepository: LinkRepository,
+        @ACCShortsStreamLinkRepository private val accShortsStreamLinkRepository: LinkRepository,
         private val tokenProvider: TokenProvider,
         private val settingsRepository: SettingsRepository,
     ) : ViewModel() {
@@ -54,7 +59,7 @@ class ShortsViewModel
         private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
         private var currentPreloadManager: NPOPreloadManager? = null
-        val preloadManager: Flow<NPOPreloadManager?> =
+        private val preloadManager: Flow<NPOPreloadManager?> =
             combine(
                 player,
                 sourceConfig.asFlow(),
@@ -63,19 +68,16 @@ class ShortsViewModel
                 val oldPreloadManager = currentPreloadManager
                 return@combine if (usePreLoadManager && npoPlayer != null) {
                     if (oldPreloadManager != null) {
-                        val sourceWrapperListSize = mutableSourceWrapperList.value?.size ?: 0
                         npoSourceConfigList
                             .subList(
-                                npoSourceConfigList.size - sourceWrapperListSize,
+                                npoSourceConfigList.size - sizeOfValidSourceConfigs,
                                 npoSourceConfigList.size,
                             ).forEachIndexed { index, config ->
                                 oldPreloadManager.addSource(
                                     config,
-                                    index + npoSourceConfigList.size - sourceWrapperListSize,
+                                    index + npoSourceConfigList.size - sizeOfValidSourceConfigs,
                                 )
                             }
-
-                        currentPreloadManager = oldPreloadManager
                         oldPreloadManager
                     } else {
                         val loader = NPOPlayerLibrary.getPreloadManager()
@@ -88,16 +90,18 @@ class ShortsViewModel
                     currentPreloadManager = null
                     null
                 }
-            }
+            }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+        private var sizeOfValidSourceConfigs = 0
 
         init {
             viewModelScope.launch {
                 mutableSourceWrapperList.asFlow().collect { list ->
                     val mutableList = list.toMutableList()
                     mutableSourceConfig.postValue(
-                        mutableList.mapNotNull { sourceWrapper ->
-                            fetchSourceConfig(sourceWrapper)
-                        },
+                        mutableList
+                            .mapNotNull { sourceWrapper ->
+                                fetchSourceConfig(sourceWrapper)
+                            }.also { sizeOfValidSourceConfigs = it.size },
                     )
                 }
             }
@@ -174,8 +178,8 @@ class ShortsViewModel
         private fun extendSourceConfigListIfNeeded(index: Int) {
             val sourceConfigList = mutableSourceConfig.value
             if (sourceConfigList != null && index + 2 >= sourceConfigList.size) {
-                val sourceWrapperListSize = mutableSourceWrapperList.value?.size ?: return
-                val subList = sourceConfigList.subList(0, sourceWrapperListSize)
+                if (sizeOfValidSourceConfigs == 0) return
+                val subList = sourceConfigList.subList(0, sizeOfValidSourceConfigs)
                 val mutableSourceConfigList = sourceConfigList.toMutableList()
                 mutableSourceConfigList.addAll(subList)
                 mutableSourceConfig.postValue(mutableSourceConfigList.toList())
@@ -184,7 +188,13 @@ class ShortsViewModel
 
         private fun getStreamLinkListItems() =
             viewModelScope.launch {
-                mutableSourceWrapperList.postValue(streamLinkRepository.getSourceList().filter { it.isShort && it.getStreamLink })
+                val sourceList =
+                    if (settingsRepository.environment.first() == Environment.Acceptance) {
+                        accShortsStreamLinkRepository.getSourceList()
+                    } else {
+                        prodShortsStreamLinkRepository.getSourceList()
+                    }
+                mutableSourceWrapperList.postValue(sourceList.filter { it.isShort && it.getStreamLink })
             }
 
         private suspend fun createToken(
