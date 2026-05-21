@@ -150,6 +150,7 @@ fun Context.startPlayerActivity(wrapper: SourceWrapper) {
                     wrapper.copy(
                         npoOfflineContent = null,
                         npoSourceConfig = wrapper.npoOfflineContent?.getOfflineSource() ?: wrapper.npoSourceConfig,
+                        overrideNicamContentDescription = wrapper.overrideNicamContentDescription
                     ),
             ),
         ),

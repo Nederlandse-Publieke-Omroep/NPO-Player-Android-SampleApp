@@ -111,16 +111,15 @@ constructor(
                         id = id,
                         sourceWrapper = sourceWrapper,
                     )
-                    offlineContent.startDownload()
+                    offlineContent.startOrResumeDownload()
                 }
-
                 is NPODownloadState.Paused -> {
-                    offlineContent.resumeDownload()
+                    offlineContent.startOrResumeDownload()
                 }
 
-                    is NPODownloadState.InProgress -> {
-                        offlineContent.startOrResumeDownload()
-                    }
+                is NPODownloadState.InProgress -> {
+                    offlineContent.pause()
+                }
 
                 is NPODownloadState.Deleting -> {
                     onClick(
@@ -130,8 +129,7 @@ constructor(
                         ),
                     )
                 }
-
-                NPODownloadState.Initializing -> {}
+                else -> NPODownloadState.Initializing
             }
         } else {
             createOfflineContent(

@@ -25,10 +25,12 @@ import nl.npo.player.library.domain.offline.models.NPODownloadState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(UnstableApi::class)
 @Composable

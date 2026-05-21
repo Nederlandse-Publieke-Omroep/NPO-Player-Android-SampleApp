@@ -184,6 +184,10 @@ object StreamLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
                 avType = AVType.VIDEO,
+                overrideNicamContentDescription = MyNicamContentDescription(
+                    ageRating = Nicam.Age.AGE_ALL,
+                    warnings = listOf(Nicam.Warning.UNRATED),
+                )
             ),
             SourceWrapper(
                 title = "Nederland Zingt: VPWON_1336246",
@@ -194,7 +198,7 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
                 overrideNicamContentDescription =
                     MyNicamContentDescription(
-                        ageRating = Nicam.Age.AGE_TOUS,
+                        ageRating = Nicam.Age.AGE_ALL,
                         warnings = listOf(Nicam.Warning.UNRATED),
                     ),
             ),
