@@ -54,17 +54,6 @@ object ShortsStreamLinkDataRepository : LinkRepository {
                 isShort = true,
             ),
             SourceWrapper(
-                title = "new short 2",
-                testingDescription = "WO_NPO_20342786",
-                uniqueId = "WO_NPO_20342786",
-                getStreamLink = true,
-                startOffset = 20.0,
-                offlineDownloadAllowed = false,
-                imageUrl = "https://images.poms.omroep.nl/image/s512/2276727",
-                avType = AVType.VIDEO,
-                isShort = true,
-            ),
-            SourceWrapper(
                 title = "new short 3",
                 testingDescription = "WO_NPO_20342785",
                 uniqueId = "WO_NPO_20342785",
