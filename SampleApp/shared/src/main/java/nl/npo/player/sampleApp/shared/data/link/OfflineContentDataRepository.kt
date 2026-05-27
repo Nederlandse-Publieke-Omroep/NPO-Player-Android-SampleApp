@@ -2,7 +2,6 @@ package nl.npo.player.sampleApp.shared.data.link
 
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.exception.NPOPlayerException
@@ -36,7 +35,7 @@ class OfflineContentDataRepository
                     imageUrl = offlineContent.getOfflineSource()?.imageUrl ?: offlineContent.getOfflineSource()?.imageUrl,
                     npoOfflineContent = offlineContent,
                 )
-            }
+        }
 
         @Throws(NPOOfflineContentException::class)
         override suspend fun createOfflineContent(sourceWrapper: SourceWrapper): NPOOfflineContent {
@@ -85,7 +84,6 @@ class OfflineContentDataRepository
         private fun NPOSourceConfig.getDownloadNotAllowedReason(): String =
             when {
                 isLiveStream == true -> "A live stream can't be downloaded"
-//                avType == AVType.VIDEO -> "(NPO StreamLink) Video's aren't allowed to be downloaded"
                 else -> "Unknown reason"
             }
     }

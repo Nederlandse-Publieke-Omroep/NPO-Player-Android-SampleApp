@@ -18,38 +18,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(UnstableApi::class)
 @Composable
 fun ProgressActionIcon(
-    downloadState: StateFlow<NPODownloadState>?,
+    downloadState: NPODownloadState?,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val state by downloadState
-        ?.collectAsStateWithLifecycle()
-        ?: remember {
-            mutableStateOf<NPODownloadState>(NPODownloadState.Initializing)
-        }
 
     Box(
         modifier = modifier.size(32.dp),
         contentAlignment = Alignment.Center,
     ) {
-        when (val s = state) {
+        when (val s = downloadState) {
             is NPODownloadState.InProgress -> {
                     CircularProgressIndicator(
                         progress = { s.progress / 100f },
@@ -57,15 +44,15 @@ fun ProgressActionIcon(
                         modifier = Modifier.size(24.dp),)
             } else -> {
                 IconButton(onClick = onClick) {
-                    val icon =
-                        when (state) {
-                            NPODownloadState.Deleting -> Icons.Default.Delete
-                            is NPODownloadState.Failed -> Icons.Default.Error
-                            NPODownloadState.Finished -> Icons.Default.PlayArrow
-                            NPODownloadState.Initializing -> Icons.Default.Download
-                            is NPODownloadState.Paused -> Icons.Default.Pause
-                            is NPODownloadState.InProgress -> error("handled above")
-                        }
+                    val icon: ImageVector = when (downloadState) {
+                        NPODownloadState.Deleting -> Icons.Default.Delete
+                        is NPODownloadState.Failed -> Icons.Default.Error
+                        NPODownloadState.Finished -> Icons.Default.PlayArrow
+                        NPODownloadState.Initializing -> Icons.Default.Download
+                        is NPODownloadState.Paused -> Icons.Default.Pause
+                        is NPODownloadState.InProgress -> error("handled above")
+                        null -> Icons.Default.Download
+                    }
                     Icon(icon, contentDescription = null, tint = Color.White)
                 }
             }
@@ -81,7 +68,7 @@ fun PreviewIcon() {
             value = NPODownloadState.InProgress(0.5f)
         }
     ProgressActionIcon(
-        downloadState = downloadState,
+        downloadState = downloadState.collectAsState().value,
         onClick = {},
     )
 }

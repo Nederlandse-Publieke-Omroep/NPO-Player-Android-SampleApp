@@ -32,7 +32,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
@@ -109,8 +108,19 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     items = mergedList,
                     key = { index, item -> "offline_${item.uniqueId}_$index" },
                 ) { _, item ->
-                    val downloadState = item.npoOfflineContent?.downloadState
+                    val state by item.npoOfflineContent
+                        ?.downloadState
+                        ?.collectAsStateWithLifecycle()
+                        ?: remember {
+                            mutableStateOf<NPODownloadState?>(null)
+                        }
 
+                    LaunchedEffect(item.uniqueId, state) {
+                        Log.d(
+                            "DownloadUI",
+                            "item=${item.uniqueId}, nOfflineContent=${item.npoOfflineContent != null}, downloadState=${state != null}"
+                        )
+                    }
                     // Compose
                     ContentCard(
                         image = item.imageUrl,
@@ -130,7 +140,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         trailingContent = { onAction ->
 
                             ProgressActionIcon(
-                                downloadState = downloadState,
+                                downloadState = state,
                                 onClick = onAction,
                             )
                         },
