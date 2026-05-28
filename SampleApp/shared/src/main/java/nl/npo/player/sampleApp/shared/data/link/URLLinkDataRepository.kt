@@ -12,6 +12,17 @@ object URLLinkDataRepository : LinkRepository {
     private val urlLinkSourceList: List<SourceWrapper> by lazy {
         listOf(
             SourceWrapper(
+                title = "Transcoding test video UHD",
+                testingDescription = "UHD Dash",
+                streamUrl =
+                    "https://acc-npo-ams2-orig1-egress.hystream.io/package/clear/2026/05/NPO_TEST_VID_UHD/" +
+                        "8a7b14e9-6850-4b0e-a278-a475a5a6f7d3/8a7b14e9-6850-4b0e-a278-a475a5a6f7d3/dash.mpd",
+                uniqueId = "TC-Vid-UHD-Dash.mpd",
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "Audiodescriptie test stream",
                 streamUrl = "https://dev-tommie.cdn.streamgate.nl/video/npo/dering/thering.ism/.mpd",
                 uniqueId = "dev-tommie-ad.mpd",

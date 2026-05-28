@@ -47,6 +47,7 @@ class SettingsPreferences
             val ageProfile = intPreferencesKey("ageProfile")
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
+            val preloadManagerShorts = booleanPreferencesKey("preLoadManagerShorts")
         }
 
         val useExoplayer: Flow<Boolean>
@@ -252,6 +253,18 @@ class SettingsPreferences
         suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean) {
             dataStore.edit { prefs ->
                 prefs[Keys.chapterSkippingAlwaysFeatured] = enabled
+            }
+        }
+
+        val usePreLoadManagerShorts: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.preloadManagerShorts] ?: defaultSettings.preloadManagerShorts
+                }
+
+        suspend fun setUsePreLoadManagerShorts(usePreloadManager: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.preloadManagerShorts] = usePreloadManager
             }
         }
     }

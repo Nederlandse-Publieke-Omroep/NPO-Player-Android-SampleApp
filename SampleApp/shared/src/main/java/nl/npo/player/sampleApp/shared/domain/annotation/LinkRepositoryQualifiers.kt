@@ -13,3 +13,11 @@ annotation class URLLinkRepository
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class OfflineLinkRepository
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ShortsStreamLinkRepository
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ACCShortsStreamLinkRepository

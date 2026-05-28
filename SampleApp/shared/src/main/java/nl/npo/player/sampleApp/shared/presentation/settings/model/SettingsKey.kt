@@ -17,4 +17,5 @@ enum class SettingsKey {
     AgeProfile,
     ChapterSkippingEnabled,
     ChapterSkippingAlwaysFeatured,
+    PreloadManagerShorts,
 }

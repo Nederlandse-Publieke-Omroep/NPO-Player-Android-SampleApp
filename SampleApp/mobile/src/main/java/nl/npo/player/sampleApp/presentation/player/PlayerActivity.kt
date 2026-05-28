@@ -259,7 +259,7 @@ class PlayerActivity : BaseActivity() {
                                 NOTIFICATION_ID,
                             )
                             attachToLifecycle(lifecycle)
-                            changePageTracker(this, title.orEmpty())
+                            changePageTracker(this, title)
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
                                 when (action) {
@@ -331,7 +331,7 @@ class PlayerActivity : BaseActivity() {
         } else {
             val player = player ?: return
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
-            changePageTracker(player, title ?: "")
+            changePageTracker(player, title)
         }
 
         when {

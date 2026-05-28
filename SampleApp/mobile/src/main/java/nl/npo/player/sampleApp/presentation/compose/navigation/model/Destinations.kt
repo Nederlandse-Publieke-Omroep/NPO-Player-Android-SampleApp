@@ -8,4 +8,7 @@ sealed interface Destinations {
 
     @Serializable
     data object OfflineList : Destinations
+
+    @Serializable
+    data object Preload : Destinations
 }

@@ -378,18 +378,22 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "WO_ZAPP_20338724",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2276727",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "short 2",
-                testingDescription = "WO_ZAPP_20338725",
+                testingDescription = "WO_ZAPP_20338725 - 20 seconds startOffset",
                 uniqueId = "WO_ZAPP_20338725",
                 getStreamLink = true,
+                startOffset = 20.0,
                 offlineDownloadAllowed = false,
                 preferThisImageUrlOverStreamLink = true,
                 imageUrl = "https://images.poms.omroep.nl/image/s512/2299180",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "short 3",
@@ -397,10 +401,12 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "WO_ZAPP_20338667",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
                 imageUrl =
                     "https://assets.production.zapp.nl/attachments/series/000/002/060/" +
                         "cover/Recordbrekers_2026_NPO_Zapp.jpg?1761818775",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "Ffukkie slim - Jarig",
@@ -410,6 +416,16 @@ object StreamLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = false,
                 imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
                 avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "Live Regio content: LI_REGIO_NHTV",
+                testingDescription = "Playback Live DVR (No-DRM)",
+                uniqueId = "LI_REGIO_NHTV",
+                getStreamLink = true,
+                imageUrl = "https://images.seeklogo.com/logo-png/48/1/nh-nieuws-logo-png_seeklogo-485183.png",
+                preferThisImageUrlOverStreamLink = true,
+                avType = AVType.VIDEO,
+                isLive = true,
             ),
         )
     }
