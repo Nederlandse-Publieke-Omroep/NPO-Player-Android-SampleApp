@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
@@ -42,6 +44,7 @@ import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
+import kotlin.coroutines.coroutineContext
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
@@ -51,7 +54,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     val mergedList by viewModel.mergedSourceList.collectAsState()
     val context = LocalContext.current
     val downloadEvent by viewModel.downloadEvent.collectAsState()
-
+    val scope = rememberCoroutineScope()
 
     when (downloadEvent) {
         is DownloadEvent.Error -> {
@@ -130,7 +133,9 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                             viewModel.onItemClicked(
                                 sourceWrapper = item,
                                 id = item.uniqueId,
-                                onClick = { context.startPlayerActivity(item) },
+                                onClick = {
+                                   scope.launch { context.startPlayerActivity(item) }
+                                     },
                                 error = {
                                     Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                                 },
@@ -151,7 +156,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     }
 }
 
-fun Context.startPlayerActivity(wrapper: SourceWrapper) {
+suspend fun Context.startPlayerActivity(wrapper: SourceWrapper) {
     startActivity(
         Intent(
             PlayerActivity.getStartIntent(

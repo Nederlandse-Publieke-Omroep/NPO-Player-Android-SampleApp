@@ -81,12 +81,7 @@
 
         <service android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService"
             android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true"/>
-
-<!--        <service-->
-<!--            android:name=".presentation.model.AppDownloadService"-->
-<!--            android:foregroundServiceType="dataSync" />-->
-
+            android:exported="false"/>
 
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"

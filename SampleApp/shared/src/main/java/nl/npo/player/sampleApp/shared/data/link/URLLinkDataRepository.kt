@@ -151,6 +151,15 @@ object URLLinkDataRepository : LinkRepository {
                 avType = AVType.AUDIO,
                 isLive = false,
             ),
+
+            SourceWrapper(
+                title = "Test EZDRM dash",
+                testingDescription = "EZDRM 1 dash",
+                uniqueId = "LI_TEST_EZDRM_1",
+                getStreamLink = true,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+            )
         )
     }
 

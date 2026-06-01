@@ -434,7 +434,8 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 avType = AVType.VIDEO,
-            ),
+            )
+
         )
     }
 
