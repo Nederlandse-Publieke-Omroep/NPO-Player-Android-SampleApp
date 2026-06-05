@@ -44,7 +44,6 @@ import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
-import kotlin.coroutines.coroutineContext
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
@@ -80,7 +79,8 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                 onDismiss = viewModel::dismissDownloadEventDialog,
             )
         }
-        else -> { }
+
+        else -> {}
     }
 
     Column(
@@ -121,7 +121,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     LaunchedEffect(item.uniqueId, state) {
                         Log.d(
                             "DownloadUI",
-                            "item=${item.uniqueId}, nOfflineContent=${item.npoOfflineContent != null}, downloadState=${state != null}"
+                            "item=${item.uniqueId}, nOfflineContent=${item.npoOfflineContent != null}, downloadState=${state != null}",
                         )
                     }
                     // Compose
@@ -134,8 +134,8 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                 sourceWrapper = item,
                                 id = item.uniqueId,
                                 onClick = {
-                                   scope.launch { context.startPlayerActivity(item) }
-                                     },
+                                    scope.launch { context.startPlayerActivity(item) }
+                                },
                                 error = {
                                     Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                                 },
@@ -164,8 +164,9 @@ suspend fun Context.startPlayerActivity(wrapper: SourceWrapper) {
                 sourceWrapper =
                     wrapper.copy(
                         npoOfflineContent = null,
-                        npoSourceConfig = wrapper.npoOfflineContent?.getOfflineSource() ?: wrapper.npoSourceConfig,
-                        overrideNicamContentDescription = wrapper.overrideNicamContentDescription
+                        npoSourceConfig =
+                            wrapper.npoOfflineContent?.getOfflineSource()
+                                ?: wrapper.npoSourceConfig,
                     ),
             ),
         ),

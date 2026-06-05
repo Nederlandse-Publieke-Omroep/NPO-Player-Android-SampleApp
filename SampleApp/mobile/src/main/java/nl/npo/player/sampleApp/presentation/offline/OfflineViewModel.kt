@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
@@ -193,7 +194,12 @@ constructor(
         errorCallback: (Throwable) -> Unit,
     ) {
         viewModelScope.launch {
-            val offlineContent = offlineLinkRepository.createOfflineContent(sourceWrapper)
+            val offlineContent = try {
+                offlineLinkRepository.createOfflineContent(sourceWrapper)
+            } catch (e: NPOOfflineContentException){
+                errorCallback(e)
+                return@launch
+            }
             val existingItem = mutableOfflineLinkList.value.firstOrNull {
                 it.uniqueId == sourceWrapper.uniqueId
             }
