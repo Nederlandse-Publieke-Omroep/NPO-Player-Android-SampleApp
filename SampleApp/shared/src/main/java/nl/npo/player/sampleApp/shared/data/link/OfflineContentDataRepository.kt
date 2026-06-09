@@ -32,10 +32,12 @@ class OfflineContentDataRepository
                     uniqueId = offlineContent.uniqueId,
                     getStreamLink = false,
                     title = offlineContent.getOriginalSource().title ?: offlineContent.uniqueId,
-                    imageUrl = offlineContent.getOfflineSource()?.imageUrl ?: offlineContent.getOfflineSource()?.imageUrl,
+                    imageUrl =
+                        offlineContent.getOfflineSource()?.imageUrl
+                            ?: offlineContent.getOfflineSource()?.imageUrl,
                     npoOfflineContent = offlineContent,
                 )
-        }
+            }
 
         @Throws(NPOOfflineContentException::class)
         override suspend fun createOfflineContent(sourceWrapper: SourceWrapper): NPOOfflineContent {
@@ -61,10 +63,12 @@ class OfflineContentDataRepository
                             }
                         }
 
-                        is StreamInfoResult.Error -> throw NPOOfflineContentException.IOException(
-                            "JWT retrieval failed",
-                            cause = result.exception,
-                        )
+                        is StreamInfoResult.Error -> {
+                            throw NPOOfflineContentException.IOException(
+                                "JWT retrieval failed",
+                                cause = result.exception,
+                            )
+                        }
                     }
                 }
             if (npoSource.isDownloadDisallowed()) {
@@ -79,7 +83,7 @@ class OfflineContentDataRepository
             npoOfflineContent.delete()
         }
 
-        private fun NPOSourceConfig.isDownloadDisallowed(): Boolean = (isLiveStream == true )
+        private fun NPOSourceConfig.isDownloadDisallowed(): Boolean = (isLiveStream == true)
 
         private fun NPOSourceConfig.getDownloadNotAllowedReason(): String =
             when {

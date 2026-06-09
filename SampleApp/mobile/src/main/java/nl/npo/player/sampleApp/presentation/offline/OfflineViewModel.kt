@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
@@ -22,233 +25,248 @@ import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.URLLinkRepository
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class OfflineViewModel
-@UnstableApi
-@Inject
-constructor(
-    @StreamLinkRepository private val streamLinkRepository: LinkRepository,
-    @URLLinkRepository private val urlLinkRepository: LinkRepository,
-    @OfflineLinkRepository private val offlineLinkRepository: LinkRepository.OfflineLinkRepository,
-) : ViewModel() {
-    private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
-    val downloadEvent = _downloadEvent
-    private val mutableOfflineLinkList = MutableStateFlow<List<SourceWrapper>>(emptyList())
-    private val streamLinkList =
-        flow {
-            emit(streamLinkRepository.getSourceList())
-        }
-    private val urlLinkList =
-        flow {
-            emit(urlLinkRepository.getSourceList())
-        }
+    @UnstableApi
+    @Inject
+    constructor(
+        @StreamLinkRepository private val streamLinkRepository: LinkRepository,
+        @URLLinkRepository private val urlLinkRepository: LinkRepository,
+        @OfflineLinkRepository private val offlineLinkRepository: LinkRepository.OfflineLinkRepository,
+    ) : ViewModel() {
+        private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
+        val downloadEvent = _downloadEvent
+        private val mutableOfflineLinkList = MutableStateFlow<List<SourceWrapper>>(emptyList())
+        private val streamLinkList =
+            flow {
+                emit(streamLinkRepository.getSourceList())
+            }
+        private val urlLinkList =
+            flow {
+                emit(urlLinkRepository.getSourceList())
+            }
 
-    val mergedSourceList =
-        combine(
-            streamLinkList,
-            urlLinkList,
-            mutableOfflineLinkList,
-            ::mergeList,
-        ).stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            emptyList(),
-        )
+        val mergedSourceList =
+            combine(
+                streamLinkList,
+                urlLinkList,
+                mutableOfflineLinkList,
+                ::mergeList,
+            ).stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5_000),
+                emptyList(),
+            )
+        private val _legacyOfflineContentList = MutableStateFlow<List<NPOOfflineContent>>(emptyList())
+        val legacyOfflineContentList: StateFlow<List<NPOOfflineContent>> = _legacyOfflineContentList
 
-    @OptIn(UnstableApi::class)
-    fun mergeList(
-        streamLinkList: List<SourceWrapper>,
-        urlLinkList: List<SourceWrapper>,
-        offlineLinkList: List<SourceWrapper>,
+        @OptIn(UnstableApi::class)
+        fun mergeList(
+            streamLinkList: List<SourceWrapper>,
+            urlLinkList: List<SourceWrapper>,
+            offlineLinkList: List<SourceWrapper>,
         ): List<SourceWrapper> {
-        val offlineById = offlineLinkList.associateBy { it.uniqueId }
-        return urlLinkList
-            .union(streamLinkList)
-            .filter { it.offlineDownloadAllowed }
-            .map { source ->
-                val offlineSource = offlineById[source.uniqueId]
-                val mergedSource = source.copy(
-                    npoOfflineContent = offlineSource?.npoOfflineContent,
-                    )
-                Log.d(
-                    "OFFLINECONTENT",
-                    "mergeList: uniqueId=${source.uniqueId}, " +
+            val offlineById = offlineLinkList.associateBy { it.uniqueId }
+            return urlLinkList
+                .union(streamLinkList)
+                .filter { it.offlineDownloadAllowed }
+                .map { source ->
+                    val offlineSource = offlineById[source.uniqueId]
+                    val mergedSource =
+                        source.copy(
+                            npoOfflineContent = offlineSource?.npoOfflineContent,
+                        )
+                    Log.d(
+                        "OFFLINECONTENT",
+                        "mergeList: uniqueId=${source.uniqueId}, " +
                             "hasOfflineContent=${mergedSource.npoOfflineContent != null}, " +
                             "state=${mergedSource.npoOfflineContent?.downloadState?.value}",
                     )
-                mergedSource
-            }
-    }
+                    mergedSource
+                }
+        }
 
-    init {
-
-        viewModelScope.launch {
+        init {
+            viewModelScope.launch {
                 getOfflineLinkListItems()
-
+                _legacyOfflineContentList.tryEmit(NPOPlayerLibrary.Offline.getAllLegacyOfflineContent())
+            }
         }
 
-    }
-
-    @OptIn(UnstableApi::class)
-    fun onItemClicked(
-        sourceWrapper: SourceWrapper,
-        id: String,
-        onClick: (DownloadEvent) -> Unit,
-        error: (Throwable) -> Unit,
-    ) {
-        val offlineContent = sourceWrapper.npoOfflineContent
-        if (offlineContent == null) {
-            createOfflineContent(
-                sourceWrapper,
-                onCreated = { createdContent ->
-                    createdContent.startOrResumeDownload()
-                },
+        @OptIn(UnstableApi::class)
+        fun onItemClicked(
+            sourceWrapper: SourceWrapper,
+            id: String,
+            onClick: (DownloadEvent) -> Unit,
+            error: (Throwable) -> Unit,
+        ) {
+            val offlineContent = sourceWrapper.npoOfflineContent
+            if (offlineContent == null) {
+                createOfflineContent(
+                    sourceWrapper,
+                    onCreated = { createdContent ->
+                        createdContent.startOrResumeDownload()
+                    },
                 ) { throwable ->
-                error(throwable)
+                    error(throwable)
+                }
+                return
             }
-            return
-        }
 
-        if (sourceWrapper.uniqueId != id) return
+            if (sourceWrapper.uniqueId != id) return
 
-        when (val downloadState = offlineContent.downloadState.value) {
-
-            NPODownloadState.Finished -> {
-                onClick(
-                    DownloadEvent.Request(
-                        itemId = sourceWrapper.uniqueId,
-                        wrapper = sourceWrapper),
+            when (val downloadState = offlineContent.downloadState.value) {
+                NPODownloadState.Finished -> {
+                    onClick(
+                        DownloadEvent.Request(
+                            itemId = sourceWrapper.uniqueId,
+                            wrapper = sourceWrapper,
+                        ),
                     )
-            }
-
-            is NPODownloadState.Failed -> {
-                handleDownloadState(
-                    state = downloadState,
-                    id = id,
-                    sourceWrapper = sourceWrapper
-                )
-                offlineContent.startOrResumeDownload()
-            }
-
-            is NPODownloadState.Paused -> {
-                offlineContent.startOrResumeDownload()
-            }
-
-            is NPODownloadState.InProgress -> {
-                offlineContent.pause()
-            }
-
-            is NPODownloadState.Deleting -> {
-                onClick(
-                    DownloadEvent.Delete(
-                        sourceWrapper.uniqueId,
-                        sourceWrapper),
-                    )
-                offlineContent.delete()
-            }
-            else -> {
-                offlineContent.startOrResumeDownload()
-
-            }
-        }
-    }
-
-    private fun handleDownloadState(
-        state: NPODownloadState.Failed,
-        id: String,
-        sourceWrapper: SourceWrapper,
-    ) {
-        if (sourceWrapper.uniqueId == id) {
-            _downloadEvent.value =
-                DownloadEvent.Error(
-                    itemId = id,
-                    message = state.reason.message ?: "Download failed",
-                )
-        }
-    }
-
-    fun deleteDownloadedItem(
-        id: String,
-        sourceWrapper: SourceWrapper,
-    ) {
-
-        if (sourceWrapper.uniqueId == id) {
-            _downloadEvent.value = DownloadEvent.Delete(id, sourceWrapper = sourceWrapper)
-        }
-    }
-
-    fun dismissDownloadEventDialog() {
-        _downloadEvent.value = DownloadEvent.None
-    }
-
-    override fun onCleared() {
-        mutableOfflineLinkList.value.forEach { it.npoOfflineContent?.release() }
-        super.onCleared()
-    }
-
-    @OptIn(UnstableApi::class)
-    fun createOfflineContent(
-        sourceWrapper: SourceWrapper,
-        onCreated: (NPOOfflineContent) -> Unit = {},
-        errorCallback: (Throwable) -> Unit,
-    ) {
-        viewModelScope.launch {
-            val offlineContent = try {
-                offlineLinkRepository.createOfflineContent(sourceWrapper)
-            } catch (e: NPOOfflineContentException){
-                errorCallback(e)
-                return@launch
-            }
-            val existingItem = mutableOfflineLinkList.value.firstOrNull {
-                it.uniqueId == sourceWrapper.uniqueId
-            }
-            if (existingItem?.npoOfflineContent != null) {
-                errorCallback(Exception("Offline content already exists"))
-                onCreated(offlineContent)
-                return@launch
-            }
-
-            mutableOfflineLinkList.value =
-                mutableOfflineLinkList.value.map { item ->
-                    if (item.uniqueId == sourceWrapper.uniqueId) {
-                        item.copy(npoOfflineContent = offlineContent)
-                    } else {
-                        item
-                    }
-                }.let { updated ->
-                    if (updated.any { it.uniqueId == sourceWrapper.uniqueId }) {
-                        updated
-                    } else {
-                        updated + sourceWrapper.copy(npoOfflineContent = offlineContent)
-                    }
                 }
 
-            onCreated(offlineContent)
+                is NPODownloadState.Failed -> {
+                    handleDownloadState(
+                        state = downloadState,
+                        id = id,
+                        sourceWrapper = sourceWrapper,
+                    )
+                    offlineContent.startOrResumeDownload()
+                }
 
+                is NPODownloadState.Paused -> {
+                    offlineContent.startOrResumeDownload()
+                }
+
+                is NPODownloadState.InProgress -> {
+                    offlineContent.pause()
+                }
+
+                is NPODownloadState.Deleting -> {
+                    onClick(
+                        DownloadEvent.Delete(
+                            sourceWrapper.uniqueId,
+                            sourceWrapper,
+                        ),
+                    )
+                    offlineContent.delete()
+                }
+
+                else -> {
+                    offlineContent.startOrResumeDownload()
+                }
+            }
         }
-    }
 
-    fun deleteOfflineContent(sourceWrapper: SourceWrapper) {
+        private fun handleDownloadState(
+            state: NPODownloadState.Failed,
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                _downloadEvent.value =
+                    DownloadEvent.Error(
+                        itemId = id,
+                        message = state.reason.message ?: "Download failed",
+                    )
+            }
+        }
 
-        val offlineContent = sourceWrapper.npoOfflineContent ?: return
+        fun deleteDownloadedItem(
+            id: String,
+            sourceWrapper: SourceWrapper,
+        ) {
+            if (sourceWrapper.uniqueId == id) {
+                _downloadEvent.value = DownloadEvent.Delete(id, sourceWrapper = sourceWrapper)
+            }
+        }
 
-        viewModelScope.launch {
-            offlineLinkRepository.deleteOfflineContent(offlineContent)
+        fun dismissDownloadEventDialog() {
+            _downloadEvent.value = DownloadEvent.None
+        }
+
+        fun dismissLegacyDownloadDialog() {
+            _legacyOfflineContentList.tryEmit(emptyList())
+        }
+
+        fun refreshLegacyDownloadList() {
+            _legacyOfflineContentList.tryEmit(emptyList())
+            viewModelScope.launch {
+                delay(20.seconds)
+                _legacyOfflineContentList.tryEmit(NPOPlayerLibrary.Offline.getAllLegacyOfflineContent())
+            }
+        }
+
+        override fun onCleared() {
+            mutableOfflineLinkList.value.forEach { it.npoOfflineContent?.release() }
+            super.onCleared()
+        }
+
+        @OptIn(UnstableApi::class)
+        fun createOfflineContent(
+            sourceWrapper: SourceWrapper,
+            onCreated: (NPOOfflineContent) -> Unit = {},
+            errorCallback: (Throwable) -> Unit,
+        ) {
+            viewModelScope.launch {
+                val offlineContent =
+                    try {
+                        offlineLinkRepository.createOfflineContent(sourceWrapper)
+                    } catch (e: NPOOfflineContentException) {
+                        errorCallback(e)
+                        return@launch
+                    }
+                val existingItem =
+                    mutableOfflineLinkList.value.firstOrNull {
+                        it.uniqueId == sourceWrapper.uniqueId
+                    }
+                if (existingItem?.npoOfflineContent != null) {
+                    errorCallback(Exception("Offline content already exists"))
+                    onCreated(offlineContent)
+                    return@launch
+                }
+
                 mutableOfflineLinkList.value =
-                mutableOfflineLinkList.value.map { item ->
-                    if (item.uniqueId == sourceWrapper.uniqueId) {
-                        item.copy(npoOfflineContent = null)
-                    } else {
-                        item
-                    }
-                }
-            dismissDownloadEventDialog()
-        }
-    }
+                    mutableOfflineLinkList.value
+                        .map { item ->
+                            if (item.uniqueId == sourceWrapper.uniqueId) {
+                                item.copy(npoOfflineContent = offlineContent)
+                            } else {
+                                item
+                            }
+                        }.let { updated ->
+                            if (updated.any { it.uniqueId == sourceWrapper.uniqueId }) {
+                                updated
+                            } else {
+                                updated + sourceWrapper.copy(npoOfflineContent = offlineContent)
+                            }
+                        }
 
-    private fun getOfflineLinkListItems() =
-        viewModelScope.launch {
-            mutableOfflineLinkList.emit(offlineLinkRepository.getSourceList())
+                onCreated(offlineContent)
+            }
         }
-}
+
+        fun deleteOfflineContent(sourceWrapper: SourceWrapper) {
+            val offlineContent = sourceWrapper.npoOfflineContent ?: return
+
+            viewModelScope.launch {
+                offlineLinkRepository.deleteOfflineContent(offlineContent)
+                mutableOfflineLinkList.value =
+                    mutableOfflineLinkList.value.map { item ->
+                        if (item.uniqueId == sourceWrapper.uniqueId) {
+                            item.copy(npoOfflineContent = null)
+                        } else {
+                            item
+                        }
+                    }
+                dismissDownloadEventDialog()
+            }
+        }
+
+        private fun getOfflineLinkListItems() =
+            viewModelScope.launch {
+                mutableOfflineLinkList.emit(offlineLinkRepository.getSourceList())
+            }
+    }
