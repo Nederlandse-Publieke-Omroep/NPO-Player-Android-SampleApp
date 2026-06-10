@@ -17,4 +17,5 @@
     <string name="setting_age_profile">Age Profile</string>
     <string name="setting_chapter_skipping_enabled">Skipping chapters enabled</string>
     <string name="setting_chapter_skipping_always_featured">Chapter skipping always visible</string>
+    <string name="setting_use_preload_manager_shorts">Use Preload manager for Shorts</string>
 </resources>

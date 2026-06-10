@@ -184,11 +184,6 @@ object StreamLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = true,
                 imageUrl = "https://nederlandzingt-eo.cdn.eo.nl/w_1260/4ofj4w3bqf8w-feest.jpg",
                 avType = AVType.VIDEO,
-                overrideNicamContentDescription =
-                    MyNicamContentDescription(
-                        ageRating = Nicam.Age.AGE_ALL,
-                        warnings = listOf(Nicam.Warning.UNRATED),
-                    ),
             ),
             SourceWrapper(
                 title = "Nederland Zingt: VPWON_1336246",
@@ -199,7 +194,6 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
                 overrideNicamContentDescription =
                     MyNicamContentDescription(
-                        ageRating = Nicam.Age.AGE_ALL,
                         warnings = listOf(Nicam.Warning.UNRATED),
                     ),
             ),
@@ -379,33 +373,39 @@ object StreamLinkDataRepository : LinkRepository {
             ),
             SourceWrapper(
                 title = "short 1",
-                testingDescription = "WO_ZAPP_20324347",
-                uniqueId = "WO_ZAPP_20324347",
-                getStreamLink = true,
-                offlineDownloadAllowed = false,
-                imageUrl = "https://images.poms.omroep.nl/image/s512/2486139",
-                avType = AVType.VIDEO,
-            ),
-            SourceWrapper(
-                title = "short 2",
-                testingDescription = "WO_NPO_20330607",
-                uniqueId = "WO_NPO_20330607",
+                testingDescription = "WO_ZAPP_20338724",
+                uniqueId = "WO_ZAPP_20338724",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 preferThisImageUrlOverStreamLink = true,
-                imageUrl = "https://images.poms.omroep.nl/image/s460x260%5E/c460x260/2220054.jpg",
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2276727",
                 avType = AVType.VIDEO,
+                isShort = true,
+            ),
+            SourceWrapper(
+                title = "short 2",
+                testingDescription = "WO_ZAPP_20338725 - 20 seconds startOffset",
+                uniqueId = "WO_ZAPP_20338725",
+                getStreamLink = true,
+                startOffset = 20.0,
+                offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
+                imageUrl = "https://images.poms.omroep.nl/image/s512/2299180",
+                avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "short 3",
-                testingDescription = "WO_NPO_20324419",
-                uniqueId = "WO_NPO_20324419",
+                testingDescription = "WO_ZAPP_20338667",
+                uniqueId = "WO_ZAPP_20338667",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
+                preferThisImageUrlOverStreamLink = true,
                 imageUrl =
-                    "https://assets.production.zapp.nl/attachments/series/000/002/042/block/" +
-                        "Pestvlogs_S02E01_STILL010.png?1706264939",
+                    "https://assets.production.zapp.nl/attachments/series/000/002/060/" +
+                        "cover/Recordbrekers_2026_NPO_Zapp.jpg?1761818775",
                 avType = AVType.VIDEO,
+                isShort = true,
             ),
             SourceWrapper(
                 title = "Ffukkie slim - Jarig",
@@ -423,6 +423,16 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "Live Regio content: LI_REGIO_NHTV",
+                testingDescription = "Playback Live DVR (No-DRM)",
+                uniqueId = "LI_REGIO_NHTV",
+                getStreamLink = true,
+                imageUrl = "https://images.seeklogo.com/logo-png/48/1/nh-nieuws-logo-png_seeklogo-485183.png",
+                preferThisImageUrlOverStreamLink = true,
+                avType = AVType.VIDEO,
+                isLive = true,
             ),
         )
     }

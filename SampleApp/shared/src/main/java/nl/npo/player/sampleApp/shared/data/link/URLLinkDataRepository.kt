@@ -24,6 +24,17 @@ object URLLinkDataRepository : LinkRepository {
                 avType = AVType.AUDIO,
             ),
             SourceWrapper(
+                title = "Transcoding test video UHD",
+                testingDescription = "UHD Dash",
+                streamUrl =
+                    "https://acc-npo-ams2-orig1-egress.hystream.io/package/clear/2026/05/NPO_TEST_VID_UHD/" +
+                        "8a7b14e9-6850-4b0e-a278-a475a5a6f7d3/8a7b14e9-6850-4b0e-a278-a475a5a6f7d3/dash.mpd",
+                uniqueId = "TC-Vid-UHD-Dash.mpd",
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "Audiodescriptie test stream",
                 streamUrl = "https://dev-tommie.cdn.streamgate.nl/video/npo/dering/thering.ism/.mpd",
                 uniqueId = "dev-tommie-ad.mpd",
@@ -162,14 +173,6 @@ object URLLinkDataRepository : LinkRepository {
                         "31a2820a631bdea44fe6bdcfd054ec68/Radio-Veronica_Martijn-Muijs_1200x675.jpg?fit=thumb&w=774&h=465&fm=webp",
                 avType = AVType.AUDIO,
                 isLive = false,
-            ),
-            SourceWrapper(
-                title = "Test EZDRM dash",
-                testingDescription = "EZDRM 1 dash",
-                uniqueId = "LI_TEST_EZDRM_1",
-                getStreamLink = true,
-                offlineDownloadAllowed = true,
-                avType = AVType.VIDEO,
             ),
         )
     }

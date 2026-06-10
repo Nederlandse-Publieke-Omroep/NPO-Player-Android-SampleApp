@@ -103,6 +103,10 @@ class SettingsViewModel
                     settingsRepository.setChapterSkippingAlwaysFeatured(value)
                 }
 
+                SettingsKey.PreloadManagerShorts -> {
+                    settingsRepository.setUsePreloadManagerShorts(value)
+                }
+
                 SettingsKey.Styling,
                 SettingsKey.Environment,
                 SettingsKey.UserType,
@@ -258,6 +262,14 @@ class SettingsViewModel
                             SettingsKey.ChapterSkippingAlwaysFeatured,
                             R.string.setting_chapter_skipping_always_featured,
                             SettingsSwitchOption(settingsRepository.chapterSkippingAlwaysFeatured.first()),
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Switch(
+                            SettingsKey.PreloadManagerShorts,
+                            R.string.setting_use_preload_manager_shorts,
+                            SettingsSwitchOption(settingsRepository.usePreloadManagerShorts.first()),
                         ),
                     )
                 }

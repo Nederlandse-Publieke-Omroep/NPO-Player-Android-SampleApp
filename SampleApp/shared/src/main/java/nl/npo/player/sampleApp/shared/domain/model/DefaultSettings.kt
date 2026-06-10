@@ -30,4 +30,5 @@ data class DefaultSettings(
     val ageProfile: AgeProfileInt = 18,
     val chapterSkippingEnabled: Boolean = true,
     val chapterSkippingAlwaysFeatured: Boolean = false,
+    val preloadManagerShorts: Boolean = true,
 )

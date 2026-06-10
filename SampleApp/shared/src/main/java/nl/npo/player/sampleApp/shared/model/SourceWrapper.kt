@@ -35,6 +35,7 @@ data class SourceWrapper(
             null
         },
     val npoOfflineContent: NPOOfflineContent? = null,
+    val isShort: Boolean = false,
 ) : Serializable {
     override fun toString(): String = "$title - $uniqueId"
 }

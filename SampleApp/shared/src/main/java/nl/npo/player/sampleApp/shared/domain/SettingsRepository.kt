@@ -71,4 +71,8 @@ interface SettingsRepository {
     val chapterSkippingAlwaysFeatured: Flow<Boolean>
 
     suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean)
+
+    val usePreloadManagerShorts: Flow<Boolean>
+
+    suspend fun setUsePreloadManagerShorts(usePreloadManager: Boolean)
 }
