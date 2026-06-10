@@ -1,10 +1,9 @@
 package nl.npo.player.sampleApp.presentation.offline
 
-import androidx.annotation.OptIn
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.util.Log
-import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +18,7 @@ import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
+import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
@@ -29,7 +29,6 @@ import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class OfflineViewModel
-    @UnstableApi
     @Inject
     constructor(
         @StreamLinkRepository private val streamLinkRepository: LinkRepository,
@@ -62,7 +61,6 @@ class OfflineViewModel
         private val _legacyOfflineContentList = MutableStateFlow<List<NPOOfflineContent>>(emptyList())
         val legacyOfflineContentList: StateFlow<List<NPOOfflineContent>> = _legacyOfflineContentList
 
-        @OptIn(UnstableApi::class)
         fun mergeList(
             streamLinkList: List<SourceWrapper>,
             urlLinkList: List<SourceWrapper>,
@@ -74,17 +72,9 @@ class OfflineViewModel
                 .filter { it.offlineDownloadAllowed }
                 .map { source ->
                     val offlineSource = offlineById[source.uniqueId]
-                    val mergedSource =
-                        source.copy(
-                            npoOfflineContent = offlineSource?.npoOfflineContent,
-                        )
-                    Log.d(
-                        "OFFLINECONTENT",
-                        "mergeList: uniqueId=${source.uniqueId}, " +
-                            "hasOfflineContent=${mergedSource.npoOfflineContent != null}, " +
-                            "state=${mergedSource.npoOfflineContent?.downloadState?.value}",
+                    source.copy(
+                        npoOfflineContent = offlineSource?.npoOfflineContent,
                     )
-                    mergedSource
                 }
         }
 
@@ -95,7 +85,6 @@ class OfflineViewModel
             }
         }
 
-        @OptIn(UnstableApi::class)
         fun onItemClicked(
             sourceWrapper: SourceWrapper,
             id: String,
@@ -160,6 +149,22 @@ class OfflineViewModel
             }
         }
 
+        fun playOfflineContent(
+            wrapper: SourceWrapper,
+            context: Context,
+        ) {
+            viewModelScope.launch {
+                context.startPlayerActivity(
+                    wrapper.copy(
+                        npoOfflineContent = null,
+                        npoSourceConfig =
+                            wrapper.npoOfflineContent?.getOfflineSource()
+                                ?: wrapper.npoSourceConfig,
+                    ),
+                )
+            }
+        }
+
         private fun handleDownloadState(
             state: NPODownloadState.Failed,
             id: String,
@@ -204,7 +209,6 @@ class OfflineViewModel
             super.onCleared()
         }
 
-        @OptIn(UnstableApi::class)
         fun createOfflineContent(
             sourceWrapper: SourceWrapper,
             onCreated: (NPOOfflineContent) -> Unit = {},
@@ -270,3 +274,14 @@ class OfflineViewModel
                 mutableOfflineLinkList.emit(offlineLinkRepository.getSourceList())
             }
     }
+
+fun Context.startPlayerActivity(wrapper: SourceWrapper) {
+    startActivity(
+        Intent(
+            PlayerActivity.getStartIntent(
+                packageContext = this,
+                sourceWrapper = wrapper,
+            ),
+        ),
+    )
+}
