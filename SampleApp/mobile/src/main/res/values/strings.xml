@@ -18,6 +18,8 @@
     <string name="header_video">Video</string>
     <string name="delete_offline_confirmation">Are you sure you want to delete the offline content for "%1$s"?</string>
     <string name="delete_offline_title">"Delete offline content"</string>
+    <string name="delete_legacy_title">"Delete unsupported offline content"</string>
+    <string name="delete_legacy_body">"We detected unsupported (Bitmovin) offline items. They can't be played anymore. Delete them?"</string>
     <string name="offline_header">Offline</string>
 
     <!--    For testing S&A Audio Receiver-->

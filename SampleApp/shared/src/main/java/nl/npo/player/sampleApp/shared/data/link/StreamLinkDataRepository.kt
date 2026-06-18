@@ -194,7 +194,6 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
                 overrideNicamContentDescription =
                     MyNicamContentDescription(
-                        ageRating = Nicam.Age.AGE_TOUS,
                         warnings = listOf(Nicam.Warning.UNRATED),
                     ),
             ),
@@ -415,6 +414,14 @@ object StreamLinkDataRepository : LinkRepository {
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
                 imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
+                title = "Test EZDRM",
+                testingDescription = "EZDRM 1",
+                uniqueId = "LI_TEST_EZDRM_1",
+                getStreamLink = true,
+                offlineDownloadAllowed = false,
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(

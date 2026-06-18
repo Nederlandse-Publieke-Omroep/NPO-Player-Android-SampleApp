@@ -34,7 +34,7 @@ import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.PlayerListener
@@ -335,9 +335,9 @@ class PlayerActivity : BaseActivity() {
         }
 
         when {
-            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+            sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig -> {
                 loadStreamURL(
-                    sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                    sourceWrapper.npoSourceConfig as NPOMedia3OfflineSourceConfig,
                 )
             }
 
@@ -825,12 +825,12 @@ class PlayerActivity : BaseActivity() {
 
         @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
-            val offlineSource: NPOOfflineSourceConfig?
+            val offlineSource: NPOMedia3OfflineSourceConfig?
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 offlineSource =
                     this@getSourceWrapper.getParcelableExtra(
                         PLAYER_OFFLINE_SOURCE,
-                        NPOOfflineSourceConfig::class.java,
+                        NPOMedia3OfflineSourceConfig::class.java,
                     )
                 getSerializableExtra(PLAYER_SOURCE, SourceWrapper::class.java)
             } else {
@@ -847,7 +847,7 @@ class PlayerActivity : BaseActivity() {
             sourceWrapper: SourceWrapper,
         ): Intent =
             Intent(packageContext, PlayerActivity::class.java).apply {
-                if (sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig) {
+                if (sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig) {
                     putExtra(PLAYER_OFFLINE_SOURCE, sourceWrapper.npoSourceConfig as Parcelable)
                     putExtra(PLAYER_SOURCE, sourceWrapper.copy(npoSourceConfig = null))
                 } else {
