@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -59,55 +60,55 @@ class ShortsViewModel
         private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
         private var currentPreloadManager: NPOPreloadManager? = null
-        private val preloadManager: Flow<NPOPreloadManager?> =
-            combine(
-                player,
-                sourceConfig.asFlow(),
-                settingsRepository.usePreloadManagerShorts,
-            ) { npoPlayer, npoSourceConfigList, usePreLoadManager ->
-                val oldPreloadManager = currentPreloadManager
-                return@combine if (usePreLoadManager && npoPlayer != null) {
-                    if (oldPreloadManager != null) {
-                        npoSourceConfigList
-                            .subList(
-                                npoSourceConfigList.size - sizeOfValidSourceConfigs,
-                                npoSourceConfigList.size,
-                            ).forEachIndexed { index, config ->
-                                oldPreloadManager.addSource(
-                                    config,
-                                    index + npoSourceConfigList.size - sizeOfValidSourceConfigs,
-                                )
-                            }
-                        oldPreloadManager
-                    } else {
-                        val loader = NPOPlayerLibrary.getPreloadManager()
-                        loader.setSources(npoSourceConfigList)
-                        currentPreloadManager = loader
-                        loader
-                    }
-                } else {
-                    oldPreloadManager?.release()
-                    currentPreloadManager = null
-                    null
-                }
-            }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-        private var sizeOfValidSourceConfigs = 0
+    private val preloadManager: StateFlow<NPOPreloadManager?> =
+        combine(
+            player,
+            sourceConfig.asFlow(),
+            settingsRepository.usePreloadManagerShorts,
+            ) { npoPlayer, sourceConfigs, usePreloadManager ->
 
-        init {
-            viewModelScope.launch {
-                mutableSourceWrapperList.asFlow().collect { list ->
-                    val mutableList = list.toMutableList()
-                    mutableSourceConfig.postValue(
-                        mutableList
-                            .mapNotNull { sourceWrapper ->
-                                fetchSourceConfig(sourceWrapper)
-                            }.also { sizeOfValidSourceConfigs = it.size },
-                    )
-                }
+            if (!usePreloadManager || npoPlayer == null) {
+                currentPreloadManager?.release()
+                currentPreloadManager = null
+                return@combine null
             }
 
-            getStreamLinkListItems()
+            currentPreloadManager?.let { manager ->
+                val startIndex = (sourceConfigs.size - sizeOfValidSourceConfigs)
+                    .coerceAtLeast(0)
+                sourceConfigs
+                    .drop(startIndex)
+                    .forEachIndexed { index, config ->
+                        manager.addSource(
+                            config,
+                            startIndex + index,
+                            )
+                    }
+                return@combine manager
+            }
+            NPOPlayerLibrary.getPreloadManager().also { manager ->
+                manager.setSources(sourceConfigs)
+                currentPreloadManager = manager
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = null,
+            )
+        private var sizeOfValidSourceConfigs = 0
+
+    init {
+        viewModelScope.launch {
+            mutableSourceWrapperList.asFlow().collect { list ->
+                val validSourceConfigs = list.mapNotNull { sourceWrapper ->
+                    fetchSourceConfig(sourceWrapper)
+                }
+                sizeOfValidSourceConfigs = validSourceConfigs.size
+                mutableSourceConfig.value = validSourceConfigs
+            }
         }
+        getStreamLinkListItems()
+    }
 
         fun initPlayer(context: Context) {
             viewModelScope.launch(Dispatchers.Main) {
