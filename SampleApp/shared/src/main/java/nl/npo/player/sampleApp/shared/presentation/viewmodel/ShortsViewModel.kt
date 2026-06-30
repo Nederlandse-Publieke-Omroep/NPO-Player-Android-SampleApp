@@ -96,16 +96,20 @@ class ShortsViewModel
             )
         private var sizeOfValidSourceConfigs = 0
 
+
     init {
         viewModelScope.launch {
             mutableSourceWrapperList.asFlow().collect { list ->
-                val validSourceConfigs = list.mapNotNull { sourceWrapper ->
-                    fetchSourceConfig(sourceWrapper)
-                }
-                sizeOfValidSourceConfigs = validSourceConfigs.size
-                mutableSourceConfig.value = validSourceConfigs
+                val mutableList = list.toMutableList()
+                mutableSourceConfig.postValue(
+                    mutableList
+                        .mapNotNull { sourceWrapper ->
+                            fetchSourceConfig(sourceWrapper)
+                        }.also { sizeOfValidSourceConfigs = it.size },
+                )
             }
         }
+
         getStreamLinkListItems()
     }
 
