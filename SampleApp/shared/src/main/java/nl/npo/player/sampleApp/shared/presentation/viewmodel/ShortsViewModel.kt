@@ -59,59 +59,59 @@ class ShortsViewModel
         private val _player = MutableStateFlow<NPOPlayer?>(null)
         val player = _player.asStateFlow()
         private var currentPreloadManager: NPOPreloadManager? = null
-    private val preloadManager: StateFlow<NPOPreloadManager?> =
-        combine(
-            player,
-            sourceConfig.asFlow(),
-            settingsRepository.usePreloadManagerShorts,
+        private val preloadManager: StateFlow<NPOPreloadManager?> =
+            combine(
+                player,
+                sourceConfig.asFlow(),
+                settingsRepository.usePreloadManagerShorts,
             ) { npoPlayer, sourceConfigs, usePreloadManager ->
 
-            if (!usePreloadManager || npoPlayer == null) {
-                currentPreloadManager?.release()
-                currentPreloadManager = null
-                return@combine null
-            }
+                if (!usePreloadManager || npoPlayer == null) {
+                    currentPreloadManager?.release()
+                    currentPreloadManager = null
+                    return@combine null
+                }
 
-            currentPreloadManager?.let { manager ->
-                val startIndex = (sourceConfigs.size - sizeOfValidSourceConfigs)
-                    .coerceAtLeast(0)
-                sourceConfigs
-                    .drop(startIndex)
-                    .forEachIndexed { index, config ->
-                        manager.addSource(
-                            config,
-                            startIndex + index,
+                currentPreloadManager?.let { manager ->
+                    val startIndex =
+                        (sourceConfigs.size - sizeOfValidSourceConfigs)
+                            .coerceAtLeast(0)
+                    sourceConfigs
+                        .drop(startIndex)
+                        .forEachIndexed { index, config ->
+                            manager.addSource(
+                                config,
+                                startIndex + index,
                             )
-                    }
-                return@combine manager
-            }
-            NPOPlayerLibrary.getPreloadManager().also { manager ->
-                manager.setSources(sourceConfigs)
-                currentPreloadManager = manager
-            }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = null,
+                        }
+                    return@combine manager
+                }
+                NPOPlayerLibrary.getPreloadManager().also { manager ->
+                    manager.setSources(sourceConfigs)
+                    currentPreloadManager = manager
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = null,
             )
         private var sizeOfValidSourceConfigs = 0
 
-
-    init {
-        viewModelScope.launch {
-            mutableSourceWrapperList.asFlow().collect { list ->
-                val mutableList = list.toMutableList()
-                mutableSourceConfig.postValue(
-                    mutableList
-                        .mapNotNull { sourceWrapper ->
-                            fetchSourceConfig(sourceWrapper)
-                        }.also { sizeOfValidSourceConfigs = it.size },
-                )
+        init {
+            viewModelScope.launch {
+                mutableSourceWrapperList.asFlow().collect { list ->
+                    val mutableList = list.toMutableList()
+                    mutableSourceConfig.postValue(
+                        mutableList
+                            .mapNotNull { sourceWrapper ->
+                                fetchSourceConfig(sourceWrapper)
+                            }.also { sizeOfValidSourceConfigs = it.size },
+                    )
+                }
             }
-        }
 
-        getStreamLinkListItems()
-    }
+            getStreamLinkListItems()
+        }
 
         fun initPlayer(context: Context) {
             viewModelScope.launch(Dispatchers.Main) {
