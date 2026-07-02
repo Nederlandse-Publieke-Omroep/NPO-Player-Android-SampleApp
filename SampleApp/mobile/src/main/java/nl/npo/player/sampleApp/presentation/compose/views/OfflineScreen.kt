@@ -27,15 +27,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
 import nl.npo.player.sampleApp.presentation.compose.components.Header
 import nl.npo.player.sampleApp.presentation.compose.components.ProgressActionIcon
+import nl.npo.player.sampleApp.presentation.ext.getFormattedDownloadSize
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
-import java.text.DecimalFormat
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -130,7 +129,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
-                        contentDescription = state.getFormatterDownloadSize(),
+                        contentDescription = state.getFormattedDownloadSize(context),
                         accent = orange,
                         onClick = {
                             viewModel.onItemClicked(
@@ -155,33 +154,4 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
             }
         }
     }
-}
-
-fun NPODownloadState?.getFormatterDownloadSize(): String =
-    when (this) {
-        null -> "Download not started"
-        is NPODownloadState.Finished -> "Download finished. Size: ${bytesDownloaded.bytesToHuman()}"
-        is NPODownloadState.Failed -> "Download failed. Size: ${bytesDownloaded.bytesToHuman()}"
-        else -> "Download in progress. Size: ${bytesDownloaded.bytesToHuman()}"
-    }
-
-/**
- * Convert bytes to human format.
- * @param totalBytes `long` - Total of bytes.
- * @return [String] - Converted size.
- */
-fun Long.bytesToHuman(): String? {
-    val simbols = arrayOf("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB")
-    var scale = 1L
-    for (simbol in simbols) {
-        if (this < (scale * 1024L)) {
-            return String.format(
-                "%s %s",
-                DecimalFormat("#.##").format(this.toDouble() / scale),
-                simbol,
-            )
-        }
-        scale *= 1024L
-    }
-    return "-1 B"
 }
