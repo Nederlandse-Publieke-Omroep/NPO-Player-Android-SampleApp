@@ -47,7 +47,6 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
 
     // Manual PRID earch bar
     var searchString by rememberSaveable { mutableStateOf("") }
-    var searchActive by rememberSaveable { mutableStateOf(false) }
     val searchHint = stringResource(R.string.manual_prid_hint)
 
     Column(
