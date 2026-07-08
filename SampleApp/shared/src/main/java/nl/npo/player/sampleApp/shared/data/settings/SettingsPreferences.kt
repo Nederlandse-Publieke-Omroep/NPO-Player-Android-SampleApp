@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.player.ui.model.PlayNext
+import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
@@ -43,8 +44,10 @@ class SettingsPreferences
             val playNextOffset = intPreferencesKey("playNextOffset")
             val enableCasting = booleanPreferencesKey("enableCasting")
             val environment = stringPreferencesKey("environment")
+            val ageProfile = intPreferencesKey("ageProfile")
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
+            val preloadManagerShorts = booleanPreferencesKey("preLoadManagerShorts")
         }
 
         val useExoplayer: Flow<Boolean>
@@ -216,6 +219,18 @@ class SettingsPreferences
             }
         }
 
+        val ageProfile: Flow<AgeProfileInt>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.ageProfile] ?: defaultSettings.ageProfile
+                }
+
+        suspend fun setAgeProfile(ageProfile: AgeProfileInt) {
+            dataStore.edit { prefs ->
+                prefs[Keys.ageProfile] = ageProfile
+            }
+        }
+
         val chapterSkippingEnabled: Flow<Boolean>
             get() =
                 dataStore.data.map { prefs ->
@@ -238,6 +253,18 @@ class SettingsPreferences
         suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean) {
             dataStore.edit { prefs ->
                 prefs[Keys.chapterSkippingAlwaysFeatured] = enabled
+            }
+        }
+
+        val usePreLoadManagerShorts: Flow<Boolean>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.preloadManagerShorts] ?: defaultSettings.preloadManagerShorts
+                }
+
+        suspend fun setUsePreLoadManagerShorts(usePreloadManager: Boolean) {
+            dataStore.edit { prefs ->
+                prefs[Keys.preloadManagerShorts] = usePreloadManager
             }
         }
     }

@@ -27,7 +27,6 @@ class StreamInfoRepository
         override suspend fun createToken(
             prid: String,
             asPlusUser: Boolean,
-            ageProfile: Int,
         ): StreamInfoResult<TokenResponse> {
             val claims =
                 mapOf<String, Any>(
@@ -37,7 +36,7 @@ class StreamInfoRepository
                     "sub" to prid,
                     // An issuer should always be added to your signing. Currently only NPO Start has two different issuers so this logic only applies to NPO Start.
                     "iss" to if (asPlusUser) BuildConfig.TOKEN_ISSUER_PLUS else BuildConfig.TOKEN_ISSUER_START,
-                    "age_profile" to ageProfile,
+                    "age_profile" to settingsRepository.ageProfile.first(),
                 )
             val environment = settingsRepository.environment.first()
             return StreamInfoResult.Success(

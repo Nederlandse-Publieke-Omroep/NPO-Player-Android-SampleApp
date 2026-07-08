@@ -2,7 +2,6 @@ package nl.npo.player.sampleApp.shared.data.link
 
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.exception.NPOPlayerException
@@ -33,7 +32,9 @@ class OfflineContentDataRepository
                     uniqueId = offlineContent.uniqueId,
                     getStreamLink = false,
                     title = offlineContent.getOriginalSource().title ?: offlineContent.uniqueId,
-                    imageUrl = offlineContent.getOfflineSource()?.imageUrl ?: offlineContent.getOfflineSource()?.imageUrl,
+                    imageUrl =
+                        offlineContent.getOfflineSource()?.imageUrl
+                            ?: offlineContent.getOfflineSource()?.imageUrl,
                     npoOfflineContent = offlineContent,
                 )
             }
@@ -62,10 +63,12 @@ class OfflineContentDataRepository
                             }
                         }
 
-                        is StreamInfoResult.Error -> throw NPOOfflineContentException.IOException(
-                            "JWT retrieval failed",
-                            cause = result.exception,
-                        )
+                        is StreamInfoResult.Error -> {
+                            throw NPOOfflineContentException.IOException(
+                                "JWT retrieval failed",
+                                cause = result.exception,
+                            )
+                        }
                     }
                 }
             if (npoSource.isDownloadDisallowed()) {
@@ -80,12 +83,11 @@ class OfflineContentDataRepository
             npoOfflineContent.delete()
         }
 
-        private fun NPOSourceConfig.isDownloadDisallowed(): Boolean = (isLiveStream == true || avType == AVType.VIDEO)
+        private fun NPOSourceConfig.isDownloadDisallowed(): Boolean = (isLiveStream == true)
 
         private fun NPOSourceConfig.getDownloadNotAllowedReason(): String =
             when {
                 isLiveStream == true -> "A live stream can't be downloaded"
-                avType == AVType.VIDEO -> "(NPO StreamLink) Video's aren't allowed to be downloaded"
                 else -> "Unknown reason"
             }
     }

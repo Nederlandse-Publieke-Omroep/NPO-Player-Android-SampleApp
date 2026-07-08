@@ -12,6 +12,29 @@ object URLLinkDataRepository : LinkRepository {
     private val urlLinkSourceList: List<SourceWrapper> by lazy {
         listOf(
             SourceWrapper(
+                title = "VPWON_test1234",
+                testingDescription = "Direct MP3 content",
+                uniqueId = "_1123901",
+                getStreamLink = false,
+                streamUrl =
+                    "https://npo-ams1-shield1-egress.hystream.io/passthrough/clear/2026/03/VPWON_test1234/" +
+                        "550e8400-e29b-41d4-a716-446655440891/550e8400-e29b-41d4-a716-446655440891.mp3",
+                offlineDownloadAllowed = true,
+                imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
+                avType = AVType.AUDIO,
+            ),
+            SourceWrapper(
+                title = "Transcoding test video UHD",
+                testingDescription = "UHD Dash",
+                streamUrl =
+                    "https://acc-npo-ams2-orig1-egress.hystream.io/package/clear/2026/05/NPO_TEST_VID_UHD/" +
+                        "8a7b14e9-6850-4b0e-a278-a475a5a6f7d3/8a7b14e9-6850-4b0e-a278-a475a5a6f7d3/dash.mpd",
+                uniqueId = "TC-Vid-UHD-Dash.mpd",
+                getStreamLink = false,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "Audiodescriptie test stream",
                 streamUrl = "https://dev-tommie.cdn.streamgate.nl/video/npo/dering/thering.ism/.mpd",
                 uniqueId = "dev-tommie-ad.mpd",

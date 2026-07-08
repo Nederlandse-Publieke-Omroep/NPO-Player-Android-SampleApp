@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -22,16 +23,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastStateListener
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.PlayerListener
@@ -219,6 +222,7 @@ class PlayerActivity : BaseActivity() {
         useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
+        this.sourceWrapper = sourceWrapper
         val title = sourceWrapper.title.orEmpty()
         if (player == null) {
             logPageAnalytics(title)
@@ -255,7 +259,7 @@ class PlayerActivity : BaseActivity() {
                                 NOTIFICATION_ID,
                             )
                             attachToLifecycle(lifecycle)
-                            changePageTracker(this, title.orEmpty())
+                            changePageTracker(this, title)
                             setTokenRefreshCallback(retryListener)
                             setPlayNextListener { action ->
                                 when (action) {
@@ -327,13 +331,13 @@ class PlayerActivity : BaseActivity() {
         } else {
             val player = player ?: return
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
-            changePageTracker(player, title ?: "")
+            changePageTracker(player, title)
         }
 
         when {
-            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+            sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig -> {
                 loadStreamURL(
-                    sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                    sourceWrapper.npoSourceConfig as NPOMedia3OfflineSourceConfig,
                 )
             }
 
@@ -368,9 +372,13 @@ class PlayerActivity : BaseActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             binding.composeCastButton.isVisible = false
+            hideButtons(alsoRetryButton = true)
         } else {
             backstackLost = true
             binding.composeCastButton.isVisible = true
+            if (!fullScreenHandler.isFullscreen) {
+                showButtons()
+            }
         }
     }
 
@@ -421,6 +429,23 @@ class PlayerActivity : BaseActivity() {
     }
 
     private fun ActivityPlayerBinding.setupViews() {
+        ViewCompat.setOnApplyWindowInsetsListener(npoVideoPlayerParent) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Apply the insets as a margin to the view. This solution sets
+            // only the bottom, left, and right dimensions, but you can apply whichever
+            // insets are appropriate to your layout. You can also update the view padding
+            // if that's more appropriate.
+            v.updateLayoutParams<RelativeLayout.LayoutParams> {
+                leftMargin = insets.left
+                bottomMargin = insets.bottom
+                rightMargin = insets.right
+                topMargin = insets.top
+            }
+
+            // Return CONSUMED if you don't want the window insets to keep passing
+            // down to descendant views.
+            WindowInsetsCompat.CONSUMED
+        }
         setupCastButton()
 
         btnSwitchStreams.setOnClickListener {
@@ -707,6 +732,21 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun hideButtons(alsoRetryButton: Boolean = false) {
+        binding.apply {
+            btnSwitchStreams.isVisible = false
+            btnPlayPause.isVisible = false
+            if (alsoRetryButton) retryBtn.isVisible = false
+        }
+    }
+
+    private fun showButtons() {
+        binding.apply {
+            btnSwitchStreams.isVisible = true
+            btnPlayPause.isVisible = true
+        }
+    }
+
     private val fullScreenHandler =
         object : NPOFullScreenHandler {
             private var fullscreen = false
@@ -719,10 +759,7 @@ class PlayerActivity : BaseActivity() {
             override fun onFullscreenExitRequested() {
                 fullscreen = false
                 runOnUiThread {
-                    binding.apply {
-                        btnSwitchStreams.isVisible = true
-                        btnPlayPause.isVisible = true
-                    }
+                    showButtons()
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                     doSystemUiVisibility(fullscreen)
                 }
@@ -731,10 +768,7 @@ class PlayerActivity : BaseActivity() {
             override fun onFullscreenRequested() {
                 fullscreen = true
                 runOnUiThread {
-                    binding.apply {
-                        btnSwitchStreams.isVisible = false
-                        btnPlayPause.isVisible = false
-                    }
+                    hideButtons()
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                     doSystemUiVisibility(fullscreen)
                 }
@@ -791,12 +825,12 @@ class PlayerActivity : BaseActivity() {
 
         @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
-            val offlineSource: NPOOfflineSourceConfig?
+            val offlineSource: NPOMedia3OfflineSourceConfig?
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 offlineSource =
                     this@getSourceWrapper.getParcelableExtra(
                         PLAYER_OFFLINE_SOURCE,
-                        NPOOfflineSourceConfig::class.java,
+                        NPOMedia3OfflineSourceConfig::class.java,
                     )
                 getSerializableExtra(PLAYER_SOURCE, SourceWrapper::class.java)
             } else {
@@ -813,7 +847,7 @@ class PlayerActivity : BaseActivity() {
             sourceWrapper: SourceWrapper,
         ): Intent =
             Intent(packageContext, PlayerActivity::class.java).apply {
-                if (sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig) {
+                if (sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig) {
                     putExtra(PLAYER_OFFLINE_SOURCE, sourceWrapper.npoSourceConfig as Parcelable)
                     putExtra(PLAYER_SOURCE, sourceWrapper.copy(npoSourceConfig = null))
                 } else {

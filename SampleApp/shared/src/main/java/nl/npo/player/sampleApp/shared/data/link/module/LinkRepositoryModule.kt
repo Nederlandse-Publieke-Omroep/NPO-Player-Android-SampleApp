@@ -5,13 +5,17 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import nl.npo.player.library.domain.offline.NPOOfflineContentManager
+import nl.npo.player.sampleApp.shared.data.link.ACCShortsStreamLinkDataRepository
 import nl.npo.player.sampleApp.shared.data.link.OfflineContentDataRepository
+import nl.npo.player.sampleApp.shared.data.link.ShortsStreamLinkDataRepository
 import nl.npo.player.sampleApp.shared.data.link.StreamLinkDataRepository
 import nl.npo.player.sampleApp.shared.data.link.URLLinkDataRepository
 import nl.npo.player.sampleApp.shared.data.streamlink.StreamInfoRepository
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
+import nl.npo.player.sampleApp.shared.domain.annotation.ACCShortsStreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
+import nl.npo.player.sampleApp.shared.domain.annotation.ShortsStreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.URLLinkRepository
 
@@ -38,4 +42,12 @@ object LinkRepositoryModule {
             streamInfoRepository,
             settingsRepository,
         )
+
+    @ShortsStreamLinkRepository
+    @Provides
+    fun provideShortsStreamLinkRepo(): LinkRepository = ShortsStreamLinkDataRepository
+
+    @ACCShortsStreamLinkRepository
+    @Provides
+    fun provideACCShortsStreamLinkRepo(): LinkRepository = ACCShortsStreamLinkDataRepository
 }

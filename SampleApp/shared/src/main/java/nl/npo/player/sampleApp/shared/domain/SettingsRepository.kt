@@ -2,6 +2,7 @@ package nl.npo.player.sampleApp.shared.domain
 
 import kotlinx.coroutines.flow.Flow
 import nl.npo.player.library.domain.player.ui.model.PlayNext
+import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.domain.model.Styling
 import nl.npo.player.sampleApp.shared.domain.model.UserType
@@ -59,6 +60,10 @@ interface SettingsRepository {
 
     suspend fun setEnvironment(type: Environment)
 
+    val ageProfile: Flow<AgeProfileInt>
+
+    suspend fun setAgeProfile(ageProfile: AgeProfileInt)
+
     val chapterSkippingEnabled: Flow<Boolean>
 
     suspend fun setChapterSkippingEnabled(enabled: Boolean)
@@ -66,4 +71,8 @@ interface SettingsRepository {
     val chapterSkippingAlwaysFeatured: Flow<Boolean>
 
     suspend fun setChapterSkippingAlwaysFeatured(enabled: Boolean)
+
+    val usePreloadManagerShorts: Flow<Boolean>
+
+    suspend fun setUsePreloadManagerShorts(usePreloadManager: Boolean)
 }

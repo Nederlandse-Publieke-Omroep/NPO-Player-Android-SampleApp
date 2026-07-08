@@ -10,15 +10,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,39 +72,21 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             ) {
-                section(
-                    listOf(null),
-                    key = { _, _ -> 1 },
-                    header = { },
-                ) {
-                    SearchBar(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight(),
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = searchString,
-                                onQueryChange = { searchString = it },
-                                onSearch = {
-                                    if (searchString.isNotBlank()) {
-                                        context.intentPlayerActivity(
-                                            SourceWrapper(
-                                                title = searchString,
-                                                uniqueId = searchString,
-                                                getStreamLink = true,
-                                            ),
-                                        )
-                                    }
-                                },
-                                expanded = false,
-                                onExpandedChange = { },
-                                placeholder = { BasicText(searchHint) },
+                item(key = "search_bar") {
+                    ManualPridSearchBar(
+                        searchString = searchString,
+                        searchHint = searchHint,
+                        onSearchStringChange = { searchString = it },
+                        onSearch = { query ->
+                            context.intentPlayerActivity(
+                                SourceWrapper(
+                                    title = query,
+                                    uniqueId = query,
+                                    getStreamLink = true,
+                                ),
                             )
                         },
-                        expanded = false,
-                        onExpandedChange = { },
-                    ) {}
+                    )
                 }
                 section(
                     items = videoItems,
