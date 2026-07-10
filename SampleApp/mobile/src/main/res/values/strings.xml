@@ -21,10 +21,10 @@
     <string name="delete_legacy_title">"Delete unsupported offline content"</string>
     <string name="delete_legacy_body">"We detected unsupported (Bitmovin) offline items. They can't be played anymore. Delete them?"</string>
     <string name="offline_header">Offline</string>
-    <string name="download_not_started">Download nog niet gestart</string>
-    <string name="download_in_progress">Bezig met downloaden: %1$s</string>
-    <string name="download_finished">Download voltooid: %1$s</string>
-    <string name="download_failed">Download mislukt: %1$s</string>
+    <string name="download_not_started">Download not started yet</string>
+    <string name="download_in_progress">Download in progress: %1$s</string>
+    <string name="download_finished">Download finished: %1$s</string>
+    <string name="download_failed">Download failed: %1$s</string>
 
     <!--    For testing S&A Audio Receiver-->
 <!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
