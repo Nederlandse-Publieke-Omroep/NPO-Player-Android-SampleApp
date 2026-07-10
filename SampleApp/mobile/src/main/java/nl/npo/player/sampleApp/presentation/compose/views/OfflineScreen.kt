@@ -32,6 +32,7 @@ import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
 import nl.npo.player.sampleApp.presentation.compose.components.Header
 import nl.npo.player.sampleApp.presentation.compose.components.ProgressActionIcon
+import nl.npo.player.sampleApp.presentation.ext.getFormattedDownloadSize
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 
@@ -128,6 +129,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
+                        contentDescription = state.getFormattedDownloadSize(context),
                         accent = orange,
                         onClick = {
                             viewModel.onItemClicked(

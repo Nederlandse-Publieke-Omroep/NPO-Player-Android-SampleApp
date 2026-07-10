@@ -50,7 +50,7 @@ fun ProgressActionIcon(
                         when (downloadState) {
                             NPODownloadState.Deleting -> Icons.Default.Delete
                             is NPODownloadState.Failed -> Icons.Default.Error
-                            NPODownloadState.Finished -> Icons.Default.PlayArrow
+                            is NPODownloadState.Finished -> Icons.Default.PlayArrow
                             NPODownloadState.Initializing -> Icons.Default.Download
                             is NPODownloadState.Paused -> Icons.Default.Pause
                             is NPODownloadState.InProgress -> error("handled above")
@@ -68,7 +68,7 @@ fun ProgressActionIcon(
 fun PreviewIcon() {
     val downloadState =
         MutableStateFlow<NPODownloadState>(value = NPODownloadState.Initializing).apply {
-            value = NPODownloadState.InProgress(0.5f)
+            value = NPODownloadState.InProgress(0.5f, 500L)
         }
     ProgressActionIcon(
         downloadState = downloadState.collectAsState().value,
