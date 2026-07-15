@@ -5,9 +5,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import nl.npo.player.library.domain.offline.ProgressStorageProvider
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
@@ -17,6 +19,7 @@ import nl.npo.player.sampleApp.shared.data.settings.module.SettingsDataStore
 import nl.npo.player.sampleApp.shared.domain.model.DefaultSettings
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
@@ -48,6 +51,7 @@ class SettingsPreferences
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
             val preloadManagerShorts = booleanPreferencesKey("preLoadManagerShorts")
+
         }
 
         val useExoplayer: Flow<Boolean>

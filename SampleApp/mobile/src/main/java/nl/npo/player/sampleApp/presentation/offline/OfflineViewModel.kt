@@ -15,11 +15,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
+import nl.npo.player.library.domain.offline.ProgressStorageProvider
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
+import nl.npo.player.sampleApp.shared.data.progress.SharedPreferencesProgressStorageProvider
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
+import nl.npo.player.sampleApp.shared.domain.ProgressStorageRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.URLLinkRepository
@@ -34,7 +37,8 @@ class OfflineViewModel
         @StreamLinkRepository private val streamLinkRepository: LinkRepository,
         @URLLinkRepository private val urlLinkRepository: LinkRepository,
         @OfflineLinkRepository private val offlineLinkRepository: LinkRepository.OfflineLinkRepository,
-    ) : ViewModel() {
+        private val progressStorageRepository: ProgressStorageRepository,
+        ) : ViewModel() {
         private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
         val downloadEvent = _downloadEvent
         private val mutableOfflineLinkList = MutableStateFlow<List<SourceWrapper>>(emptyList())
@@ -218,6 +222,7 @@ class OfflineViewModel
                 val offlineContent =
                     try {
                         offlineLinkRepository.createOfflineContent(sourceWrapper)
+
                     } catch (e: NPOOfflineContentException) {
                         errorCallback(e)
                         return@launch
@@ -231,7 +236,7 @@ class OfflineViewModel
                     onCreated(offlineContent)
                     return@launch
                 }
-
+                progressStorageRepository.getProgress(sourceWrapper.uniqueId)
                 mutableOfflineLinkList.value =
                     mutableOfflineLinkList.value
                         .map { item ->

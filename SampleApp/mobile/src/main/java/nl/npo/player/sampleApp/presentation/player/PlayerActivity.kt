@@ -457,6 +457,7 @@ class PlayerActivity : BaseActivity() {
                     pause()
                 } else {
                     play()
+
                 }
             }
         }
