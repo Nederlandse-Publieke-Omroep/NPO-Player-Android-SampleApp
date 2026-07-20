@@ -445,7 +445,6 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
                 isLive = false,
             ),
-
         )
     }
 

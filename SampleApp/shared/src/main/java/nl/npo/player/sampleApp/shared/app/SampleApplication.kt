@@ -13,6 +13,7 @@ import nl.npo.player.sampleApp.shared.BuildConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.data.extensions.toPlayerEnvironment
 import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
+import nl.npo.player.sampleApp.shared.data.progress.SharedPreferencesProgressStorageProvider
 import nl.npo.player.sampleApp.shared.domain.AnalyticsEnvironmentProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.tag.sdk.NpoTag
@@ -30,6 +31,10 @@ open class SampleApplication :
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
+
+    @Inject
+    lateinit var sharedPreferencesProgressStorageProvider:
+        SharedPreferencesProgressStorageProvider
 
     override fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
 
@@ -49,8 +54,8 @@ open class SampleApplication :
                     ) {
                         this.environment = environment
                         this.enableCasting = enableCasting
+                        this.progressStorageProvider = sharedPreferencesProgressStorageProvider
                         debugLogging = true
-                        addInterceptors(list)
                     }
                 }
         } else {
@@ -62,6 +67,7 @@ open class SampleApplication :
             ) {
                 this.environment = environment
                 this.enableCasting = enableCasting
+                this.progressStorageProvider = sharedPreferencesProgressStorageProvider
                 debugLogging = true
                 addInterceptors(list)
             }

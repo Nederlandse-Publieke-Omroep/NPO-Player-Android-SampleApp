@@ -1,18 +1,25 @@
 package nl.npo.player.sampleApp.shared.data.settings.module
 
-import dagger.Binds
+import android.content.Context
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import nl.npo.player.sampleApp.shared.data.progress.ProgressStorageRepositoryImpl
-import nl.npo.player.sampleApp.shared.domain.ProgressStorageRepository
-import nl.npo.player.sampleApp.shared.domain.SettingsRepository
+import nl.npo.player.library.domain.offline.ProgressStorageProvider
+import nl.npo.player.sampleApp.shared.data.progress.SharedPreferencesProgressStorageProvider
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class ProgressStorageModule {
-    @Binds
+object ProgressStorageModule {
+    @Provides
     @Singleton
-    abstract fun bindsProgressRepository(impl: ProgressStorageRepositoryImpl): ProgressStorageRepository
+    fun provideProgressStorageProvider(
+        @ApplicationContext context: Context,
+    ): ProgressStorageProvider {
+        return SharedPreferencesProgressStorageProvider(
+            context = context,
+        )
+    }
 }
