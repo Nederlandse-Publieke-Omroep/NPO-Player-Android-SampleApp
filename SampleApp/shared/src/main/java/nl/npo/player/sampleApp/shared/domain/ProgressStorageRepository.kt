@@ -9,7 +9,7 @@ interface ProgressStorageRepository {
         uniqueId: String,
     ): Duration?
 
-   suspend fun storeProgress(
+    suspend fun storeProgress(
         sourceConfig: NPOSourceConfig,
         uniqueId: String,
         progress: Duration,
