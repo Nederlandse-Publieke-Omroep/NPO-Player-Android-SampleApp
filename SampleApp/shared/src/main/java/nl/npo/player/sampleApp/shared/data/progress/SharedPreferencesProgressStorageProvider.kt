@@ -20,7 +20,7 @@ class SharedPreferencesProgressStorageProvider
                 Context.MODE_PRIVATE,
             )
 
-        override fun getProgress(
+        override suspend fun getProgress(
             sourceConfig: NPOSourceConfig,
             sourceId: String?,
         ): Duration? {
@@ -40,7 +40,7 @@ class SharedPreferencesProgressStorageProvider
             return progress
         }
 
-        override fun storeProgress(
+        override suspend fun storeProgress(
             sourceConfig: NPOSourceConfig,
             sourceId: String,
             progress: Duration,

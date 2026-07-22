@@ -10,14 +10,14 @@ class ProgressStorageRepositoryImpl
     constructor(
         private val progressStorageProvider: SharedPreferencesProgressStorageProvider,
     ) : ProgressStorageRepository {
-        override fun getProgress(
+        override suspend fun getProgress(
             sourceConfig: NPOSourceConfig,
             uniqueId: String,
         ): Duration? {
             return progressStorageProvider.getProgress(sourceConfig, uniqueId)
         }
 
-        override fun storeProgress(
+        override suspend fun storeProgress(
             sourceConfig: NPOSourceConfig,
             uniqueId: String,
             progress: Duration,

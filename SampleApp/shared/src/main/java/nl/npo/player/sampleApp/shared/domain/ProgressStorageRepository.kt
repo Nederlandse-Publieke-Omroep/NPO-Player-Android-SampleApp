@@ -4,12 +4,12 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import kotlin.time.Duration
 
 interface ProgressStorageRepository {
-    fun getProgress(
+    suspend fun getProgress(
         sourceConfig: NPOSourceConfig,
         uniqueId: String,
     ): Duration?
 
-    fun storeProgress(
+   suspend fun storeProgress(
         sourceConfig: NPOSourceConfig,
         uniqueId: String,
         progress: Duration,
