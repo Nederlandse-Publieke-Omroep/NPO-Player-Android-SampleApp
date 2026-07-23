@@ -13,6 +13,7 @@ sealed interface DownloadEvent {
     data class Error(
         val itemId: String?,
         val message: String?,
+        val wrapper: SourceWrapper? = null,
     ) : DownloadEvent
 
     data class Delete(

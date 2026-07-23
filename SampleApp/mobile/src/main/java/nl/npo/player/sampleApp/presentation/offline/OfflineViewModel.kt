@@ -38,6 +38,10 @@ class OfflineViewModel
         private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
         val downloadEvent = _downloadEvent
         private val mutableOfflineLinkList = MutableStateFlow<List<SourceWrapper>>(emptyList())
+
+        // Ids for which an offline-content creation is currently in flight. Guards against
+        // rapid repeated taps kicking off multiple downloads before the list re-emits.
+        private val pendingCreations = mutableSetOf<String>()
         private val streamLinkList =
             flow {
                 emit(streamLinkRepository.getSourceList())
@@ -117,12 +121,13 @@ class OfflineViewModel
                 }
 
                 is NPODownloadState.Failed -> {
+                    // Don't auto-retry. Surface the error and let the user choose to
+                    // retry (resume) or cancel via the dialog.
                     handleDownloadState(
                         state = downloadState,
                         id = id,
                         sourceWrapper = sourceWrapper,
                     )
-                    offlineContent.startOrResumeDownload()
                 }
 
                 is NPODownloadState.Paused -> {
@@ -175,7 +180,57 @@ class OfflineViewModel
                     DownloadEvent.Error(
                         itemId = id,
                         message = state.reason.message ?: "Download failed",
+                        wrapper = sourceWrapper,
                     )
+            }
+        }
+
+        /** Retry a previously failed download and dismiss the error dialog. */
+        fun retryDownload(event: DownloadEvent.Error) {
+            dismissDownloadEventDialog()
+
+            val id = event.itemId ?: event.wrapper?.uniqueId ?: return
+            // Resolve the *live* wrapper from our own list rather than trusting the
+            // (possibly stale) wrapper captured in the event.
+            val wrapper =
+                mutableOfflineLinkList.value.firstOrNull { it.uniqueId == id }
+                    ?: event.wrapper
+                    ?: return
+
+            val content = wrapper.npoOfflineContent
+            if (content != null) {
+                content.startOrResumeDownload()
+            } else {
+                // Creation itself failed earlier, so there is no NPOOfflineContent yet.
+                // Recreate it and kick off the download.
+                createOfflineContent(
+                    wrapper,
+                    onCreated = { it.startOrResumeDownload() },
+                    errorCallback = {
+                        _downloadEvent.value =
+                            DownloadEvent.Error(
+                                itemId = id,
+                                message = it.message ?: "Download failed",
+                                wrapper = wrapper,
+                            )
+                    },
+                )
+            }
+        }
+
+        /**
+         * Abandon a failed download: remove the offline content so the row resets to the
+         * initial "not started" state (Download icon), then dismiss the error dialog.
+         */
+        fun cancelDownload(event: DownloadEvent.Error) {
+            val id = event.itemId ?: event.wrapper?.uniqueId
+            val wrapper =
+                mutableOfflineLinkList.value.firstOrNull { it.uniqueId == id }
+                    ?: event.wrapper
+            if (wrapper?.npoOfflineContent != null) {
+                deleteOfflineContent(wrapper)
+            } else {
+                dismissDownloadEventDialog()
             }
         }
 
@@ -214,23 +269,30 @@ class OfflineViewModel
             onCreated: (NPOOfflineContent) -> Unit = {},
             errorCallback: (Throwable) -> Unit,
         ) {
+            val id = sourceWrapper.uniqueId
+
+            // Already creating for this id: ignore the extra tap.
+            if (!pendingCreations.add(id)) return
+
+            // Content already exists (e.g. list hasn't recomposed yet): resume it
+            // instead of creating a duplicate download.
+            val existing =
+                mutableOfflineLinkList.value.firstOrNull { it.uniqueId == id }?.npoOfflineContent
+            if (existing != null) {
+                pendingCreations.remove(id)
+                onCreated(existing)
+                return
+            }
+
             viewModelScope.launch {
                 val offlineContent =
                     try {
                         offlineLinkRepository.createOfflineContent(sourceWrapper)
                     } catch (e: NPOOfflineContentException) {
+                        pendingCreations.remove(id)
                         errorCallback(e)
                         return@launch
                     }
-                val existingItem =
-                    mutableOfflineLinkList.value.firstOrNull {
-                        it.uniqueId == sourceWrapper.uniqueId
-                    }
-                if (existingItem?.npoOfflineContent != null) {
-                    errorCallback(Exception("Offline content already exists"))
-                    onCreated(offlineContent)
-                    return@launch
-                }
 
                 mutableOfflineLinkList.value =
                     mutableOfflineLinkList.value
@@ -248,6 +310,7 @@ class OfflineViewModel
                             }
                         }
 
+                pendingCreations.remove(id)
                 onCreated(offlineContent)
             }
         }

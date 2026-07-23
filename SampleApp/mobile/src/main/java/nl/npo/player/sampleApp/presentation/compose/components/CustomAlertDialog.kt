@@ -14,23 +14,25 @@ fun CustomAlertDialog(
     onDismiss: (() -> Unit)? = null,
     dialogDescription: String? = "",
     onConfirm: () -> Unit = {},
+    confirmText: String = stringResource(R.string.alert_dialog_confirm),
+    dismissText: String = stringResource(R.string.alert_dialog_dismiss),
 ) {
     AlertDialog(
         title = { Text(dialogTitle) },
         text = { Text(dialogDescription ?: "") },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {
-                Text(stringResource(R.string.alert_dialog_confirm))
+                Text(confirmText)
             }
         },
         dismissButton = {
             onDismiss?.let { onDismiss ->
                 TextButton(onClick = { onDismiss() }) {
-                    Text(stringResource(R.string.alert_dialog_dismiss))
+                    Text(dismissText)
                 }
             }
         },
         modifier = Modifier,
-        onDismissRequest = {},
+        onDismissRequest = { onDismiss?.invoke() },
     )
 }

@@ -15,9 +15,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import nl.npo.player.library.domain.offline.models.NPODownloadState
+import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -47,9 +51,18 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
 
     when (downloadEvent) {
         is DownloadEvent.Error -> {
+            val error = downloadEvent as DownloadEvent.Error
             CustomAlertDialog(
-                dialogTitle = (downloadEvent as DownloadEvent.Error).message.orEmpty(),
-                onConfirm = viewModel::dismissDownloadEventDialog,
+                dialogTitle = stringResource(R.string.download_error_title),
+                dialogDescription =
+                    stringResource(
+                        R.string.download_error_body,
+                        error.wrapper?.title.orEmpty(),
+                        error.message.orEmpty(),
+                    ),
+                confirmText = stringResource(R.string.download_error_retry),
+                onConfirm = { viewModel.retryDownload(error) },
+                onDismiss = { viewModel.cancelDownload(error) },
             )
         }
 
@@ -119,13 +132,23 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     items = mergedList,
                     key = { index, item -> "offline_${item.uniqueId}_$index" },
                 ) { _, item ->
-                    val state by item.npoOfflineContent
-                        ?.downloadState
-                        ?.collectAsStateWithLifecycle()
-                        ?: remember {
-                            mutableStateOf(null)
+                    val state = rememberDownloadState(item.npoOfflineContent)
+
+                    // Always surface a toast the moment a download enters the failed state.
+                    LaunchedEffect(state is NPODownloadState.Failed) {
+                        if (state is NPODownloadState.Failed) {
+                            Toast
+                                .makeText(
+                                    context,
+                                    context.getString(
+                                        R.string.download_error_toast,
+                                        item.title.orEmpty(),
+                                    ),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
                         }
-                    // Compose
+                    }
+
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
@@ -154,4 +177,24 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
             }
         }
     }
+}
+
+/**
+ * Observes the download state of an offline item in a Compose-safe way.
+ *
+ * The previous implementation conditionally called `collectAsStateWithLifecycle()` only when
+ * [content] was non-null (via an elvis fallback to `remember`), which breaks positional
+ * memoization: when content flipped from null to non-null the collector wasn't reliably
+ * (re)started, so progress appeared frozen and only "caught up" on an unrelated recomposition.
+ *
+ * Here the collector is always invoked at a stable call site. When [content] is null we collect
+ * a constant `null` flow; `StateFlow` is covariant, so a real `StateFlow<NPODownloadState>`
+ * substitutes cleanly. Keying [remember] on [content] restarts collection when it changes.
+ */
+@Composable
+private fun rememberDownloadState(content: NPOOfflineContent?): NPODownloadState? {
+    val flow: StateFlow<NPODownloadState?> =
+        remember(content) { content?.downloadState ?: MutableStateFlow(null) }
+    val state by flow.collectAsStateWithLifecycle()
+    return state
 }
