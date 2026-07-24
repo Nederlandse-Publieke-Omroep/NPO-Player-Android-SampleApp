@@ -18,7 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,7 +63,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         error.wrapper?.title.orEmpty(),
                         error.message.orEmpty(),
                     ),
-                confirmText = stringResource(R.string.download_error_retry),
+                confirmButtonText = stringResource(R.string.download_error_retry),
                 onConfirm = { viewModel.retryDownload(error) },
                 onDismiss = { viewModel.cancelDownload(error) },
             )
@@ -134,9 +137,15 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                 ) { _, item ->
                     val state = rememberDownloadState(item.npoOfflineContent)
 
-                    // Always surface a toast the moment a download enters the failed state.
-                    LaunchedEffect(state is NPODownloadState.Failed) {
-                        if (state is NPODownloadState.Failed) {
+                    // Surface a toast the moment a download enters the failed state, but only
+                    // once per failure — the saveable guard survives config changes so a
+                    // rotation while still failed doesn't re-toast. It resets when the item
+                    // leaves the failed state, so a later failure toasts again.
+                    var failureNotified by rememberSaveable(item.uniqueId) { mutableStateOf(false) }
+                    val isFailed = state is NPODownloadState.Failed
+                    LaunchedEffect(isFailed) {
+                        if (isFailed && !failureNotified) {
+                            failureNotified = true
                             Toast
                                 .makeText(
                                     context,
@@ -146,6 +155,8 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                     ),
                                     Toast.LENGTH_SHORT,
                                 ).show()
+                        } else if (!isFailed) {
+                            failureNotified = false
                         }
                     }
 

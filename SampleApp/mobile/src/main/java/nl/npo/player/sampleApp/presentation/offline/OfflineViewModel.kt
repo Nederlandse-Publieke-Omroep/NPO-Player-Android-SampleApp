@@ -92,7 +92,7 @@ class OfflineViewModel
         fun onItemClicked(
             sourceWrapper: SourceWrapper,
             id: String,
-            onClick: (DownloadEvent) -> Unit,
+            onClick: () -> Unit,
             error: (Throwable) -> Unit,
         ) {
             val offlineContent = sourceWrapper.npoOfflineContent
@@ -112,12 +112,7 @@ class OfflineViewModel
 
             when (val downloadState = offlineContent.downloadState.value) {
                 is NPODownloadState.Finished -> {
-                    onClick(
-                        DownloadEvent.Request(
-                            itemId = sourceWrapper.uniqueId,
-                            wrapper = sourceWrapper,
-                        ),
-                    )
+                    onClick()
                 }
 
                 is NPODownloadState.Failed -> {
@@ -139,16 +134,10 @@ class OfflineViewModel
                 }
 
                 is NPODownloadState.Deleting -> {
-                    onClick(
-                        DownloadEvent.Delete(
-                            sourceWrapper.uniqueId,
-                            sourceWrapper,
-                        ),
-                    )
-                    offlineContent.delete()
+                    // Deletion is already in progress; ignore taps until it settles.
                 }
 
-                else -> {
+                NPODownloadState.Initializing -> {
                     offlineContent.startOrResumeDownload()
                 }
             }
