@@ -35,22 +35,16 @@ fun ProgressActionIcon(
         contentAlignment = Alignment.Center,
     ) {
         when (val s = downloadState) {
-            // Determinate ring for an active download. Tapping it pauses the download,
-            // so it must be interactive (previously it was a bare, non-clickable ring).
             is NPODownloadState.InProgress -> {
                 CircularProgressIndicator(
                     progress = { (s.progress / 100f).coerceIn(0f, 1f) },
                     strokeWidth = 2.dp,
-//                    color = Color.Cyan,
                     modifier =
                         Modifier
                             .size(24.dp)
                             .clickable(onClick = onClick),
                 )
             }
-
-            // Queued/starting: indeterminate spinner so it reads as "working",
-            // not as a fresh "not started" download button.
             NPODownloadState.Initializing,
             NPODownloadState.Deleting,
             -> {

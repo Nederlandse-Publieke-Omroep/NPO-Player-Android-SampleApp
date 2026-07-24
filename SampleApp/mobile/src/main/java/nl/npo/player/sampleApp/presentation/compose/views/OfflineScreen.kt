@@ -136,11 +136,6 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     key = { index, item -> "offline_${item.uniqueId}_$index" },
                 ) { _, item ->
                     val state = rememberDownloadState(item.npoOfflineContent)
-
-                    // Surface a toast the moment a download enters the failed state, but only
-                    // once per failure — the saveable guard survives config changes so a
-                    // rotation while still failed doesn't re-toast. It resets when the item
-                    // leaves the failed state, so a later failure toasts again.
                     var failureNotified by rememberSaveable(item.uniqueId) { mutableStateOf(false) }
                     val isFailed = state is NPODownloadState.Failed
                     LaunchedEffect(isFailed) {
@@ -190,18 +185,6 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     }
 }
 
-/**
- * Observes the download state of an offline item in a Compose-safe way.
- *
- * The previous implementation conditionally called `collectAsStateWithLifecycle()` only when
- * [content] was non-null (via an elvis fallback to `remember`), which breaks positional
- * memoization: when content flipped from null to non-null the collector wasn't reliably
- * (re)started, so progress appeared frozen and only "caught up" on an unrelated recomposition.
- *
- * Here the collector is always invoked at a stable call site. When [content] is null we collect
- * a constant `null` flow; `StateFlow` is covariant, so a real `StateFlow<NPODownloadState>`
- * substitutes cleanly. Keying [remember] on [content] restarts collection when it changes.
- */
 @Composable
 private fun rememberDownloadState(content: NPOOfflineContent?): NPODownloadState? {
     val flow: StateFlow<NPODownloadState?> =

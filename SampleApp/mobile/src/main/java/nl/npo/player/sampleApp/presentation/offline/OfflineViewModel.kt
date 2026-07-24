@@ -38,9 +38,6 @@ class OfflineViewModel
         private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
         val downloadEvent = _downloadEvent
         private val mutableOfflineLinkList = MutableStateFlow<List<SourceWrapper>>(emptyList())
-
-        // Ids for which an offline-content creation is currently in flight. Guards against
-        // rapid repeated taps kicking off multiple downloads before the list re-emits.
         private val pendingCreations = mutableSetOf<String>()
         private val streamLinkList =
             flow {
@@ -190,8 +187,6 @@ class OfflineViewModel
             if (content != null) {
                 content.startOrResumeDownload()
             } else {
-                // Creation itself failed earlier, so there is no NPOOfflineContent yet.
-                // Recreate it and kick off the download.
                 createOfflineContent(
                     wrapper,
                     onCreated = { it.startOrResumeDownload() },
@@ -207,10 +202,6 @@ class OfflineViewModel
             }
         }
 
-        /**
-         * Abandon a failed download: remove the offline content so the row resets to the
-         * initial "not started" state (Download icon), then dismiss the error dialog.
-         */
         fun cancelDownload(event: DownloadEvent.Error) {
             val id = event.itemId ?: event.wrapper?.uniqueId
             val wrapper =
