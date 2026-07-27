@@ -1,10 +1,12 @@
 package nl.npo.player.sampleApp.shared.data.progress
 
-import jakarta.inject.Inject
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.sampleApp.shared.domain.ProgressStorageRepository
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.time.Duration
 
+@Singleton
 class ProgressStorageRepositoryImpl
     @Inject
     constructor(

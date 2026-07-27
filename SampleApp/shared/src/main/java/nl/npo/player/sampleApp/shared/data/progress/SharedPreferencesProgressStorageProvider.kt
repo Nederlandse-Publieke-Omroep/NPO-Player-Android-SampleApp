@@ -6,9 +6,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import nl.npo.player.library.domain.offline.ProgressStorageProvider
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+@Singleton
 class SharedPreferencesProgressStorageProvider
     @Inject
     constructor(
