@@ -20,6 +20,7 @@ import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
+import nl.npo.player.sampleApp.shared.domain.ProgressStorageRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.OfflineLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.URLLinkRepository
@@ -34,6 +35,7 @@ class OfflineViewModel
         @StreamLinkRepository private val streamLinkRepository: LinkRepository,
         @URLLinkRepository private val urlLinkRepository: LinkRepository,
         @OfflineLinkRepository private val offlineLinkRepository: LinkRepository.OfflineLinkRepository,
+        private val progressStorageRepository: ProgressStorageRepository,
     ) : ViewModel() {
         private val _downloadEvent = MutableStateFlow<DownloadEvent>(DownloadEvent.None)
         val downloadEvent = _downloadEvent
@@ -300,6 +302,7 @@ class OfflineViewModel
 
             viewModelScope.launch {
                 offlineLinkRepository.deleteOfflineContent(offlineContent)
+                progressStorageRepository.clearProgress(sourceWrapper.uniqueId)
                 mutableOfflineLinkList.value =
                     mutableOfflineLinkList.value.map { item ->
                         if (item.uniqueId == sourceWrapper.uniqueId) {

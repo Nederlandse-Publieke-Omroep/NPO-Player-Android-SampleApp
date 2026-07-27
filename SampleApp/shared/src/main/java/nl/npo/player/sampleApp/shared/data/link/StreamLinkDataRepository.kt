@@ -434,6 +434,17 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
                 isLive = true,
             ),
+            SourceWrapper(
+                title = "Teledoc Campus",
+                testingDescription = "(No-DRM)",
+                uniqueId = "AT_2031723",
+                getStreamLink = true,
+                imageUrl = "https://images.seeklogo.com/logo-png/48/1/nh-nieuws-logo-png_seeklogo-485183.png",
+                preferThisImageUrlOverStreamLink = true,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
+                isLive = false,
+            ),
         )
     }
 

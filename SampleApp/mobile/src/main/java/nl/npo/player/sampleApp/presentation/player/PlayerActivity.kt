@@ -39,6 +39,7 @@ import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.exception.NPOPlayerException
+import nl.npo.player.library.domain.offline.ProgressStorageProvider
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.error.NPOPlayerError
 import nl.npo.player.library.domain.player.media.NPOPlaybackSpeed
@@ -84,6 +85,7 @@ import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import nl.npo.tag.sdk.tracker.PageTracker
+import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -101,6 +103,9 @@ class PlayerActivity : BaseActivity() {
     private var npoNotificationManager: NPONotificationManager? = null
     private var backstackLost = false
     private var pipHandler: NPOPictureInPictureHandler? = null
+
+    @Inject
+    lateinit var progressStorageProvider: ProgressStorageProvider
 
     private val onPlayPauseListener: PlayerListener =
         object : PlayerListener {
@@ -240,6 +245,7 @@ class PlayerActivity : BaseActivity() {
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
                             useExoplayer = useExoplayer,
+                            progressStorageProvider = progressStorageProvider,
                         ).apply {
                             val player = this
 
