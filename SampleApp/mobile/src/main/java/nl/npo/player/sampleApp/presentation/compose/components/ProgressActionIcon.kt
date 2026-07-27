@@ -1,13 +1,12 @@
 package nl.npo.player.sampleApp.presentation.compose.components
 
 import androidx.annotation.OptIn
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -38,8 +37,20 @@ fun ProgressActionIcon(
         when (val s = downloadState) {
             is NPODownloadState.InProgress -> {
                 CircularProgressIndicator(
-                    progress = { s.progress / 100f },
+                    progress = { (s.progress / 100f).coerceIn(0f, 1f) },
                     strokeWidth = 2.dp,
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(onClick = onClick),
+                )
+            }
+            NPODownloadState.Initializing,
+            NPODownloadState.Deleting,
+            -> {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    color = Color.White,
                     modifier = Modifier.size(24.dp),
                 )
             }
@@ -47,16 +58,14 @@ fun ProgressActionIcon(
             else -> {
                 IconButton(onClick = onClick) {
                     val icon: ImageVector =
-                        when (downloadState) {
-                            NPODownloadState.Deleting -> Icons.Default.Delete
+                        when (s) {
                             is NPODownloadState.Failed -> Icons.Default.Error
                             is NPODownloadState.Finished -> Icons.Default.PlayArrow
-                            NPODownloadState.Initializing -> Icons.Default.Download
-                            is NPODownloadState.Paused -> Icons.Default.Pause
-                            is NPODownloadState.InProgress -> error("handled above")
-                            null -> Icons.Default.Download
+                            is NPODownloadState.Paused -> Icons.Default.Download
+                            else -> Icons.Default.Download
                         }
-                    Icon(icon, contentDescription = null, tint = Color.White)
+                    val tint = if (s is NPODownloadState.Failed) Color(0xFFE53935) else Color.White
+                    Icon(icon, contentDescription = null, tint = tint)
                 }
             }
         }
