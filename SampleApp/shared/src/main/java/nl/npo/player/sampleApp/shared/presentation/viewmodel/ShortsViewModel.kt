@@ -1,6 +1,5 @@
 package nl.npo.player.sampleApp.shared.presentation.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,6 +31,7 @@ import nl.npo.player.library.domain.player.preload.play
 import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
@@ -113,7 +113,7 @@ class ShortsViewModel
             getStreamLinkListItems()
         }
 
-        fun initPlayer(context: Context) {
+        fun initPlayer() {
             viewModelScope.launch(Dispatchers.Main) {
                 val pageTracker: PlayerPageTracker =
                     PlayerTagProvider.getPageTracker(
@@ -141,8 +141,8 @@ class ShortsViewModel
                 _player.emit(
                     NPOPlayerLibrary
                         .getPlayer(
-                            context = context,
                             npoPlayerConfig = playerConfig,
+                            adManager = AdManagerProvider.getAdManager(),
                             pageTracker = pageTracker,
                             useExoplayer = useExoplayer,
                         ).also { player ->

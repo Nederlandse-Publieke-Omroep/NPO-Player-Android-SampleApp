@@ -45,7 +45,7 @@ open class SampleApplication :
                     NPOPlayerLibrary.initialize(
                         context = this,
                         analyticsConfig = AnalyticsConfiguration.Provided(tag),
-                        adManager = AdManagerProvider.getAdManager(this),
+                        sterConfiguration = AdManagerProvider.getSterConfiguration(this),
                     ) {
                         this.environment = environment
                         this.enableCasting = enableCasting
@@ -58,7 +58,7 @@ open class SampleApplication :
             NPOPlayerLibrary.initialize(
                 context = this,
                 analyticsConfig = setupAnalyticsConfiguration(),
-                adManager = AdManagerProvider.getAdManager(this),
+                sterConfiguration = AdManagerProvider.getSterConfiguration(this),
             ) {
                 this.environment = environment
                 this.enableCasting = enableCasting

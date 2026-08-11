@@ -78,6 +78,7 @@ import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.enums.PlaybackSpeeds
 import nl.npo.player.sampleApp.presentation.player.enums.PlayerSettings
 import nl.npo.player.sampleApp.shared.app.PlayerApplication
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -241,7 +242,7 @@ class PlayerActivity : BaseActivity() {
                 player =
                     NPOPlayerLibrary
                         .getPlayer(
-                            context = binding.root.context,
+                            adManager = AdManagerProvider.getAdManager(),
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
                             useExoplayer = useExoplayer,

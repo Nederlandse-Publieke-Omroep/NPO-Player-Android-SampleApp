@@ -42,6 +42,7 @@ import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
 import nl.npo.player.library.presentation.tv.compose.theme.tv
 import nl.npo.player.library.sterads.presentation.ui.TvSterOverlayRenderer
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.extension.observeNonNull
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -194,7 +195,7 @@ class ComposePlaybackVideoFragment : Fragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context = context,
+                        adManager = AdManagerProvider.getAdManager(),
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                         useExoplayer = useExoplayer,

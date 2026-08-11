@@ -6,5 +6,7 @@ import nl.npo.player.library.domain.ads.SterConfiguration
 import nl.npo.player.library.sterads.presentation.ads.VastAdManager
 
 object AdManagerProvider {
-    fun getAdManager(applicationContext: Context): AdManager = VastAdManager(SterConfiguration(applicationContext.packageName))
+    fun getAdManager(): AdManager = VastAdManager()
+
+    fun getSterConfiguration(applicationContext: Context): SterConfiguration = SterConfiguration(applicationContext.packageName)
 }

@@ -41,6 +41,7 @@ import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.view.NPOVideoPlayerView
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -127,7 +128,7 @@ class NativePlaybackVideoFragment : Fragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context = context,
+                        adManager = AdManagerProvider.getAdManager(),
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                         useExoplayer = useExoplayer,

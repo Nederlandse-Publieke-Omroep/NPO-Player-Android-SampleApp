@@ -22,7 +22,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.asFlow
@@ -52,7 +51,7 @@ fun PreloadScreen(viewModel: ShortsViewModel = hiltViewModel()) {
     var currentPageIndex by remember { mutableIntStateOf(0) }
     val player =
         viewModel.player.collectAsState().value ?: run {
-            viewModel.initPlayer(LocalContext.current)
+            viewModel.initPlayer()
             return
         }
     val playerUIState = rememberNPOPlayerUIState(player = player)
