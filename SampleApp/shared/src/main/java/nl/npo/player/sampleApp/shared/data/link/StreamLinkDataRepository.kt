@@ -417,8 +417,8 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
-                title = "Test EZDRM",
-                testingDescription = "EZDRM 1",
+                title = "Test EZDRM (ALLEEN OP TEST ENVIRONMENT)",
+                testingDescription = "LI_TEST_EZDRM_1",
                 uniqueId = "LI_TEST_EZDRM_1",
                 getStreamLink = true,
                 offlineDownloadAllowed = false,
@@ -444,6 +444,14 @@ object StreamLinkDataRepository : LinkRepository {
                 offlineDownloadAllowed = true,
                 avType = AVType.VIDEO,
                 isLive = false,
+            ),
+            SourceWrapper(
+                title = "Test EZDRM NOS (ALLEEN OP TEST ENVIRONMENT)",
+                testingDescription = "NOSC_2bccff4a_5fc0_409c_96bd_854d370f37a1",
+                uniqueId = "NOSC_2bccff4a_5fc0_409c_96bd_854d370f37a1",
+                getStreamLink = true,
+                offlineDownloadAllowed = true,
+                avType = AVType.VIDEO,
             ),
         )
     }

@@ -4,7 +4,9 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
 
-enum class ByteUnit(val suffix: String) {
+enum class ByteUnit(
+    val suffix: String,
+) {
     BYTES("B"),
     KIBI("KiB"),
     MEBI("MiB"),
@@ -26,9 +28,11 @@ fun Long.toHumanReadableSize(locale: Locale = Locale.US): String {
     var unit = ByteUnit.BYTES
 
     for (candidate in ByteUnit.entries) {
-        if (remaining < BYTES_PER_UNIT) break
+        if (remaining < BYTES_PER_UNIT) {
+            unit = candidate
+            break
+        }
         remaining /= BYTES_PER_UNIT
-        unit = candidate
     }
 
     val formatter = DecimalFormat("#.##", DecimalFormatSymbols(locale))
