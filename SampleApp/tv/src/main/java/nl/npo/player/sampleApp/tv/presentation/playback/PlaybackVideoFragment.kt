@@ -62,7 +62,6 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                         useExoplayer = useExoplayer,
@@ -78,18 +77,23 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             mTransportControlGlue = PlaybackTransportControlGlue(activity, playerAdapter)
             mTransportControlGlue.host = glueHost
             when {
-                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
+                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
                     loadStreamURL(
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
+                }
 
-                sourceWrapper.getStreamLink ->
+                sourceWrapper.getStreamLink -> {
                     playerViewModel.retrieveSource(
                         sourceWrapper,
                         ::handleTokenState,
                     )
+                }
 
-                sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
+                sourceWrapper.npoSourceConfig != null -> {
+                    loadStreamURL(sourceWrapper.npoSourceConfig!!)
+                }
+
                 else -> {
                     /** NO-OP **/
                 }
@@ -99,12 +103,15 @@ class PlaybackVideoFragment : VideoSupportFragment() {
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
-            is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
+            is StreamRetrievalState.Success -> {
+                loadStreamURL(retrievalState.npoSourceConfig)
+            }
 
-            is StreamRetrievalState.Error ->
+            is StreamRetrievalState.Error -> {
                 player.publishEvent(
                     NPOPlayerEvent.Player.Error(retrievalState.error, player.isRetryPossible),
                 )
+            }
 
             StreamRetrievalState.Loading,
 

@@ -127,7 +127,6 @@ class NativePlaybackVideoFragment : Fragment() {
             player =
                 NPOPlayerLibrary
                     .getPlayer(
-                        context = context,
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                         useExoplayer = useExoplayer,

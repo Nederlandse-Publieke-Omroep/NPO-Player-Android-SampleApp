@@ -87,6 +87,7 @@ class PlayerViewModel
                         .copy(overrideAutoPlay = settingsRepository.autoPlayEnabled.first())
                 StreamRetrievalState.Success(mergedSource, sourceWrapper)
             } catch (e: NPOPlayerException) {
+                e.cause?.printStackTrace()
                 StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper)
             }
         }

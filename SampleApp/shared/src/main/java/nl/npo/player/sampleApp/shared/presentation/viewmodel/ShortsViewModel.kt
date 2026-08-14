@@ -141,7 +141,6 @@ class ShortsViewModel
                 _player.emit(
                     NPOPlayerLibrary
                         .getPlayer(
-                            context = context,
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
                             useExoplayer = useExoplayer,

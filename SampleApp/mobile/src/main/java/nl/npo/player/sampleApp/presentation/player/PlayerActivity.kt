@@ -241,7 +241,6 @@ class PlayerActivity : BaseActivity() {
                 player =
                     NPOPlayerLibrary
                         .getPlayer(
-                            context = binding.root.context,
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
                             useExoplayer = useExoplayer,
