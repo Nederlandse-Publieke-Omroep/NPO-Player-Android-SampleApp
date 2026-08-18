@@ -25,12 +25,6 @@
 
         <profileable android:shell="true" />
 
-        <meta-data
-            android:name="BITMOVIN_PLAYER_LICENSE_KEY"
-            android:value="${YOUR-PLAYER-LICENSE-KEY}" />
-        <meta-data
-            android:name="BITMOVIN_ANALYTICS_LICENSE_KEY"
-            android:value="${YOUR-ANALYTICS-LICENSE-KEY}" />
 
         <activity
             android:name=".presentation.SelectNPOTagTypeActivity"
@@ -53,21 +47,6 @@
             android:launchMode="singleTask"
             android:supportsPictureInPicture="true"
             android:theme="@style/Theme.NPOPlayer" />
-        <!-- Following lines are needed for the usage of cast -->
-        <activity
-            android:name="com.bitmovin.player.casting.ExpandedControllerActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.CastVideosTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="nl.npo.player.sampleApp.presentation.MainActivity" />
-        </activity>
 
         <service
             android:name="nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService"
@@ -83,6 +62,7 @@
             android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- Following lines are needed for the usage of cast -->
 
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"

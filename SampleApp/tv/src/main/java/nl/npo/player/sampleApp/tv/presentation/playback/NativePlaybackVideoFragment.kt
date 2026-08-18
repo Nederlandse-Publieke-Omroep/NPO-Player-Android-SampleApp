@@ -26,7 +26,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
@@ -124,13 +124,12 @@ class NativePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, playerUIConfig ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoplayer = useExoplayer,
                         adManager = AdManagerProvider.getAdManager(),
                     ).apply {
                         attachToLifecycle(lifecycle)
@@ -155,9 +154,9 @@ class NativePlaybackVideoFragment : Fragment() {
                     }
 
             when {
-                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+                sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig -> {
                     loadStreamURL(
-                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                        sourceWrapper.npoSourceConfig as NPOMedia3OfflineSourceConfig,
                     )
                 }
 
@@ -173,7 +172,7 @@ class NativePlaybackVideoFragment : Fragment() {
                 }
 
                 else -> {
-                    // NO-OP **/
+                    // NO-OP
                 }
             }
         }

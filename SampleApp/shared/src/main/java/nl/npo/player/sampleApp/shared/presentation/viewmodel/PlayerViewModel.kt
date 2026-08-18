@@ -106,7 +106,7 @@ class PlayerViewModel
             }
         }
 
-        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, UseExoplayer, NPOPlayerUIConfig) -> Unit) {
+        fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, NPOPlayerUIConfig) -> Unit) {
             viewModelScope.launch {
                 val playerConfig =
                     NPOPlayerConfig(
@@ -136,7 +136,6 @@ class PlayerViewModel
                     } else {
                         null
                     }
-                val useExoplayer: UseExoplayer = settingsRepository.useExoplayer.first()
                 val playerUIConfig =
                     if (settingsRepository.chapterSkippingAlwaysFeatured.first()) {
                         NPOPlayerUIConfig(
@@ -150,7 +149,6 @@ class PlayerViewModel
                 callback(
                     playerConfig,
                     npoPlayerColors,
-                    useExoplayer,
                     playerUIConfig,
                 )
             }

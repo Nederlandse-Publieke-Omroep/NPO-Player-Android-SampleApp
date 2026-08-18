@@ -50,7 +50,6 @@ import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
-import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.ads.NoAdOverlayRenderer
@@ -66,7 +65,6 @@ import nl.npo.player.library.presentation.mobile.compose.components.MobilePlayer
 import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
-import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
 import nl.npo.player.sampleApp.R
@@ -84,7 +82,6 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
-import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import nl.npo.tag.sdk.tracker.PageTracker
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -101,7 +98,6 @@ class PlayerActivity : BaseActivity() {
     private lateinit var sourceWrapper: SourceWrapper
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val linkViewModel by viewModels<LinksViewModel>()
-    private var npoNotificationManager: NPONotificationManager? = null
     private var backstackLost = false
     private var pipHandler: NPOPictureInPictureHandler? = null
 
@@ -211,8 +207,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
-            loadSource(sourceWrapper, playerConfig, npoPlayerColors, useExoplayer, playerUIConfig)
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, playerUIConfig ->
+            loadSource(sourceWrapper, playerConfig, npoPlayerColors, playerUIConfig)
         }
     }
 
@@ -227,7 +223,6 @@ class PlayerActivity : BaseActivity() {
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
         npoPlayerColors: NativePlayerColors?,
-        useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
         this.sourceWrapper = sourceWrapper
@@ -246,7 +241,6 @@ class PlayerActivity : BaseActivity() {
                         .getPlayer(
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
-                            useExoplayer = useExoplayer,
                             adManager = AdManagerProvider.getAdManager(),
                             progressStorageProvider = progressStorageProvider,
                         ).apply {
@@ -261,12 +255,6 @@ class PlayerActivity : BaseActivity() {
                                 }
 
                             eventEmitter.addListener(onPlayPauseListener)
-                            setupPlayerNotification(
-                                NOTIFICATION_CHANNEL_ID,
-                                R.string.app_name,
-                                R.drawable.ic_launcher_foreground,
-                                NOTIFICATION_ID,
-                            )
                             attachToLifecycle(lifecycle)
                             changePageTracker(this, title)
                             setTokenRefreshCallback(retryListener)
@@ -428,7 +416,6 @@ class PlayerActivity : BaseActivity() {
         }
         binding.npoVideoPlayerNative.destroy()
 
-        npoNotificationManager?.setPlayer(null)
         if (isGooglePlayServicesAvailable()) {
             CastContext
                 .getSharedInstance(this@PlayerActivity)
@@ -497,8 +484,8 @@ class PlayerActivity : BaseActivity() {
             } // ?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer, playerUIConfig ->
-                        loadSource(newSource, config, npoPlayerColors, useExoplayer, playerUIConfig)
+                    playerViewModel.getConfiguration { config, npoPlayerColors, playerUIConfig ->
+                        loadSource(newSource, config, npoPlayerColors, playerUIConfig)
                     }
                 }
         }

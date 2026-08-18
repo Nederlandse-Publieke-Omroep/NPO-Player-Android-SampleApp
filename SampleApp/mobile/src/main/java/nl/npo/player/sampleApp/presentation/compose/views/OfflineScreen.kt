@@ -50,7 +50,6 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     val mergedList by viewModel.mergedSourceList.collectAsState()
     val context = LocalContext.current
     val downloadEvent by viewModel.downloadEvent.collectAsState()
-    val legacyOfflineContent by viewModel.legacyOfflineContentList.collectAsState()
 
     when (downloadEvent) {
         is DownloadEvent.Error -> {
@@ -87,18 +86,6 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
         }
 
         else -> {}
-    }
-
-    if (legacyOfflineContent.isNotEmpty()) {
-        CustomAlertDialog(
-            dialogTitle = stringResource(R.string.delete_legacy_title),
-            dialogDescription = stringResource(R.string.delete_legacy_body),
-            onConfirm = {
-                legacyOfflineContent.forEach { it.delete() }
-                viewModel.refreshLegacyDownloadList()
-            },
-            onDismiss = viewModel::dismissLegacyDownloadDialog,
-        )
     }
 
     Column(

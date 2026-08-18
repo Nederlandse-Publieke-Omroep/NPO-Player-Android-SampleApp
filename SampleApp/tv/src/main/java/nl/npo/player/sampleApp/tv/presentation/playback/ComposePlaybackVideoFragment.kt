@@ -24,7 +24,7 @@ import androidx.fragment.app.viewModels
 import androidx.tv.material3.Icon
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
@@ -191,13 +191,12 @@ class ComposePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, playerUIConfig ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoplayer = useExoplayer,
                         adManager = AdManagerProvider.getAdManager(),
                     ).apply {
                         attachToLifecycle(lifecycle)
@@ -223,9 +222,9 @@ class ComposePlaybackVideoFragment : Fragment() {
     private fun loadSource(sourceWrapper: SourceWrapper) {
         this.sourceWrapper = sourceWrapper
         when {
-            sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+            sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig -> {
                 loadStreamURL(
-                    sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                    sourceWrapper.npoSourceConfig as NPOMedia3OfflineSourceConfig,
                 )
             }
 

@@ -3,10 +3,6 @@ name: setup
 inputs:
   NPOTAG_PACKAGE_CLOUD_KEY:
     required: true
-  NPO_PLAYER_BITMOVIN_LICENCE_KEY:
-    required: true
-  NPO_PLAYER_BITMOVIN_ANALYTICS_KEY:
-    required: true
   TOKEN_ISSUER_START:
     required: true
   TOKEN_ISSUER_PLUS:
@@ -52,8 +48,6 @@ runs:
 
     - run: |
         echo "npotag_package_cloud_key=${{ inputs.NPOTAG_PACKAGE_CLOUD_KEY }}" >> local.properties
-        echo "your_player_license_key_here=${{ inputs.NPO_PLAYER_BITMOVIN_LICENCE_KEY }}" >> local.properties
-        echo "your_analytics_license_key_here=${{ inputs.NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}" >> local.properties
         echo "token_issuer_start=${{ inputs.TOKEN_ISSUER_START }}" >> local.properties
         echo "token_issuer_plus=${{ inputs.TOKEN_ISSUER_PLUS }}" >> local.properties
         echo "token_signature_start_dev=${{ inputs.TOKEN_SIGNATURE_START_DEV }}" >> local.properties

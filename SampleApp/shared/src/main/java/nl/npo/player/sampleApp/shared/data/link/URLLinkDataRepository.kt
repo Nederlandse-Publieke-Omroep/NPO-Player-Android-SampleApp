@@ -153,7 +153,7 @@ object URLLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
-                title = "Bitmovin/Dashif sample livestream",
+                title = "Dashif sample livestream",
                 streamUrl = "https://livesim.dashif.org/livesim2/tsbd_600/testpic_2s/Manifest.mpd",
                 uniqueId = "testpic_2s",
                 getStreamLink = false,

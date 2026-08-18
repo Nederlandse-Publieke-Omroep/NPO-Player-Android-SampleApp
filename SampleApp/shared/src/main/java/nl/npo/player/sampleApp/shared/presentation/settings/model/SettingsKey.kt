@@ -1,7 +1,6 @@
 package nl.npo.player.sampleApp.shared.presentation.settings.model
 
 enum class SettingsKey {
-    Exoplayer,
     Styling,
     UserType,
     CustomSettings,

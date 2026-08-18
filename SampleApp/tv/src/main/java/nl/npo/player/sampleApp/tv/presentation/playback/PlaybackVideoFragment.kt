@@ -10,7 +10,7 @@ import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.PlaybackControlsRow
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
@@ -57,7 +57,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, playerUIConfig ->
             val pageTracker = activity.pageTracker ?: return@getConfiguration
             val playerPageTracker = PlayerTagProvider.getPageTracker(pageTracker)
             player =
@@ -65,7 +65,6 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                     .getPlayer(
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoplayer = useExoplayer,
                         adManager = AdManagerProvider.getAdManager(),
                     ).apply {
                         attachToLifecycle(lifecycle)
@@ -79,9 +78,9 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             mTransportControlGlue = PlaybackTransportControlGlue(activity, playerAdapter)
             mTransportControlGlue.host = glueHost
             when {
-                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+                sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig -> {
                     loadStreamURL(
-                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                        sourceWrapper.npoSourceConfig as NPOMedia3OfflineSourceConfig,
                     )
                 }
 

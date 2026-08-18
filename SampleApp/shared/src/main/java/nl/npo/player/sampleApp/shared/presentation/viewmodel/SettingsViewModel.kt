@@ -59,10 +59,6 @@ class SettingsViewModel
             value: Boolean,
         ) {
             when (key) {
-                SettingsKey.Exoplayer -> {
-                    settingsRepository.setUseExoplayer(value)
-                }
-
                 SettingsKey.CustomSettings -> {
                     settingsRepository.setShowCustomSettings(value)
                 }
@@ -131,13 +127,6 @@ class SettingsViewModel
         private suspend fun generateSettingsList(supportsCasting: Boolean) {
             _settingsList.value =
                 buildList {
-                    add(
-                        SettingsItem.Switch(
-                            SettingsKey.Exoplayer,
-                            R.string.setting_use_exoplayer,
-                            SettingsSwitchOption(settingsRepository.useExoplayer.first()),
-                        ),
-                    )
                     add(
                         SettingsItem.Picker(
                             SettingsKey.ShouldPlayNext,
