@@ -195,7 +195,9 @@ class PlayerActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         NPOCasting.updateCastingContext(this)
-        pipHandler?.exitPictureInPicture()
+        if (!isInPictureInPictureMode) {
+            pipHandler?.exitPictureInPicture()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
