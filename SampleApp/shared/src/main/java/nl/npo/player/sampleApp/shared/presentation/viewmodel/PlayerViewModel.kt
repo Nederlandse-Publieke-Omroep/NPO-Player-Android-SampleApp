@@ -190,7 +190,7 @@ class PlayerViewModel
         }
     }
 
-internal suspend fun SourceWrapper.mergeSourceWrapperWithSource(source: NPOSourceConfig): NPOSourceConfig =
+internal fun SourceWrapper.mergeSourceWrapperWithSource(source: NPOSourceConfig): NPOSourceConfig =
     source.copy(
         overrideStartOffset = startOffset,
         overrideImageUrl = getImageUrl(source),

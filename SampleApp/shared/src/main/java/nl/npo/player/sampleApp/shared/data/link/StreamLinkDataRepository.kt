@@ -21,6 +21,13 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
+                title = "EZDRM test: NOSC_2bccff4a_5fc0_409c_96bd_854d370f37a1 (ALLEEN OP TEST ENVIRONMENT)",
+                testingDescription = "EZDRM test",
+                uniqueId = "NOSC_2bccff4a_5fc0_409c_96bd_854d370f37a1",
+                getStreamLink = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "Audio transcriptie test: WO_VPRO_20308566 (ALLEEN OP ACC ENVIRONMENT)",
                 testingDescription = "Audio transcriptie test",
                 uniqueId = "WO_VPRO_20308566",
