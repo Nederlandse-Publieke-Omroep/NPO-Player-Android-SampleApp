@@ -76,7 +76,7 @@ fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
                     ManualPridSearchBar(
                         searchString = searchString,
                         searchHint = searchHint,
-                        onSearchStringChange = { searchString = it },
+                        onSearchStringChange = { searchString = it.uppercase() },
                         onSearch = { query ->
                             context.intentPlayerActivity(
                                 SourceWrapper(
