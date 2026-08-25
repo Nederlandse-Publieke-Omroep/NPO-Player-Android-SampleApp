@@ -17,6 +17,7 @@ import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.tv.adapter.NPOLeanbackPlayerAdapter
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -65,6 +66,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                         useExoplayer = useExoplayer,
+                        adManager = AdManagerProvider.getAdManager(),
                     ).apply {
                         attachToLifecycle(lifecycle)
                         updatePageTracker(playerPageTracker)
@@ -95,7 +97,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
                 }
 
                 else -> {
-                    /** NO-OP **/
+                    // NO-OP
                 }
             }
         }
