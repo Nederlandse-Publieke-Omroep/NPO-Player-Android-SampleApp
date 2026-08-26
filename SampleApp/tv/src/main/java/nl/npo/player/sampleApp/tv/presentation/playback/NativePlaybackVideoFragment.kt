@@ -41,6 +41,7 @@ import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
 import nl.npo.player.library.presentation.tv.view.NPOVideoPlayerView
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -130,6 +131,7 @@ class NativePlaybackVideoFragment : Fragment() {
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
                         useExoplayer = useExoplayer,
+                        adManager = AdManagerProvider.getAdManager(),
                     ).apply {
                         attachToLifecycle(lifecycle)
                         playbackViewModel.setPlayer(this)
@@ -153,20 +155,25 @@ class NativePlaybackVideoFragment : Fragment() {
                     }
 
             when {
-                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig ->
+                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
                     loadStreamURL(
                         sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
                     )
+                }
 
-                sourceWrapper.getStreamLink ->
+                sourceWrapper.getStreamLink -> {
                     playerViewModel.retrieveSource(
                         sourceWrapper,
                         ::handleTokenState,
                     )
+                }
 
-                sourceWrapper.npoSourceConfig != null -> loadStreamURL(sourceWrapper.npoSourceConfig!!)
+                sourceWrapper.npoSourceConfig != null -> {
+                    loadStreamURL(sourceWrapper.npoSourceConfig!!)
+                }
+
                 else -> {
-                    /** NO-OP **/
+                    // NO-OP **/
                 }
             }
         }
@@ -174,7 +181,9 @@ class NativePlaybackVideoFragment : Fragment() {
 
     private fun handleTokenState(retrievalState: StreamRetrievalState) {
         when (retrievalState) {
-            is StreamRetrievalState.Success -> loadStreamURL(retrievalState.npoSourceConfig)
+            is StreamRetrievalState.Success -> {
+                loadStreamURL(retrievalState.npoSourceConfig)
+            }
 
             is StreamRetrievalState.Error -> {
                 player.publishEvent(

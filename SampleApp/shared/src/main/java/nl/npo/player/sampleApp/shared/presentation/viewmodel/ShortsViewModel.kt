@@ -32,6 +32,7 @@ import nl.npo.player.library.domain.player.preload.play
 import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
+import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
@@ -144,6 +145,7 @@ class ShortsViewModel
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
                             useExoplayer = useExoplayer,
+                            adManager = AdManagerProvider.getAdManager(),
                         ).also { player ->
                             player.setTokenRefreshCallback { playbackStoppedAt ->
                                 viewModelScope.launch {
