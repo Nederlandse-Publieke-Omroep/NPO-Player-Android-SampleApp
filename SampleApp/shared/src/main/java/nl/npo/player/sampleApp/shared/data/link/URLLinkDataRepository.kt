@@ -27,7 +27,8 @@ object URLLinkDataRepository : LinkRepository {
                 title = "Transcoding test Audio",
                 testingDescription = "npo-tv-staging.prd.cdn.bcms.kpn.com Dash",
                 streamUrl =
-                    "https://npo-tv-staging.prd.cdn.bcms.kpn.com/e93133a272709c13d79e36b533a4fdcd_1735642800/L1/11b1447e/7523e1be.isml/dash.mpd",
+                    "https://npo-tv-staging.prd.cdn.bcms.kpn.com/e93133a272709c13d79e36b533a4fdcd_1735642800/" +
+                        "L1/11b1447e/7523e1be.isml/dash.mpd",
                 uniqueId = "L1/11b1447e/7523e1be",
                 getStreamLink = false,
                 isLive = true,
