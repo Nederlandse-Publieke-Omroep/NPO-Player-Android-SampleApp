@@ -137,14 +137,11 @@ class ShortsViewModel
                                 emptyList()
                             },
                     )
-                val useExoplayer: UseExoplayer = settingsRepository.useExoplayer.first()
-
                 _player.emit(
                     NPOPlayerLibrary
                         .getPlayer(
                             npoPlayerConfig = playerConfig,
                             pageTracker = pageTracker,
-                            useExoplayer = useExoplayer,
                             adManager = AdManagerProvider.getAdManager(),
                         ).also { player ->
                             player.setTokenRefreshCallback { playbackStoppedAt ->

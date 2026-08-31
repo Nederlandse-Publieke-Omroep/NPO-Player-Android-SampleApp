@@ -7,7 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.FragmentActivity
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.tv.R
 
@@ -38,12 +38,12 @@ class PlayerActivity : FragmentActivity() {
 
         @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
-            val offlineSource: NPOOfflineSourceConfig?
+            val offlineSource: NPOMedia3OfflineSourceConfig?
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 offlineSource =
                     this@getSourceWrapper.getParcelableExtra(
                         PLAYER_OFFLINE_SOURCE,
-                        NPOOfflineSourceConfig::class.java,
+                        NPOMedia3OfflineSourceConfig::class.java,
                     )
                 getSerializableExtra(PLAYER_SOURCE, SourceWrapper::class.java)
             } else {
@@ -61,7 +61,7 @@ class PlayerActivity : FragmentActivity() {
             optionalClass: Class<T>,
         ): Intent =
             Intent(packageContext, optionalClass).apply {
-                if (sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig) {
+                if (sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig) {
                     putExtra(PLAYER_OFFLINE_SOURCE, sourceWrapper.npoSourceConfig as Parcelable)
                     putExtra(PLAYER_SOURCE, sourceWrapper.copy(npoSourceConfig = null))
                 } else {

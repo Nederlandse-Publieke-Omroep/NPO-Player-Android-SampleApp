@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -19,14 +20,13 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOPlayerLibrary
-import nl.npo.player.library.data.offline.model.NPOOfflineSourceConfig
+import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.common.model.PlayerListener
 import nl.npo.player.library.domain.events.NPOPlayerEvent
 import nl.npo.player.library.domain.player.NPOPlayer
@@ -34,13 +34,17 @@ import nl.npo.player.library.domain.player.media.NPOSubtitleTrack
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
+import nl.npo.player.library.presentation.PlayerUI
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
 import nl.npo.player.library.presentation.compose.state.NPOPlayerUIState
 import nl.npo.player.library.presentation.compose.state.collectStreamInfoAsState
+import nl.npo.player.library.presentation.compose.state.rememberNPOPlayerUIState
+import nl.npo.player.library.presentation.compose.theme.PlayerTypography
 import nl.npo.player.library.presentation.compose.theme.toPlayerColors
 import nl.npo.player.library.presentation.tv.compose.components.DefaultTvPlayerComponents
 import nl.npo.player.library.presentation.tv.compose.components.TvPlayerTopBar
-import nl.npo.player.library.presentation.tv.view.NPOVideoPlayerView
+import nl.npo.player.library.presentation.tv.compose.scenes.TVSceneRenderer
+import nl.npo.player.library.presentation.tv.compose.theme.tv
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
@@ -77,6 +81,7 @@ class NativePlaybackVideoFragment : Fragment() {
             }
         }
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
@@ -84,29 +89,30 @@ class NativePlaybackVideoFragment : Fragment() {
 
         MaterialTheme {
             val isPreview = LocalInspectionMode.current
-            Box(modifier = Modifier.fillMaxSize()) {
-                AndroidView(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .background(Color.Black),
-                    factory = { context ->
-                        NPOVideoPlayerView(
-                            context = context,
-                        ).apply {
-                            if (!isPreview) {
-                                attachPlayer(
-                                    npoPlayer = player,
-                                    npoPlayerColors = playerColors,
-                                    components =
-                                        CustomPlayerComponents(
-                                            onBackPressed = { activity?.onBackPressedDispatcher?.onBackPressed() },
-                                        ),
-                                )
-                            }
-                        }
-                    },
-                )
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black),
+            ) {
+                if (!isPreview) {
+                    val uiState = rememberNPOPlayerUIState(player)
+                    PlayerUI.Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        state = uiState,
+                    )
+                    PlayerUI.Overlay(
+                        modifier = Modifier.fillMaxSize(),
+                        state = uiState,
+                        typography = PlayerTypography.tv(),
+                        sceneOverlays = TVSceneRenderer(),
+                        npoPlayerColors = playerColors,
+                        components =
+                            CustomPlayerComponents(
+                                onBackPressed = { activity?.onBackPressedDispatcher?.onBackPressed() },
+                            ),
+                    )
+                }
             }
         }
     }
@@ -124,13 +130,12 @@ class NativePlaybackVideoFragment : Fragment() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, playerUIConfig ->
             player =
                 NPOPlayerLibrary
                     .getPlayer(
                         npoPlayerConfig = playerConfig,
                         pageTracker = PlayerTagProvider.getPageTracker(pageTracker),
-                        useExoplayer = useExoplayer,
                         adManager = AdManagerProvider.getAdManager(),
                     ).apply {
                         attachToLifecycle(lifecycle)
@@ -155,9 +160,9 @@ class NativePlaybackVideoFragment : Fragment() {
                     }
 
             when {
-                sourceWrapper.npoSourceConfig is NPOOfflineSourceConfig -> {
+                sourceWrapper.npoSourceConfig is NPOMedia3OfflineSourceConfig -> {
                     loadStreamURL(
-                        sourceWrapper.npoSourceConfig as NPOOfflineSourceConfig,
+                        sourceWrapper.npoSourceConfig as NPOMedia3OfflineSourceConfig,
                     )
                 }
 

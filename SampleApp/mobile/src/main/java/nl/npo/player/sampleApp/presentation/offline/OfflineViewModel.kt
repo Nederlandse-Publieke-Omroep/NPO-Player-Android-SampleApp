@@ -84,7 +84,8 @@ class OfflineViewModel
         init {
             viewModelScope.launch {
                 getOfflineLinkListItems()
-                _legacyOfflineContentList.tryEmit(NPOPlayerLibrary.Offline.getAllLegacyOfflineContent())
+                // Legacy (Bitmovin-era) offline downloads are no longer supported by the library (7.x).
+                _legacyOfflineContentList.tryEmit(emptyList())
             }
         }
 
@@ -237,7 +238,8 @@ class OfflineViewModel
             _legacyOfflineContentList.tryEmit(emptyList())
             viewModelScope.launch {
                 delay(20.seconds)
-                _legacyOfflineContentList.tryEmit(NPOPlayerLibrary.Offline.getAllLegacyOfflineContent())
+                // Legacy (Bitmovin-era) offline downloads are no longer supported by the library (7.x).
+                _legacyOfflineContentList.tryEmit(emptyList())
             }
         }
 
