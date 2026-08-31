@@ -83,7 +83,7 @@ class OfflineViewModel
         init {
             viewModelScope.launch {
                 getOfflineLinkListItems()
-                // Legacy (Bitmovin-era) offline downloads are no longer supported by the library (7.x).
+                // Legacy (Bitmovin) offline downloads are no longer supported.
                 _legacyOfflineContentList.tryEmit(emptyList())
             }
         }
@@ -237,7 +237,7 @@ class OfflineViewModel
             _legacyOfflineContentList.tryEmit(emptyList())
             viewModelScope.launch {
                 delay(20.seconds)
-                // Legacy (Bitmovin-era) offline downloads are no longer supported by the library (7.x).
+                // Legacy (Bitmovin) offline downloads are no longer supported .
                 _legacyOfflineContentList.tryEmit(emptyList())
             }
         }
