@@ -837,7 +837,6 @@ class PlayerActivity : BaseActivity() {
     }
 
     companion object {
-
         @Suppress("DEPRECATION")
         fun Intent.getSourceWrapper(): SourceWrapper? {
             val offlineSource: NPOMedia3OfflineSourceConfig?

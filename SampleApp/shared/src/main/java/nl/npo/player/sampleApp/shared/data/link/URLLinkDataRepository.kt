@@ -20,14 +20,17 @@ object URLLinkDataRepository : LinkRepository {
                     "https://npo-ams1-shield1-egress.hystream.io/passthrough/clear/2026/03/VPWON_test1234/" +
                         "550e8400-e29b-41d4-a716-446655440891/550e8400-e29b-41d4-a716-446655440891.mp3",
                 offlineDownloadAllowed = true,
-                imageUrl = "https://assets-start.npo.nl/resources/2023/07/02/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
+                imageUrl =
+                    "https://assets-start.npo.nl/resources/2023/07/02" +
+                        "/d9abee61-b309-4b3f-b3ca-6e2ff4cdf13c.jpg?dimensions=600x600",
                 avType = AVType.AUDIO,
             ),
             SourceWrapper(
                 title = "Transcoding test Audio",
                 testingDescription = "npo-tv-staging.prd.cdn.bcms.kpn.com Dash",
                 streamUrl =
-                    "https://npo-tv-staging.prd.cdn.bcms.kpn.com/e93133a272709c13d79e36b533a4fdcd_1735642800/L1/11b1447e/7523e1be.isml/dash.mpd",
+                    "https://npo-tv-staging.prd.cdn.bcms.kpn.com/e93133a272709c13d79e36b533a4fdcd_1735642800/" +
+                        "L1/11b1447e/7523e1be.isml/dash.mpd",
                 uniqueId = "L1/11b1447e/7523e1be",
                 getStreamLink = false,
                 isLive = true,
