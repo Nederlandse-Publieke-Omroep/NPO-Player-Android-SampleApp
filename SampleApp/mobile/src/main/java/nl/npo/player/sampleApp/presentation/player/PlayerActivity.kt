@@ -276,7 +276,7 @@ class PlayerActivity : BaseActivity() {
 
                                 val configuration = LocalConfiguration.current
                                 LaunchedEffect(configuration.orientation) {
-                                if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE &&
+                                    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE &&
                                         !fullScreenHandler.isFullscreen
                                     ) {
                                         uiState.setFullScreen(true)
@@ -302,29 +302,29 @@ class PlayerActivity : BaseActivity() {
                                 }
 
                                 val sceneOverlays =
-                                remember(player) {
+                                    remember(player) {
                                         val adOverlay =
                                             if (playerViewModel.isSterUIEnabled.value) {
                                                 player.adManager.supplyDefaultAdsOverlayViewClass()
                                             } else {
                                                 null
                                             }
-                                    MobileSceneRenderer(
-                                        adOverlay?.let {
-                                            NativeAdsOverlayRenderer(
-                                                it,
-                                                onBackAction = { onBackPressedDispatcher.onBackPressed() },
-                                            )
-                                        } ?: NoAdOverlayRenderer,
-                                    )
-                                }
+                                        MobileSceneRenderer(
+                                            adOverlay?.let {
+                                                NativeAdsOverlayRenderer(
+                                                    it,
+                                                    onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                                )
+                                            } ?: NoAdOverlayRenderer,
+                                        )
+                                    }
                                 val components =
                                     remember(player) {
-                                    if (npoPlayerColors != null) {
-                                        CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
-                                    } else {
-                                        DefaultMobilePlayerComponents()
-                                    }
+                                        if (npoPlayerColors != null) {
+                                            CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                                        } else {
+                                            DefaultMobilePlayerComponents()
+                                        }
                                     }
 
                                 Box(modifier = Modifier.fillMaxSize()) {
@@ -332,15 +332,15 @@ class PlayerActivity : BaseActivity() {
                                         modifier = Modifier.fillMaxSize(),
                                         state = uiState,
                                     )
-                                PlayerUI.Overlay(
-                                    modifier = Modifier.fillMaxSize(),
+                                    PlayerUI.Overlay(
+                                        modifier = Modifier.fillMaxSize(),
                                         state = uiState,
                                         typography = PlayerTypography.mobile(),
                                         sceneOverlays = sceneOverlays,
                                         npoPlayerColors =
                                             (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
                                         components = components,
-                                )
+                                    )
                                 }
                             }
                         }
@@ -434,7 +434,6 @@ class PlayerActivity : BaseActivity() {
             if (!NPOCasting.isCastingConnected()) destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
-
 
         if (isGooglePlayServicesAvailable()) {
             CastContext
