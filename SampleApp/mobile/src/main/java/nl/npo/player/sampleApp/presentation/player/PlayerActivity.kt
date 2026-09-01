@@ -20,11 +20,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -110,7 +110,6 @@ class PlayerActivity : BaseActivity() {
     private val linkViewModel by viewModels<LinksViewModel>()
     private var backstackLost = false
     private var pipHandler: NPOPictureInPictureHandler? = null
-    private var playerUiState: NPOPlayerUIState? = null
 
     @Inject
     lateinit var progressStorageProvider: ProgressStorageProvider
@@ -223,13 +222,6 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE && !fullScreenHandler.isFullscreen) {
-            playerUiState?.setFullScreen(true)
-        }
-        super.onConfigurationChanged(newConfig)
-    }
-
     @OptIn(ExperimentalComposeUiApi::class)
     private fun loadSource(
         sourceWrapper: SourceWrapper,
@@ -281,9 +273,15 @@ class PlayerActivity : BaseActivity() {
                             )
                             setContent {
                                 val uiState = rememberNPOPlayerUIState(player)
-                                // Hoist the state so the Activity's lifecycle callbacks
-                                // (onConfigurationChanged, onDestroy) can drive it imperatively.
-                                SideEffect { playerUiState = uiState }
+
+                                val configuration = LocalConfiguration.current
+                                LaunchedEffect(configuration.orientation) {
+                                    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE &&
+                                        !fullScreenHandler.isFullscreen
+                                    ) {
+                                        uiState.setFullScreen(true)
+                                    }
+                                }
 
                                 LaunchedEffect(uiState) {
                                     uiState.setUIConfig(playerUIConfig)
@@ -436,8 +434,6 @@ class PlayerActivity : BaseActivity() {
             if (!NPOCasting.isCastingConnected()) destroy()
             eventEmitter.removeListener(onPlayPauseListener)
         }
-        playerUiState?.onDestroy()
-
         if (isGooglePlayServicesAvailable()) {
             CastContext
                 .getSharedInstance(this@PlayerActivity)
