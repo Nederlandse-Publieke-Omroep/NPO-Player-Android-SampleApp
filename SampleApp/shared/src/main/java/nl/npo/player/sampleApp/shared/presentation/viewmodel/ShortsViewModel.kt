@@ -137,6 +137,7 @@ class ShortsViewModel
                                 emptyList()
                             },
                     )
+
                 _player.emit(
                     NPOPlayerLibrary
                         .getPlayer(

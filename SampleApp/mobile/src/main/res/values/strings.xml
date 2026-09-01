@@ -19,8 +19,6 @@
     <string name="header_video">Video</string>
     <string name="delete_offline_confirmation">Are you sure you want to delete the offline content for "%1$s"?</string>
     <string name="delete_offline_title">"Delete offline content"</string>
-    <string name="delete_legacy_title">"Delete unsupported offline content"</string>
-    <string name="delete_legacy_body">"We detected unsupported (Bitmovin) offline items. They can't be played anymore. Delete them?"</string>
     <string name="offline_header">Offline</string>
     <string name="download_not_started">Download not started yet</string>
     <string name="download_in_progress">Downloading %1$d%% · %2$s</string>
@@ -43,4 +41,5 @@
     <!--    For test testing NPO Player Receiver-->
     <string name="cast_receiver_id_test" translatable="false">72990B99</string>
     <string name="debug_casting">onScreenDebug=true</string>
+    <string name="media_route_menu_title">Cast</string>
 </resources>

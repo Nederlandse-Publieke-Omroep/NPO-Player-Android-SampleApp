@@ -33,7 +33,7 @@ class MainActivity : BaseActivity() {
                 MainScreen()
             }
         }
-        // Update the context the BitmovinCastManager is using
+        // Update the context the CastManager is using
         // This should be done in every Activity's onCreate using the cast function
         NPOCasting.updateCastingContext(this)
         setObservers()

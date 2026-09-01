@@ -16,8 +16,6 @@ jobs:
         uses: actions/checkout@v4.2.2
       - uses: ./.github/actions/setup
         with:
-          NPO_PLAYER_BITMOVIN_ANALYTICS_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_ANALYTICS_KEY }}
-          NPO_PLAYER_BITMOVIN_LICENCE_KEY: ${{ secrets.NPO_PLAYER_BITMOVIN_LICENCE_KEY }}
           NPOTAG_PACKAGE_CLOUD_KEY: ${{ secrets.NPOTAG_PACKAGE_CLOUD_KEY }}
           STORE_FILE_ALIAS: ${{ vars.STORE_FILE_ALIAS }}
           STORE_FILE_ALIAS_PASSWORD: ${{ secrets.STORE_FILE_ALIAS_PASSWORD }}

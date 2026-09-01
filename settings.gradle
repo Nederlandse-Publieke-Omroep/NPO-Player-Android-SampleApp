@@ -33,9 +33,6 @@ dependencyResolutionManagement {
             }
         }
         maven {
-            url 'https://artifacts.bitmovin.com/artifactory/public-releases'
-        }
-        maven {
             url "https://packagecloud.io/priv/${getTagPackageCloudKey(localProperties)}/npo-data/npotag-v2-android/maven2"
         }
     }

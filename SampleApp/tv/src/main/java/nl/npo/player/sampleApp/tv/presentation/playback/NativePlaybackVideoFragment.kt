@@ -178,7 +178,7 @@ class NativePlaybackVideoFragment : Fragment() {
                 }
 
                 else -> {
-                    // NO-OP **/
+                    // NO-OP
                 }
             }
         }
