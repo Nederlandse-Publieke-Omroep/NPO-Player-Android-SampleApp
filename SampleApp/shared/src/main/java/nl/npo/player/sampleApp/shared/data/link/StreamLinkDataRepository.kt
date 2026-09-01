@@ -28,6 +28,13 @@ object StreamLinkDataRepository : LinkRepository {
                 avType = AVType.VIDEO,
             ),
             SourceWrapper(
+                title = "Luizenmoeder, de film: AT_300012178",
+                testingDescription = "EZDRM test (Op Prod)",
+                uniqueId = "AT_300012178",
+                getStreamLink = true,
+                avType = AVType.VIDEO,
+            ),
+            SourceWrapper(
                 title = "Audio transcriptie test: WO_VPRO_20308566 (ALLEEN OP ACC ENVIRONMENT)",
                 testingDescription = "Audio transcriptie test",
                 uniqueId = "WO_VPRO_20308566",

@@ -5,15 +5,12 @@ import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
@@ -26,7 +23,6 @@ import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.URLLinkRepository
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class OfflineViewModel
@@ -61,8 +57,6 @@ class OfflineViewModel
                 SharingStarted.WhileSubscribed(5_000),
                 emptyList(),
             )
-        private val _legacyOfflineContentList = MutableStateFlow<List<NPOOfflineContent>>(emptyList())
-        val legacyOfflineContentList: StateFlow<List<NPOOfflineContent>> = _legacyOfflineContentList
 
         fun mergeList(
             streamLinkList: List<SourceWrapper>,
@@ -84,7 +78,6 @@ class OfflineViewModel
         init {
             viewModelScope.launch {
                 getOfflineLinkListItems()
-                _legacyOfflineContentList.tryEmit(NPOPlayerLibrary.Offline.getAllLegacyOfflineContent())
             }
         }
 
@@ -227,18 +220,6 @@ class OfflineViewModel
 
         fun dismissDownloadEventDialog() {
             _downloadEvent.value = DownloadEvent.None
-        }
-
-        fun dismissLegacyDownloadDialog() {
-            _legacyOfflineContentList.tryEmit(emptyList())
-        }
-
-        fun refreshLegacyDownloadList() {
-            _legacyOfflineContentList.tryEmit(emptyList())
-            viewModelScope.launch {
-                delay(20.seconds)
-                _legacyOfflineContentList.tryEmit(NPOPlayerLibrary.Offline.getAllLegacyOfflineContent())
-            }
         }
 
         override fun onCleared() {

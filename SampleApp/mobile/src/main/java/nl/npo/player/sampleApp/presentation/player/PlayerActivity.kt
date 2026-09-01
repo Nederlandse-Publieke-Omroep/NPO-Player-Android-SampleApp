@@ -38,7 +38,6 @@ import nl.npo.player.library.data.offline.model.NPOMedia3OfflineSourceConfig
 import nl.npo.player.library.domain.analytics.model.PageConfiguration
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.PlayerListener
-import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.offline.ProgressStorageProvider
 import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.domain.player.error.NPOPlayerError
@@ -50,7 +49,6 @@ import nl.npo.player.library.domain.player.ui.model.PlayNextListenerResult
 import nl.npo.player.library.domain.state.StoppedPlayingReason
 import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
-import nl.npo.player.library.ext.setupPlayerNotification
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.ads.NoAdOverlayRenderer
@@ -66,7 +64,6 @@ import nl.npo.player.library.presentation.mobile.compose.components.MobilePlayer
 import nl.npo.player.library.presentation.mobile.compose.scene.MobileSceneRenderer
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
-import nl.npo.player.library.presentation.notifications.NPONotificationManager
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
 import nl.npo.player.sampleApp.R
@@ -84,7 +81,6 @@ import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
-import nl.npo.player.sampleApp.shared.presentation.viewmodel.UseExoplayer
 import nl.npo.tag.sdk.tracker.PageTracker
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -101,7 +97,6 @@ class PlayerActivity : BaseActivity() {
     private lateinit var sourceWrapper: SourceWrapper
     private val playerViewModel by viewModels<PlayerViewModel>()
     private val linkViewModel by viewModels<LinksViewModel>()
-    private var npoNotificationManager: NPONotificationManager? = null
     private var backstackLost = false
     private var pipHandler: NPOPictureInPictureHandler? = null
 
@@ -211,8 +206,8 @@ class PlayerActivity : BaseActivity() {
             return
         }
 
-        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, useExoplayer, playerUIConfig ->
-            loadSource(sourceWrapper, playerConfig, npoPlayerColors, useExoplayer, playerUIConfig)
+        playerViewModel.getConfiguration { playerConfig, npoPlayerColors, playerUIConfig ->
+            loadSource(sourceWrapper, playerConfig, npoPlayerColors, playerUIConfig)
         }
     }
 
@@ -227,7 +222,6 @@ class PlayerActivity : BaseActivity() {
         sourceWrapper: SourceWrapper,
         playerConfig: NPOPlayerConfig,
         npoPlayerColors: NativePlayerColors?,
-        useExoplayer: UseExoplayer,
         playerUIConfig: NPOPlayerUIConfig,
     ) {
         this.sourceWrapper = sourceWrapper
@@ -240,103 +234,83 @@ class PlayerActivity : BaseActivity() {
                         PageConfiguration(title),
                     )
 
-            try {
-                player =
-                    NPOPlayerLibrary
-                        .getPlayer(
-                            npoPlayerConfig = playerConfig,
-                            pageTracker = pageTracker,
-                            useExoplayer = useExoplayer,
-                            adManager = AdManagerProvider.getAdManager(),
-                            progressStorageProvider = progressStorageProvider,
-                        ).apply {
-                            val player = this
+            player =
+                NPOPlayerLibrary
+                    .getPlayer(
+                        npoPlayerConfig = playerConfig,
+                        pageTracker = pageTracker,
+                        adManager = AdManagerProvider.getAdManager(),
+                        progressStorageProvider = progressStorageProvider,
+                    ).apply {
+                        val player = this
 
-                            val defaultPipHandler =
-                                DefaultNPOPictureInPictureHandler(
-                                    this@PlayerActivity,
-                                    player,
-                                ).also {
-                                    pipHandler = it
-                                }
-
-                            eventEmitter.addListener(onPlayPauseListener)
-                            setupPlayerNotification(
-                                NOTIFICATION_CHANNEL_ID,
-                                R.string.app_name,
-                                R.drawable.ic_launcher_foreground,
-                                NOTIFICATION_ID,
-                            )
-                            attachToLifecycle(lifecycle)
-                            changePageTracker(this, title)
-                            setTokenRefreshCallback(retryListener)
-                            setPlayNextListener { action ->
-                                when (action) {
-                                    is PlayNextListenerResult.Triggered -> playRandom()
-                                }
+                        val defaultPipHandler =
+                            DefaultNPOPictureInPictureHandler(
+                                this@PlayerActivity,
+                                player,
+                            ).also {
+                                pipHandler = it
                             }
 
-                            binding.npoVideoPlayerNative.apply {
-                                val adOverlay =
-                                    if (playerViewModel.isSterUIEnabled.value) {
-                                        player.adManager.supplyDefaultAdsOverlayViewClass()
-                                    } else {
-                                        null
-                                    }
-
-                                attachPlayer(
-                                    npoPlayer = player,
-                                    npoPlayerColors =
-                                        (
-                                            npoPlayerColors
-                                                ?: NativePlayerColors()
-                                        ).toPlayerColors(),
-                                    sceneOverlays =
-                                        MobileSceneRenderer(
-                                            adOverlay?.let {
-                                                NativeAdsOverlayRenderer(
-                                                    adOverlay,
-                                                    onBackAction = { onBackPressedDispatcher.onBackPressed() },
-                                                )
-                                            } ?: NoAdOverlayRenderer,
-                                        ),
-                                    components =
-                                        if (npoPlayerColors != null) {
-                                            CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
-                                        } else {
-                                            DefaultMobilePlayerComponents()
-                                        },
-                                )
-                                setUIConfig(playerUIConfig)
-
-                                setFullScreenHandler(fullScreenHandler)
-                                enablePictureInPictureSupport(defaultPipHandler)
-
-                                playerViewModel.hasCustomSettings {
-                                    setSettingsOverride(
-                                        listOf(
-                                            object : SettingType.Custom {
-                                                override val id: String = "custom_settings"
-                                                override val label: String = "Open custom settings"
-                                            },
-                                        ),
-                                    )
-                                    setCustomSettingsClickListener { showSettings() }
-                                }
+                        eventEmitter.addListener(onPlayPauseListener)
+                        attachToLifecycle(lifecycle)
+                        changePageTracker(this, title)
+                        setTokenRefreshCallback(retryListener)
+                        setPlayNextListener { action ->
+                            when (action) {
+                                is PlayNextListenerResult.Triggered -> playRandom()
                             }
                         }
-            } catch (e: NPOPlayerException.PlayerInitializationException) {
-                AlertDialog
-                    .Builder(this)
-                    .setTitle("Error")
-                    .setMessage("Player Analytics not initialized correctly. ${e.message}")
-                    .setCancelable(false)
-                    .setPositiveButton(
-                        "Ok",
-                    ) { _, _ -> finish() }
-                    .show()
-                return
-            }
+
+                        binding.npoVideoPlayerNative.apply {
+                            val adOverlay =
+                                if (playerViewModel.isSterUIEnabled.value) {
+                                    player.adManager.supplyDefaultAdsOverlayViewClass()
+                                } else {
+                                    null
+                                }
+
+                            attachPlayer(
+                                npoPlayer = player,
+                                npoPlayerColors =
+                                    (
+                                        npoPlayerColors
+                                            ?: NativePlayerColors()
+                                    ).toPlayerColors(),
+                                sceneOverlays =
+                                    MobileSceneRenderer(
+                                        adOverlay?.let {
+                                            NativeAdsOverlayRenderer(
+                                                adOverlay,
+                                                onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                            )
+                                        } ?: NoAdOverlayRenderer,
+                                    ),
+                                components =
+                                    if (npoPlayerColors != null) {
+                                        CustomPlayerComponents { onBackPressedDispatcher.onBackPressed() }
+                                    } else {
+                                        DefaultMobilePlayerComponents()
+                                    },
+                            )
+                            setUIConfig(playerUIConfig)
+
+                            setFullScreenHandler(fullScreenHandler)
+                            enablePictureInPictureSupport(defaultPipHandler)
+
+                            playerViewModel.hasCustomSettings {
+                                setSettingsOverride(
+                                    listOf(
+                                        object : SettingType.Custom {
+                                            override val id: String = "custom_settings"
+                                            override val label: String = "Open custom settings"
+                                        },
+                                    ),
+                                )
+                                setCustomSettingsClickListener { showSettings() }
+                            }
+                        }
+                    }
         } else {
             val player = player ?: return
             // Note: This is only to simulate switching pages. A normal app shouldn't need to do such a switch at stream load, only when switching to a new page with the same player..
@@ -428,7 +402,6 @@ class PlayerActivity : BaseActivity() {
         }
         binding.npoVideoPlayerNative.destroy()
 
-        npoNotificationManager?.setPlayer(null)
         if (isGooglePlayServicesAvailable()) {
             CastContext
                 .getSharedInstance(this@PlayerActivity)
@@ -497,8 +470,8 @@ class PlayerActivity : BaseActivity() {
             } // ?.filter { it.avType != player?.lastLoadedSource?.avType }
                 ?.random()
                 ?.let { newSource ->
-                    playerViewModel.getConfiguration { config, npoPlayerColors, useExoplayer, playerUIConfig ->
-                        loadSource(newSource, config, npoPlayerColors, useExoplayer, playerUIConfig)
+                    playerViewModel.getConfiguration { config, npoPlayerColors, playerUIConfig ->
+                        loadSource(newSource, config, npoPlayerColors, playerUIConfig)
                     }
                 }
         }

@@ -28,7 +28,6 @@ class SettingsPreferences
         private val defaultSettings: DefaultSettings,
     ) {
         object Keys {
-            val useExoplayer = booleanPreferencesKey("useExoplayer")
             val styling = stringPreferencesKey("styling")
             val userType = stringPreferencesKey("userType")
             val settingsType = booleanPreferencesKey("settingsType")
@@ -48,18 +47,6 @@ class SettingsPreferences
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
             val preloadManagerShorts = booleanPreferencesKey("preLoadManagerShorts")
-        }
-
-        val useExoplayer: Flow<Boolean>
-            get() =
-                dataStore.data.map { prefs ->
-                    prefs[Keys.useExoplayer] ?: defaultSettings.useExoplayer
-                }
-
-        suspend fun setUseExoplayer(show: Boolean) {
-            dataStore.edit { prefs ->
-                prefs[Keys.useExoplayer] = show
-            }
         }
 
         val styling: Flow<StylingPref>

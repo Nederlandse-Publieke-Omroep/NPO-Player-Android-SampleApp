@@ -20,13 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NPOPlayerAndroidSampleApp">
 
-        <meta-data
-            android:name="BITMOVIN_PLAYER_LICENSE_KEY"
-            android:value="${YOUR-PLAYER-LICENSE-KEY}" />
-        <meta-data
-            android:name="BITMOVIN_ANALYTICS_LICENSE_KEY"
-            android:value="${YOUR-ANALYTICS-LICENSE-KEY}" />
-
         <activity
             android:name=".presentation.selection.MainActivity"
             android:banner="@mipmap/ic_launcher"
