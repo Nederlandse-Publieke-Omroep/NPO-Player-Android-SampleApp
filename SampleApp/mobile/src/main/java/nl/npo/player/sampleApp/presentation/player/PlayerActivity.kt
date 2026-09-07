@@ -301,10 +301,12 @@ class PlayerActivity : BaseActivity() {
                                     }
                                 }
 
+                                val isSterUIEnabled =
+                                    androidx.compose.runtime.collectAsState(playerViewModel.isSterUIEnabled).value
                                 val sceneOverlays =
-                                    remember(player) {
+                                    remember(player, isSterUIEnabled) {
                                         val adOverlay =
-                                            if (playerViewModel.isSterUIEnabled.value) {
+                                            if (isSterUIEnabled) {
                                                 player.adManager.supplyDefaultAdsOverlayViewClass()
                                             } else {
                                                 null
