@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -301,8 +303,7 @@ class PlayerActivity : BaseActivity() {
                                     }
                                 }
 
-                                val isSterUIEnabled =
-                                    androidx.compose.runtime.collectAsState(playerViewModel.isSterUIEnabled).value
+                                val isSterUIEnabled by playerViewModel.isSterUIEnabled.collectAsState()
                                 val sceneOverlays =
                                     remember(player, isSterUIEnabled) {
                                         val adOverlay =
