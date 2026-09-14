@@ -2,6 +2,7 @@ package nl.npo.player.sampleApp.presentation.offline
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
+import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
@@ -86,13 +88,14 @@ class OfflineViewModel
             id: String,
             onClick: () -> Unit,
             error: (Throwable) -> Unit,
+            drmLicenseExpiration: NPOOfflineLicenseHelper.DRMLicenseExpiration?,
         ) {
             val offlineContent = sourceWrapper.npoOfflineContent
             if (offlineContent == null) {
                 createOfflineContent(
                     sourceWrapper,
                     onCreated = { createdContent ->
-                        createdContent.startOrResumeDownload()
+//                        createdContent.startOrResumeDownload()
                     },
                 ) { throwable ->
                     error(throwable)
@@ -104,7 +107,19 @@ class OfflineViewModel
 
             when (val downloadState = offlineContent.downloadState.value) {
                 is NPODownloadState.Finished -> {
-                    onClick()
+                    if (drmLicenseExpiration != null && !drmLicenseExpiration.drmExpiration.isPositive()) {
+                        viewModelScope.launch {
+                            try {
+                                offlineContent.renewOfflineDRMLicense()
+//                                (offlineContent.getOfflineSource() as? NPOMedia3OfflineSourceConfig)?.renewOfflineDRMLicense()
+//                                onClick()
+                            } catch (e: Exception) {
+                                error(e)
+                            }
+                        }
+                    } else {
+                        onClick()
+                    }
                 }
 
                 is NPODownloadState.Failed -> {
@@ -168,6 +183,7 @@ class OfflineViewModel
 
         /** Retry a previously failed download and dismiss the error dialog. */
         fun retryDownload(event: DownloadEvent.Error) {
+            Log.d("SampleAppTest", "OfflineViewModel - retryDownload($event: DownloadEvent.Error)")
             dismissDownloadEventDialog()
 
             val id = event.itemId ?: event.wrapper?.uniqueId ?: return
@@ -184,7 +200,9 @@ class OfflineViewModel
             } else {
                 createOfflineContent(
                     wrapper,
-                    onCreated = { it.startOrResumeDownload() },
+                    onCreated = {
+//                        it.startOrResumeDownload()
+                    },
                     errorCallback = {
                         _downloadEvent.value =
                             DownloadEvent.Error(
@@ -232,6 +250,7 @@ class OfflineViewModel
             onCreated: (NPOOfflineContent) -> Unit = {},
             errorCallback: (Throwable) -> Unit,
         ) {
+            Log.d("SampleAppTest", "OfflineViewModel - createOfflineContent")
             val id = sourceWrapper.uniqueId
 
             // Already creating for this id: ignore the extra tap.

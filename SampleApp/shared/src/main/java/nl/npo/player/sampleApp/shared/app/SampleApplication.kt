@@ -7,6 +7,11 @@ import com.chuckerteam.chucker.api.ChuckerInterceptor
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
+import nl.npo.player.library.domain.common.enums.UserType
+import nl.npo.player.library.domain.common.model.JWTString
+import nl.npo.player.library.domain.exception.NPOPlayerException
+import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.streamLink.provider.StreamLinkReloadProvider
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.library.npotag.model.AnalyticsConfiguration
 import nl.npo.player.sampleApp.shared.BuildConfig
@@ -15,6 +20,8 @@ import nl.npo.player.sampleApp.shared.data.extensions.toPlayerEnvironment
 import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
 import nl.npo.player.sampleApp.shared.domain.AnalyticsEnvironmentProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
+import nl.npo.player.sampleApp.shared.domain.TokenProvider
+import nl.npo.player.sampleApp.shared.domain.model.StreamInfoResult
 import nl.npo.tag.sdk.NpoTag
 import nl.npo.tag.sdk.govolteplugin.GovoltePlugin
 import javax.inject.Inject
@@ -30,6 +37,9 @@ open class SampleApplication :
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
+
+    @Inject
+    lateinit var tokenProvider: TokenProvider
 
     override fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
 
@@ -51,6 +61,7 @@ open class SampleApplication :
                         this.enableCasting = enableCasting
                         debugLogging = true
                         addInterceptors(list)
+                        this.steamLinkReloadProvider = getStreamLinkReloader()
                     }
                 }
         } else {
@@ -64,6 +75,7 @@ open class SampleApplication :
                 this.enableCasting = enableCasting
                 debugLogging = true
                 addInterceptors(list)
+                this.steamLinkReloadProvider = getStreamLinkReloader()
             }
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
@@ -103,4 +115,32 @@ open class SampleApplication :
     private fun getPlatform(): AnalyticsPlatform = if (isThisDeviceATelevision()) AnalyticsPlatform.TV_APP else AnalyticsPlatform.APP
 
     private fun Context.isThisDeviceATelevision(): Boolean = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+
+    private fun getStreamLinkReloader(): StreamLinkReloadProvider =
+        object : StreamLinkReloadProvider {
+            override suspend fun reloadStreamLinkFor(npoSourceConfig: NPOSourceConfig): NPOSourceConfig {
+                tokenProvider.createToken(npoSourceConfig.uniqueId, npoSourceConfig.userType == UserType.PLUS)
+                val token = getToken(npoSourceConfig) ?: throw NPOPlayerException.UnknownPlayerLoadingException(null)
+                return NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
+            }
+
+            private suspend fun getToken(npoSourceConfig: NPOSourceConfig): String? {
+                tokenProvider.createToken(npoSourceConfig.uniqueId, npoSourceConfig.userType == UserType.PLUS)
+                return when (
+                    val tokenResult =
+                        tokenProvider.createToken(
+                            npoSourceConfig.uniqueId,
+                            npoSourceConfig.userType == UserType.PLUS,
+                        )
+                ) {
+                    is StreamInfoResult.Success -> {
+                        tokenResult.data.token
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+            }
+        }
 }
