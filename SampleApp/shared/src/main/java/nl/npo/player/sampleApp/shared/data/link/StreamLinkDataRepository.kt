@@ -63,6 +63,15 @@ object StreamLinkDataRepository : LinkRepository {
                 isLive = true,
             ),
             SourceWrapper(
+                title = "Live NPO2: LI_NEDERLAND2_221679",
+                testingDescription = "Playback Live DVR (DRM)",
+                uniqueId = "LI_NEDERLAND2_221679",
+                getStreamLink = true,
+                imageUrl = "https://cdn.npoplayer.nl/posters/npo2_afbeelding.jpg",
+                avType = AVType.VIDEO,
+                isLive = true,
+            ),
+            SourceWrapper(
                 title = "Visual Radio 1: LI_RADIO1_300877",
                 testingDescription = "Playback Live NO-DVR (DRM)",
                 uniqueId = "LI_RADIO1_300877",
