@@ -60,7 +60,6 @@ import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.PlayerUI
-import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.ads.NoAdOverlayRenderer
 import nl.npo.player.library.presentation.compose.components.PlayerIcon
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
@@ -79,6 +78,7 @@ import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
+import nl.npo.player.library.sterads.presentation.ui.MobileSterOverlayRenderer
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
@@ -306,19 +306,14 @@ class PlayerActivity : BaseActivity() {
                                 val isSterUIEnabled by playerViewModel.isSterUIEnabled.collectAsState()
                                 val sceneOverlays =
                                     remember(player, isSterUIEnabled) {
-                                        val adOverlay =
-                                            if (isSterUIEnabled) {
-                                                player.adManager.supplyDefaultAdsOverlayViewClass()
-                                            } else {
-                                                null
-                                            }
                                         MobileSceneRenderer(
-                                            adOverlay?.let {
-                                                NativeAdsOverlayRenderer(
-                                                    it,
+                                            if (isSterUIEnabled) {
+                                                MobileSterOverlayRenderer(
                                                     onBackAction = { onBackPressedDispatcher.onBackPressed() },
                                                 )
-                                            } ?: NoAdOverlayRenderer,
+                                            } else {
+                                                NoAdOverlayRenderer
+                                            },
                                         )
                                     }
                                 val components =
