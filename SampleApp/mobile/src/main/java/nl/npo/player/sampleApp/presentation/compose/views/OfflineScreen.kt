@@ -30,8 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
@@ -45,6 +48,7 @@ import nl.npo.player.sampleApp.presentation.ext.getFormattedDownloadSize
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -150,12 +154,25 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                             failureNotified = false
                         }
                     }
+                    LaunchedEffect(drmLicenseExpiration) {
+                        launch {
+                            if (isActive && drmLicenseExpiration?.drmExpiration?.isPositive() == true) {
+                                delay(5.seconds)
+                                drmLicenseExpiration =
+                                    item.npoOfflineContent?.getOfflineDRMLicenseExpiration()
+                            }
+                        }
+                    }
 
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
                         contentDescription = "${state.getFormattedDownloadSize(context)}${
-                            drmLicenseExpiration?.toStyledText() ?: ""
+                            if (licenseState is NPOOfflineLicenseState.Finished || licenseState is NPOOfflineLicenseState.FinishedButExpired) {
+                                drmLicenseExpiration?.toStyledText()
+                            } else {
+                                null
+                            } ?: ""
                         }",
                         accent = orange,
                         onClick = {
@@ -164,7 +181,12 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                 id = item.uniqueId,
                                 onClick = { viewModel.playOfflineContent(item, context) },
                                 error = {
-                                    Toast.makeText(context, it.message ?: "Unknown error", Toast.LENGTH_SHORT).show()
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            it.message ?: "Unknown error",
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
                                 },
                                 drmLicenseExpiration = item.npoOfflineContent?.getOfflineDRMLicenseExpiration(),
                             )

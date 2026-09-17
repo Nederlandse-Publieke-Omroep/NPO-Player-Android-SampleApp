@@ -92,10 +92,10 @@ class OfflineViewModel
         ) {
             val offlineContent = sourceWrapper.npoOfflineContent
             if (offlineContent == null) {
-                createOfflineContent(
+                createOrGetOfflineContent(
                     sourceWrapper,
-                    onCreated = { createdContent ->
-//                        createdContent.startOrResumeDownload()
+                    onCreated = { created, existed ->
+                        if (existed) created.startOrResumeDownload()
                     },
                 ) { throwable ->
                     error(throwable)
@@ -198,10 +198,10 @@ class OfflineViewModel
             if (content != null) {
                 content.startOrResumeDownload()
             } else {
-                createOfflineContent(
+                createOrGetOfflineContent(
                     wrapper,
-                    onCreated = {
-//                        it.startOrResumeDownload()
+                    onCreated = { created, existed ->
+                        if (existed) created.startOrResumeDownload()
                     },
                     errorCallback = {
                         _downloadEvent.value =
@@ -245,9 +245,9 @@ class OfflineViewModel
             super.onCleared()
         }
 
-        fun createOfflineContent(
+        fun createOrGetOfflineContent(
             sourceWrapper: SourceWrapper,
-            onCreated: (NPOOfflineContent) -> Unit = {},
+            onCreated: (NPOOfflineContent, exited: Boolean) -> Unit = { _, _ -> },
             errorCallback: (Throwable) -> Unit,
         ) {
             Log.d("SampleAppTest", "OfflineViewModel - createOfflineContent")
@@ -262,7 +262,7 @@ class OfflineViewModel
                 mutableOfflineLinkList.value.firstOrNull { it.uniqueId == id }?.npoOfflineContent
             if (existing != null) {
                 pendingCreations.remove(id)
-                onCreated(existing)
+                onCreated(existing, true)
                 return
             }
 
@@ -293,7 +293,7 @@ class OfflineViewModel
                         }
 
                 pendingCreations.remove(id)
-                onCreated(offlineContent)
+                onCreated(offlineContent, false)
             }
         }
 
