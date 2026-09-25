@@ -11,4 +11,3 @@
 SampleApp/signing/**
 .externalNativeBuild
 .cxx
-local.properties
