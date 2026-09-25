@@ -168,7 +168,9 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
                         contentDescription = "${state.getFormattedDownloadSize(context)}${
-                            if (licenseState is NPOOfflineLicenseState.Finished || licenseState is NPOOfflineLicenseState.FinishedButExpired) {
+                            if (licenseState is NPOOfflineLicenseState.Finished ||
+                                licenseState is NPOOfflineLicenseState.FinishedButExpired
+                            ) {
                                 drmLicenseExpiration?.toStyledText()
                             } else {
                                 null
