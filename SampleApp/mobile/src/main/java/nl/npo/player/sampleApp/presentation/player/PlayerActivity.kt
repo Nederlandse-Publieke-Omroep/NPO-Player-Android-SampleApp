@@ -310,6 +310,7 @@ class PlayerActivity : BaseActivity() {
                                             if (isSterUIEnabled) {
                                                 MobileSterOverlayRenderer(
                                                     onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                                    castButton = { CastButton() },
                                                 )
                                             } else {
                                                 NoAdOverlayRenderer
