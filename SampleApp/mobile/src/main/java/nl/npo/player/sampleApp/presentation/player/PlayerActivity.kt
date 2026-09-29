@@ -146,6 +146,15 @@ class PlayerActivity : BaseActivity() {
                 }
             }
 
+            override fun onAdBreakStarted(adCount: Int) {
+                // The Ster overlay renders its own cast button, so hide this one to avoid a duplicate.
+                binding.composeCastButton.isVisible = false
+            }
+
+            override fun onAdBreakFinished() {
+                binding.composeCastButton.isVisible = isCastButtonAvailable()
+            }
+
             override fun onSourceError(
                 error: NPOPlayerError,
                 retryPossible: Boolean,
@@ -181,7 +190,7 @@ class PlayerActivity : BaseActivity() {
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
-            binding.composeCastButton.isVisible = true
+            binding.composeCastButton.isVisible = player?.isAdPlaying != true
         }
 
     private val retryListener: (Duration) -> Unit = {
@@ -476,8 +485,11 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun isCastButtonAvailable() =
+        NPOCasting.isCastingEnabled && isGooglePlayServicesAvailable()
+
     private fun ActivityPlayerBinding.setupCastButton() {
-        if (!NPOCasting.isCastingEnabled || !isGooglePlayServicesAvailable()) {
+        if (!isCastButtonAvailable()) {
             composeCastButton.isVisible = false
             return
         }
