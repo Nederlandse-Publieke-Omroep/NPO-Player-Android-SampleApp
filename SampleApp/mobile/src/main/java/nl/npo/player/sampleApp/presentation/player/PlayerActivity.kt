@@ -124,14 +124,14 @@ class PlayerActivity : BaseActivity() {
 
             override fun onPaused(stoppedPlayingReason: StoppedPlayingReason) {
                 binding.btnPlayPause.apply {
-                    isVisible = !fullScreenHandler.isFullscreen
+                    isVisible = !fullScreenHandler.isFullscreen && player?.isAdPlaying != true
                     setImageResource(android.R.drawable.ic_media_play)
                 }
             }
 
             override fun onPlaying() {
                 binding.btnPlayPause.apply {
-                    isVisible = !fullScreenHandler.isFullscreen
+                    isVisible = !fullScreenHandler.isFullscreen && player?.isAdPlaying != true
                     setImageResource(android.R.drawable.ic_media_pause)
                 }
             }
@@ -141,7 +141,7 @@ class PlayerActivity : BaseActivity() {
                 streamOptions: StreamOptions,
             ) {
                 binding.btnPlayPause.apply {
-                    isVisible = !fullScreenHandler.isFullscreen
+                    isVisible = !fullScreenHandler.isFullscreen && player?.isAdPlaying != true
                     setImageResource(android.R.drawable.ic_media_play)
                 }
             }
@@ -149,9 +149,11 @@ class PlayerActivity : BaseActivity() {
             override fun onAdBreakStarted(adCount: Int) {
                 // The Ster overlay renders its own cast button, so hide this one to avoid a duplicate.
                 binding.composeCastButton.isVisible = false
+                hideButtons()
             }
 
             override fun onAdBreakFinished() {
+                if (!fullScreenHandler.isFullscreen) showButtons()
                 binding.composeCastButton.isVisible = isCastButtonAvailable()
             }
 
