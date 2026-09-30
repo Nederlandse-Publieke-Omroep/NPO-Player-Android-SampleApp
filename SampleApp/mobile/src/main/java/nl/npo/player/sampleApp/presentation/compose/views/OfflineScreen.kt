@@ -225,7 +225,7 @@ private fun rememberDownloadState(content: NPOOfflineContent?): NPODownloadState
 @Composable
 private fun rememberOfflineLicenseState(content: NPOOfflineContent?): NPOOfflineLicenseState? {
     val flow: StateFlow<NPOOfflineLicenseState?> =
-        remember(content) { content?.offlineLicenseState ?: MutableStateFlow(null) }
+        remember(content?.offlineLicenseState) { content?.offlineLicenseState ?: MutableStateFlow(null) }
     val state by flow.collectAsStateWithLifecycle()
     return state
 }
