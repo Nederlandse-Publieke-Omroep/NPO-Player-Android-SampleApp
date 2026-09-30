@@ -33,8 +33,6 @@ import nl.npo.player.sampleApp.shared.model.StreamRetrievalState
 import javax.inject.Inject
 import kotlin.time.Duration
 
-typealias UseExoplayer = Boolean
-
 @HiltViewModel
 class PlayerViewModel
     @Inject

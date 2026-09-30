@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -120,15 +121,16 @@ class ComposePlaybackVideoFragment : Fragment() {
     private fun ContentRoot(viewModel: PlaybackViewModel) {
         val player = viewModel.player.collectAsState().value ?: return
         val colors by viewModel.playerColors.collectAsState()
-        val useCustomUI by viewModel.customPlayerUI.collectAsState()
         val playerUIConfig by viewModel.playerUIConfig.collectAsState()
-        val playerState =
-            rememberNPOPlayerUIState(player).also {
-                it.actions.nextEpisodeAction = {
-                    playRandom()
-                }
-                it.setUIConfig(playerUIConfig)
-            }
+        val playerState = rememberNPOPlayerUIState(player)
+
+        LaunchedEffect(playerState) {
+            playerState.actions.nextEpisodeAction = { playRandom() }
+        }
+
+        LaunchedEffect(playerState, playerUIConfig) {
+            playerState.setUIConfig(playerUIConfig)
+        }
 
         Row {
             val topbarInfo by playerState.collectStreamInfoAsState()
@@ -142,12 +144,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                 PlayerUI.Overlay(
                     modifier = Modifier,
                     state = playerState,
-                    components =
-                        if (useCustomUI) {
-                            CustomPlayerComponents { activity?.onBackPressedDispatcher?.onBackPressed() }
-                        } else {
-                            DefaultTvPlayerComponents()
-                        },
+                    components = DefaultTvPlayerComponents(),
                     sceneOverlays =
                         TVSceneRenderer(
                             adsOverlayRenderer =
