@@ -60,7 +60,6 @@ import nl.npo.player.library.domain.state.StreamOptions
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.PlayerUI
-import nl.npo.player.library.presentation.compose.ads.NativeAdsOverlayRenderer
 import nl.npo.player.library.presentation.compose.ads.NoAdOverlayRenderer
 import nl.npo.player.library.presentation.compose.components.PlayerIcon
 import nl.npo.player.library.presentation.compose.components.PlayerIconButton
@@ -79,6 +78,7 @@ import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.presentation.pip.NPOPictureInPictureHandler
+import nl.npo.player.library.sterads.presentation.ui.MobileSterOverlayRenderer
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivityPlayerBinding
 import nl.npo.player.sampleApp.presentation.BaseActivity
@@ -124,14 +124,14 @@ class PlayerActivity : BaseActivity() {
 
             override fun onPaused(stoppedPlayingReason: StoppedPlayingReason) {
                 binding.btnPlayPause.apply {
-                    isVisible = !fullScreenHandler.isFullscreen
+                    isVisible = !fullScreenHandler.isFullscreen && player?.isAdPlaying != true
                     setImageResource(android.R.drawable.ic_media_play)
                 }
             }
 
             override fun onPlaying() {
                 binding.btnPlayPause.apply {
-                    isVisible = !fullScreenHandler.isFullscreen
+                    isVisible = !fullScreenHandler.isFullscreen && player?.isAdPlaying != true
                     setImageResource(android.R.drawable.ic_media_pause)
                 }
             }
@@ -141,9 +141,20 @@ class PlayerActivity : BaseActivity() {
                 streamOptions: StreamOptions,
             ) {
                 binding.btnPlayPause.apply {
-                    isVisible = !fullScreenHandler.isFullscreen
+                    isVisible = !fullScreenHandler.isFullscreen && player?.isAdPlaying != true
                     setImageResource(android.R.drawable.ic_media_play)
                 }
+            }
+
+            override fun onAdBreakStarted(adCount: Int) {
+                // The Ster overlay renders its own cast button, so hide this one to avoid a duplicate.
+                binding.composeCastButton.isVisible = false
+                hideButtons()
+            }
+
+            override fun onAdBreakFinished() {
+                if (!fullScreenHandler.isFullscreen) showButtons()
+                binding.composeCastButton.isVisible = isCastButtonAvailable()
             }
 
             override fun onSourceError(
@@ -181,7 +192,7 @@ class PlayerActivity : BaseActivity() {
 
     private val castStateListener: CastStateListener =
         CastStateListener { state ->
-            binding.composeCastButton.isVisible = true
+            binding.composeCastButton.isVisible = player?.isAdPlaying != true
         }
 
     private val retryListener: (Duration) -> Unit = {
@@ -306,19 +317,15 @@ class PlayerActivity : BaseActivity() {
                                 val isSterUIEnabled by playerViewModel.isSterUIEnabled.collectAsState()
                                 val sceneOverlays =
                                     remember(player, isSterUIEnabled) {
-                                        val adOverlay =
-                                            if (isSterUIEnabled) {
-                                                player.adManager.supplyDefaultAdsOverlayViewClass()
-                                            } else {
-                                                null
-                                            }
                                         MobileSceneRenderer(
-                                            adOverlay?.let {
-                                                NativeAdsOverlayRenderer(
-                                                    it,
+                                            if (isSterUIEnabled) {
+                                                MobileSterOverlayRenderer(
                                                     onBackAction = { onBackPressedDispatcher.onBackPressed() },
+                                                    castButton = { CastButton() },
                                                 )
-                                            } ?: NoAdOverlayRenderer,
+                                            } else {
+                                                NoAdOverlayRenderer
+                                            },
                                         )
                                     }
                                 val components =
@@ -480,8 +487,11 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun isCastButtonAvailable() =
+        NPOCasting.isCastingEnabled && isGooglePlayServicesAvailable()
+
     private fun ActivityPlayerBinding.setupCastButton() {
-        if (!NPOCasting.isCastingEnabled || !isGooglePlayServicesAvailable()) {
+        if (!isCastButtonAvailable()) {
             composeCastButton.isVisible = false
             return
         }
