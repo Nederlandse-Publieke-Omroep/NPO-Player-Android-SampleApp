@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -107,12 +108,10 @@ class OfflineViewModel
 
             when (val downloadState = offlineContent.downloadState.value) {
                 is NPODownloadState.Finished -> {
-                    if (drmLicenseExpiration != null && !drmLicenseExpiration.drmExpiration.isPositive()) {
+                    if (offlineContent.getOriginalSource().drm != null && drmLicenseExpiration?.drmExpiration?.isPositive() != true) {
                         viewModelScope.launch {
                             try {
                                 offlineContent.renewOfflineDRMLicense()
-//                                (offlineContent.getOfflineSource() as? NPOMedia3OfflineSourceConfig)?.renewOfflineDRMLicense()
-//                                onClick()
                             } catch (e: Exception) {
                                 error(e)
                             }
@@ -298,11 +297,8 @@ class OfflineViewModel
         }
 
         fun deleteOfflineContent(sourceWrapper: SourceWrapper) {
-            val offlineContent = sourceWrapper.npoOfflineContent ?: return
-
-            viewModelScope.launch {
-                offlineLinkRepository.deleteOfflineContent(offlineContent)
-                progressStorageRepository.clearProgress(sourceWrapper.uniqueId)
+            viewModelScope.launch(Dispatchers.IO) {
+                val offlineContent = sourceWrapper.npoOfflineContent ?: return@launch
                 mutableOfflineLinkList.value =
                     mutableOfflineLinkList.value.map { item ->
                         if (item.uniqueId == sourceWrapper.uniqueId) {
@@ -311,8 +307,11 @@ class OfflineViewModel
                             item
                         }
                     }
-                dismissDownloadEventDialog()
+
+                offlineLinkRepository.deleteOfflineContent(offlineContent)
+                progressStorageRepository.clearProgress(sourceWrapper.uniqueId)
             }
+            dismissDownloadEventDialog()
         }
 
         private fun getOfflineLinkListItems() =

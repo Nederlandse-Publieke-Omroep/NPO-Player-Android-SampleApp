@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -156,7 +157,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     }
                     LaunchedEffect(drmLicenseExpiration) {
                         launch {
-                            if (isActive && drmLicenseExpiration?.drmExpiration?.isPositive() == true) {
+                            if (isActive) {
                                 delay(5.seconds)
                                 drmLicenseExpiration =
                                     item.npoOfflineContent?.getOfflineDRMLicenseExpiration()
@@ -168,13 +169,25 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
                         contentDescription = "${state.getFormattedDownloadSize(context)}${
-                            if (licenseState is NPOOfflineLicenseState.Finished ||
-                                licenseState is NPOOfflineLicenseState.FinishedButExpired
-                            ) {
-                                drmLicenseExpiration?.toStyledText()
-                            } else {
-                                null
-                            } ?: ""
+                            when (licenseState){
+                                is NPOOfflineLicenseState.Finished, is NPOOfflineLicenseState.FinishedButExpired -> {
+                                    drmLicenseExpiration.toStyledText()
+                                }
+
+                                is NPOOfflineLicenseState.InProgress -> {
+                                    "\nDownloading new license!"
+                                }
+
+                                is NPOOfflineLicenseState.Failed -> {
+                                    Log.d("SampleAppTest", "Download of DRM license failed because of: ${licenseState.throwable}")
+                                    licenseState.throwable?.printStackTrace()
+                                    "\nOffline DRM license download failed. Click to refresh (needs connection)."
+                                }
+
+                                else -> {
+                                    ""
+                                }
+                            }
                         }",
                         accent = orange,
                         onClick = {
@@ -208,9 +221,9 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     }
 }
 
-private fun NPOOfflineLicenseHelper.DRMLicenseExpiration.toStyledText(): String =
-    when (drmExpiration) {
-        Duration.ZERO -> "\nOffline DRM license had expired. Click to refresh (needs connection)."
+private fun NPOOfflineLicenseHelper.DRMLicenseExpiration?.toStyledText(): String =
+    when (this?.drmExpiration) {
+        Duration.ZERO, null -> "\nOffline DRM license had expired. Click to refresh (needs connection)."
         else -> "\nDRM Expires in: $drmExpiration"
     }
 

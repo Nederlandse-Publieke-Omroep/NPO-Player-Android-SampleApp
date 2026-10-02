@@ -51,13 +51,17 @@ open class SampleApplication :
         val list = listOf(ChuckerInterceptor.Builder(this).build())
         val enableCasting = settingsRepository.enableCasting.first()
         val environment = settingsRepository.environment.first().toPlayerEnvironment()
-        val offlineContentQuality = settingsRepository.downloadQuality.first().toDQPref().toDomain()
+        val offlineContentQuality =
+            settingsRepository.downloadQuality
+                .first()
+                .toDQPref()
+                .toDomain()
         val configureOptions: OptionsScope.() -> Unit = {
             this.environment = environment
             this.enableCasting = enableCasting
             debugLogging = true
             addInterceptors(list)
-            this.steamLinkReloadProvider = getStreamLinkReloader()
+            this.streamLinkReloadProvider = getStreamLinkReloader()
             this.offlineContentConfig = NPOOfflineContentConfig(offlineContentQuality)
         }
         if (withNPOTag) {
