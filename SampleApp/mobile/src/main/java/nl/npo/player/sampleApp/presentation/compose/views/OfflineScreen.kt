@@ -169,7 +169,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
                         contentDescription = "${state.getFormattedDownloadSize(context)}${
-                            when (licenseState){
+                            when (licenseState) {
                                 is NPOOfflineLicenseState.Finished, is NPOOfflineLicenseState.FinishedButExpired -> {
                                     drmLicenseExpiration.toStyledText()
                                 }
@@ -179,7 +179,10 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                 }
 
                                 is NPOOfflineLicenseState.Failed -> {
-                                    Log.d("SampleAppTest", "Download of DRM license failed because of: ${licenseState.throwable}")
+                                    Log.d(
+                                        "SampleAppTest",
+                                        "Download of DRM license failed because of: ${licenseState.throwable}",
+                                    )
                                     licenseState.throwable?.printStackTrace()
                                     "\nOffline DRM license download failed. Click to refresh (needs connection)."
                                 }
@@ -238,7 +241,9 @@ private fun rememberDownloadState(content: NPOOfflineContent?): NPODownloadState
 @Composable
 private fun rememberOfflineLicenseState(content: NPOOfflineContent?): NPOOfflineLicenseState? {
     val flow: StateFlow<NPOOfflineLicenseState?> =
-        remember(content?.offlineLicenseState) { content?.offlineLicenseState ?: MutableStateFlow(null) }
+        remember(content?.offlineLicenseState) {
+            content?.offlineLicenseState ?: MutableStateFlow(null)
+        }
     val state by flow.collectAsStateWithLifecycle()
     return state
 }

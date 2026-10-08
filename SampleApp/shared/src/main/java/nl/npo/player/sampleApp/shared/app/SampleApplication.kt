@@ -125,14 +125,14 @@ open class SampleApplication :
     private fun getStreamLinkReloader(): StreamLinkReloadProvider =
         object : StreamLinkReloadProvider {
             override suspend fun reloadStreamLinkFor(npoSourceConfig: NPOSourceConfig): NPOSourceConfig {
-                tokenProvider.createToken(npoSourceConfig.uniqueId, npoSourceConfig.userType == UserType.PLUS)
-                val token = getToken(npoSourceConfig) ?: throw NPOPlayerException.UnknownPlayerLoadingException(null)
+                val token =
+                    getToken(npoSourceConfig)
+                        ?: throw NPOPlayerException.UnknownPlayerLoadingException(null)
                 return NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
             }
 
-            private suspend fun getToken(npoSourceConfig: NPOSourceConfig): String? {
-                tokenProvider.createToken(npoSourceConfig.uniqueId, npoSourceConfig.userType == UserType.PLUS)
-                return when (
+            private suspend fun getToken(npoSourceConfig: NPOSourceConfig): String? =
+                when (
                     val tokenResult =
                         tokenProvider.createToken(
                             npoSourceConfig.uniqueId,
@@ -147,6 +147,5 @@ open class SampleApplication :
                         null
                     }
                 }
-            }
         }
 }

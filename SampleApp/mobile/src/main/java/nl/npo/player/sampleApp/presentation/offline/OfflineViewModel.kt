@@ -297,17 +297,16 @@ class OfflineViewModel
         }
 
         fun deleteOfflineContent(sourceWrapper: SourceWrapper) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val offlineContent = sourceWrapper.npoOfflineContent ?: return@launch
-                mutableOfflineLinkList.value =
-                    mutableOfflineLinkList.value.map { item ->
-                        if (item.uniqueId == sourceWrapper.uniqueId) {
-                            item.copy(npoOfflineContent = null)
-                        } else {
-                            item
-                        }
+            val offlineContent = sourceWrapper.npoOfflineContent ?: return
+            mutableOfflineLinkList.value =
+                mutableOfflineLinkList.value.map { item ->
+                    if (item.uniqueId == sourceWrapper.uniqueId) {
+                        item.copy(npoOfflineContent = null)
+                    } else {
+                        item
                     }
-
+                }
+            viewModelScope.launch(Dispatchers.IO) {
                 offlineLinkRepository.deleteOfflineContent(offlineContent)
                 progressStorageRepository.clearProgress(sourceWrapper.uniqueId)
             }
