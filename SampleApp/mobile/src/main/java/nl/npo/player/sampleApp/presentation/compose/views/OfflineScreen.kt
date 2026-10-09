@@ -35,7 +35,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
 import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
@@ -156,12 +155,10 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         }
                     }
                     LaunchedEffect(drmLicenseExpiration) {
-                        launch {
-                            if (isActive) {
-                                delay(5.seconds)
-                                drmLicenseExpiration =
-                                    item.npoOfflineContent?.getOfflineDRMLicenseExpiration()
-                            }
+                        delay(5.seconds)
+                        if (isActive) {
+                            drmLicenseExpiration =
+                                item.npoOfflineContent?.getOfflineDRMLicenseExpiration()
                         }
                     }
 

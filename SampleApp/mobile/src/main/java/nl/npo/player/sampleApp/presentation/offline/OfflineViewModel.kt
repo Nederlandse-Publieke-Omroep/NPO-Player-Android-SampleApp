@@ -108,17 +108,7 @@ class OfflineViewModel
 
             when (val downloadState = offlineContent.downloadState.value) {
                 is NPODownloadState.Finished -> {
-                    if (offlineContent.getOriginalSource().drm != null && drmLicenseExpiration?.drmExpiration?.isPositive() != true) {
-                        viewModelScope.launch {
-                            try {
-                                offlineContent.renewOfflineDRMLicense()
-                            } catch (e: Exception) {
-                                error(e)
-                            }
-                        }
-                    } else {
-                        onClick()
-                    }
+                    handleFinishedDownload(offlineContent, drmLicenseExpiration, onClick)
                 }
 
                 is NPODownloadState.Failed -> {
@@ -162,6 +152,29 @@ class OfflineViewModel
                                 ?: wrapper.npoSourceConfig,
                     ),
                 )
+            }
+        }
+
+        private fun handleFinishedDownload(
+            offlineContent: NPOOfflineContent,
+            drmLicenseExpiration: NPOOfflineLicenseHelper.DRMLicenseExpiration?,
+            onClick: () -> Unit,
+        ) {
+            val hasExpiredDrmLicense =
+                offlineContent.getOriginalSource().drm != null &&
+                    drmLicenseExpiration?.drmExpiration?.isPositive() != true
+
+            if (!hasExpiredDrmLicense) {
+                onClick()
+                return
+            }
+
+            viewModelScope.launch {
+                try {
+                    offlineContent.renewOfflineDRMLicense()
+                } catch (e: Exception) {
+                    error(e)
+                }
             }
         }
 
