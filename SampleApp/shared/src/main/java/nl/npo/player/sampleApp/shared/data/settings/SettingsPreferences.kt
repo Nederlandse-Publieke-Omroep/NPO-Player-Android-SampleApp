@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
+import nl.npo.player.sampleApp.shared.data.model.DownloadQualityInt
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
@@ -44,6 +45,7 @@ class SettingsPreferences
             val enableCasting = booleanPreferencesKey("enableCasting")
             val environment = stringPreferencesKey("environment")
             val ageProfile = intPreferencesKey("ageProfile")
+            val downloadQuality = intPreferencesKey("downloadQuality")
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
             val preloadManagerShorts = booleanPreferencesKey("preLoadManagerShorts")
@@ -215,6 +217,18 @@ class SettingsPreferences
         suspend fun setAgeProfile(ageProfile: AgeProfileInt) {
             dataStore.edit { prefs ->
                 prefs[Keys.ageProfile] = ageProfile
+            }
+        }
+
+        val downloadQuality: Flow<DownloadQualityInt>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.downloadQuality] ?: defaultSettings.downloadQuality
+                }
+
+        suspend fun setDownloadQuality(dqInt: DownloadQualityInt) {
+            dataStore.edit { prefs ->
+                prefs[Keys.downloadQuality] = dqInt
             }
         }
 

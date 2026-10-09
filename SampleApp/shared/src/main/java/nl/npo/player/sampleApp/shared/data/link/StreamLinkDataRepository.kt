@@ -33,6 +33,7 @@ object StreamLinkDataRepository : LinkRepository {
                 uniqueId = "AT_300012178",
                 getStreamLink = true,
                 avType = AVType.VIDEO,
+                offlineDownloadAllowed = true,
             ),
             SourceWrapper(
                 title = "Audio transcriptie test: WO_VPRO_20308566 (ALLEEN OP ACC ENVIRONMENT)",

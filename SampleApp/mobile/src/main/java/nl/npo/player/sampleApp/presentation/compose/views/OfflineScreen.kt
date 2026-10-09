@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -30,10 +31,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
+import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
+import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -42,6 +47,8 @@ import nl.npo.player.sampleApp.presentation.compose.components.ProgressActionIco
 import nl.npo.player.sampleApp.presentation.ext.getFormattedDownloadSize
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -123,8 +130,14 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     key = { index, item -> "offline_${item.uniqueId}_$index" },
                 ) { _, item ->
                     val state = rememberDownloadState(item.npoOfflineContent)
+                    val licenseState = rememberOfflineLicenseState(item.npoOfflineContent)
+                    var drmLicenseExpiration by remember(
+                        item.npoOfflineContent,
+                        licenseState,
+                    ) { mutableStateOf(item.npoOfflineContent?.getOfflineDRMLicenseExpiration()) }
                     var failureNotified by rememberSaveable(item.uniqueId) { mutableStateOf(false) }
                     val isFailed = state is NPODownloadState.Failed
+
                     LaunchedEffect(isFailed) {
                         if (isFailed && !failureNotified) {
                             failureNotified = true
@@ -141,11 +154,41 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                             failureNotified = false
                         }
                     }
+                    LaunchedEffect(drmLicenseExpiration) {
+                        delay(5.seconds)
+                        if (isActive) {
+                            drmLicenseExpiration =
+                                item.npoOfflineContent?.getOfflineDRMLicenseExpiration()
+                        }
+                    }
 
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
-                        contentDescription = state.getFormattedDownloadSize(context),
+                        contentDescription = "${state.getFormattedDownloadSize(context)}${
+                            when (licenseState) {
+                                is NPOOfflineLicenseState.Finished, is NPOOfflineLicenseState.FinishedButExpired -> {
+                                    drmLicenseExpiration.toStyledText()
+                                }
+
+                                is NPOOfflineLicenseState.InProgress -> {
+                                    "\nDownloading new license!"
+                                }
+
+                                is NPOOfflineLicenseState.Failed -> {
+                                    Log.d(
+                                        "SampleAppTest",
+                                        "Download of DRM license failed because of: ${licenseState.throwable}",
+                                    )
+                                    licenseState.throwable?.printStackTrace()
+                                    "\nOffline DRM license download failed. Click to refresh (needs connection)."
+                                }
+
+                                else -> {
+                                    ""
+                                }
+                            }
+                        }",
                         accent = orange,
                         onClick = {
                             viewModel.onItemClicked(
@@ -153,8 +196,14 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                                 id = item.uniqueId,
                                 onClick = { viewModel.playOfflineContent(item, context) },
                                 error = {
-                                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            it.message ?: "Unknown error",
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
                                 },
+                                drmLicenseExpiration = item.npoOfflineContent?.getOfflineDRMLicenseExpiration(),
                             )
                         },
                         onLongClick = { viewModel.deleteDownloadedItem(item.uniqueId, item) },
@@ -172,10 +221,26 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     }
 }
 
+private fun NPOOfflineLicenseHelper.DRMLicenseExpiration?.toStyledText(): String =
+    when (this?.drmExpiration) {
+        Duration.ZERO, null -> "\nOffline DRM license had expired. Click to refresh (needs connection)."
+        else -> "\nDRM Expires in: $drmExpiration"
+    }
+
 @Composable
 private fun rememberDownloadState(content: NPOOfflineContent?): NPODownloadState? {
     val flow: StateFlow<NPODownloadState?> =
         remember(content) { content?.downloadState ?: MutableStateFlow(null) }
+    val state by flow.collectAsStateWithLifecycle()
+    return state
+}
+
+@Composable
+private fun rememberOfflineLicenseState(content: NPOOfflineContent?): NPOOfflineLicenseState? {
+    val flow: StateFlow<NPOOfflineLicenseState?> =
+        remember(content?.offlineLicenseState) {
+            content?.offlineLicenseState ?: MutableStateFlow(null)
+        }
     val state by flow.collectAsStateWithLifecycle()
     return state
 }

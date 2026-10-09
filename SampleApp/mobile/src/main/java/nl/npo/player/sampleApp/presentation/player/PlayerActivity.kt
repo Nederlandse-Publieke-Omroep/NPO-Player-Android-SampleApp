@@ -306,7 +306,8 @@ class PlayerActivity : BaseActivity() {
                                             listOf(
                                                 object : SettingType.Custom {
                                                     override val id: String = "custom_settings"
-                                                    override val label: String = "Open custom settings"
+                                                    override val label: String =
+                                                        "Open custom settings"
                                                 },
                                             ),
                                         )
@@ -348,7 +349,10 @@ class PlayerActivity : BaseActivity() {
                                         typography = PlayerTypography.mobile(),
                                         sceneOverlays = sceneOverlays,
                                         npoPlayerColors =
-                                            (npoPlayerColors ?: NativePlayerColors()).toPlayerColors(),
+                                            (
+                                                npoPlayerColors
+                                                    ?: NativePlayerColors()
+                                            ).toPlayerColors(),
                                         components = components,
                                     )
                                 }
@@ -441,7 +445,10 @@ class PlayerActivity : BaseActivity() {
 
     override fun onDestroy() {
         player?.apply {
-            if (!NPOCasting.isCastingConnected()) destroy()
+            if (!NPOCasting.isCastingConnected()) {
+                unload()
+                destroy()
+            }
             eventEmitter.removeListener(onPlayPauseListener)
         }
 
@@ -487,8 +494,7 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private fun isCastButtonAvailable() =
-        NPOCasting.isCastingEnabled && isGooglePlayServicesAvailable()
+    private fun isCastButtonAvailable() = NPOCasting.isCastingEnabled && isGooglePlayServicesAvailable()
 
     private fun ActivityPlayerBinding.setupCastButton() {
         if (!isCastButtonAvailable()) {

@@ -6,15 +6,25 @@ import android.content.pm.PackageManager
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.NPOPlayerLibrary.OptionsScope
 import nl.npo.player.library.domain.analytics.model.AnalyticsPlatform
+import nl.npo.player.library.domain.common.enums.UserType
+import nl.npo.player.library.domain.common.model.JWTString
+import nl.npo.player.library.domain.exception.NPOPlayerException
+import nl.npo.player.library.domain.player.model.NPOSourceConfig
+import nl.npo.player.library.domain.streamLink.provider.StreamLinkReloadProvider
 import nl.npo.player.library.npotag.mapper.AnalyticsEnvironmentMapper
 import nl.npo.player.library.npotag.model.AnalyticsConfiguration
+import nl.npo.player.library.presentation.model.NPOOfflineContentConfig
 import nl.npo.player.sampleApp.shared.BuildConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.data.extensions.toPlayerEnvironment
+import nl.npo.player.sampleApp.shared.data.model.toDQPref
 import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
 import nl.npo.player.sampleApp.shared.domain.AnalyticsEnvironmentProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
+import nl.npo.player.sampleApp.shared.domain.TokenProvider
+import nl.npo.player.sampleApp.shared.domain.model.StreamInfoResult
 import nl.npo.tag.sdk.NpoTag
 import nl.npo.tag.sdk.govolteplugin.GovoltePlugin
 import javax.inject.Inject
@@ -31,6 +41,9 @@ open class SampleApplication :
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    @Inject
+    lateinit var tokenProvider: TokenProvider
+
     override fun isPlayerInitiatedYet(): Boolean = isPlayerInitiatedYetInternal
 
     override suspend fun initiatePlayerLibrary(withNPOTag: Boolean) {
@@ -38,6 +51,19 @@ open class SampleApplication :
         val list = listOf(ChuckerInterceptor.Builder(this).build())
         val enableCasting = settingsRepository.enableCasting.first()
         val environment = settingsRepository.environment.first().toPlayerEnvironment()
+        val offlineContentQuality =
+            settingsRepository.downloadQuality
+                .first()
+                .toDQPref()
+                .toDomain()
+        val configureOptions: OptionsScope.() -> Unit = {
+            this.environment = environment
+            this.enableCasting = enableCasting
+            debugLogging = true
+            addInterceptors(list)
+            this.streamLinkReloadProvider = getStreamLinkReloader()
+            this.offlineContentConfig = NPOOfflineContentConfig(offlineContentQuality)
+        }
         if (withNPOTag) {
             // Either create your own NpoTag implementation which can be used for app analytics:
             npoTag =
@@ -46,12 +72,8 @@ open class SampleApplication :
                         context = this,
                         analyticsConfig = AnalyticsConfiguration.Provided(tag),
                         sterConfiguration = AdManagerProvider.getSterConfig(this),
-                    ) {
-                        this.environment = environment
-                        this.enableCasting = enableCasting
-                        debugLogging = true
-                        addInterceptors(list)
-                    }
+                        configureOptions = configureOptions,
+                    )
                 }
         } else {
             // Or Initialize the library with an AnalyticsConfiguration. But never both.
@@ -59,12 +81,8 @@ open class SampleApplication :
                 context = this,
                 analyticsConfig = setupAnalyticsConfiguration(),
                 sterConfiguration = AdManagerProvider.getSterConfig(this),
-            ) {
-                this.environment = environment
-                this.enableCasting = enableCasting
-                debugLogging = true
-                addInterceptors(list)
-            }
+                configureOptions = configureOptions,
+            )
         }
         NPOPlayerLibrary.Offline.initializeDownloadService(TestDownloadService::class.java)
     }
@@ -103,4 +121,31 @@ open class SampleApplication :
     private fun getPlatform(): AnalyticsPlatform = if (isThisDeviceATelevision()) AnalyticsPlatform.TV_APP else AnalyticsPlatform.APP
 
     private fun Context.isThisDeviceATelevision(): Boolean = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+
+    private fun getStreamLinkReloader(): StreamLinkReloadProvider =
+        object : StreamLinkReloadProvider {
+            override suspend fun reloadStreamLinkFor(npoSourceConfig: NPOSourceConfig): NPOSourceConfig {
+                val token =
+                    getToken(npoSourceConfig)
+                        ?: throw NPOPlayerException.UnknownPlayerLoadingException(null)
+                return NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
+            }
+
+            private suspend fun getToken(npoSourceConfig: NPOSourceConfig): String? =
+                when (
+                    val tokenResult =
+                        tokenProvider.createToken(
+                            npoSourceConfig.uniqueId,
+                            npoSourceConfig.userType == UserType.PLUS,
+                        )
+                ) {
+                    is StreamInfoResult.Success -> {
+                        tokenResult.data.token
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+        }
 }

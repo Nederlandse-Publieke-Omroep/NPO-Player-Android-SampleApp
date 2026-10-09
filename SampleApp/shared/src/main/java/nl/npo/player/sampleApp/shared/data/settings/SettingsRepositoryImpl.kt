@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
+import nl.npo.player.sampleApp.shared.data.model.DownloadQualityInt
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
@@ -120,5 +121,12 @@ class SettingsRepositoryImpl
 
         override suspend fun setUsePreloadManagerShorts(usePreloadManager: Boolean) {
             prefs.setUsePreLoadManagerShorts(usePreloadManager)
+        }
+
+        override val downloadQuality: Flow<DownloadQualityInt>
+            get() = prefs.downloadQuality
+
+        override suspend fun setDownloadQuality(dqInt: DownloadQualityInt) {
+            prefs.setDownloadQuality(dqInt)
         }
     }

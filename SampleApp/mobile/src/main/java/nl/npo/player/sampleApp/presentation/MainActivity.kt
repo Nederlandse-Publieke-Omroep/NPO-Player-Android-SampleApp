@@ -12,8 +12,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import nl.npo.player.library.NPOCasting
+import nl.npo.player.library.NPOPlayerLibrary
+import nl.npo.player.library.presentation.model.NPOOfflineContentConfig
 import nl.npo.player.sampleApp.presentation.compose.views.MainScreen
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
+import nl.npo.player.sampleApp.shared.data.model.toDQPref
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.MainViewModel
@@ -70,6 +73,14 @@ class MainActivity : BaseActivity() {
                 exitProcess(0)
             }
             lastKnownEnvironment = it
+        }
+
+        viewModel.downloadQuality.observe(this) { downloadQuality ->
+            NPOPlayerLibrary.Offline.setOfflineContentConfig(
+                NPOOfflineContentConfig(
+                    downloadQuality.toDQPref().toDomain(),
+                ),
+            )
         }
     }
 
