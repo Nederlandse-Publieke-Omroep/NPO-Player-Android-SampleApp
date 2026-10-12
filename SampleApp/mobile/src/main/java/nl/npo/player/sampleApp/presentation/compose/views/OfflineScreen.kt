@@ -166,28 +166,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
                         contentDescription = "${state.getFormattedDownloadSize(context)}${
-                            when (licenseState) {
-                                is NPOOfflineLicenseState.Finished, is NPOOfflineLicenseState.FinishedButExpired -> {
-                                    drmLicenseExpiration.toStyledText()
-                                }
-
-                                is NPOOfflineLicenseState.InProgress -> {
-                                    "\nDownloading new license!"
-                                }
-
-                                is NPOOfflineLicenseState.Failed -> {
-                                    Log.d(
-                                        "SampleAppTest",
-                                        "Download of DRM license failed because of: ${licenseState.throwable}",
-                                    )
-                                    licenseState.throwable?.printStackTrace()
-                                    "\nOffline DRM license download failed. Click to refresh (needs connection)."
-                                }
-
-                                else -> {
-                                    ""
-                                }
-                            }
+                            licenseState.getContentDescription(drmLicenseExpiration)
                         }",
                         accent = orange,
                         onClick = {
@@ -220,6 +199,32 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
         }
     }
 }
+
+private fun NPOOfflineLicenseState?.getContentDescription(drmLicenseExpiration: NPOOfflineLicenseHelper.DRMLicenseExpiration?): String =
+    when (this) {
+        is NPOOfflineLicenseState.Finished,
+        is NPOOfflineLicenseState.FinishedButExpired,
+        -> {
+            drmLicenseExpiration.toStyledText()
+        }
+
+        is NPOOfflineLicenseState.InProgress -> {
+            "\nDownloading new license!"
+        }
+
+        is NPOOfflineLicenseState.Failed -> {
+            Log.d(
+                "SampleAppTest",
+                "Download of DRM license failed because of: $throwable",
+            )
+            throwable?.printStackTrace()
+            "\nOffline DRM license download failed. Click to refresh (needs connection)."
+        }
+
+        else -> {
+            ""
+        }
+    }
 
 private fun NPOOfflineLicenseHelper.DRMLicenseExpiration?.toStyledText(): String =
     when (this?.drmExpiration) {
