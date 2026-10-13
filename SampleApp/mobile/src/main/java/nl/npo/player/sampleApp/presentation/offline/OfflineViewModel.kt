@@ -2,9 +2,11 @@ package nl.npo.player.sampleApp.presentation.offline
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -14,6 +16,7 @@ import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineContent
+import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
@@ -86,13 +89,14 @@ class OfflineViewModel
             id: String,
             onClick: () -> Unit,
             error: (Throwable) -> Unit,
+            drmLicenseExpiration: NPOOfflineLicenseHelper.DRMLicenseExpiration?,
         ) {
             val offlineContent = sourceWrapper.npoOfflineContent
             if (offlineContent == null) {
-                createOfflineContent(
+                createOrGetOfflineContent(
                     sourceWrapper,
-                    onCreated = { createdContent ->
-                        createdContent.startOrResumeDownload()
+                    onCreated = { created, existed ->
+                        if (existed) created.startOrResumeDownload()
                     },
                 ) { throwable ->
                     error(throwable)
@@ -104,7 +108,7 @@ class OfflineViewModel
 
             when (val downloadState = offlineContent.downloadState.value) {
                 is NPODownloadState.Finished -> {
-                    onClick()
+                    handleFinishedDownload(offlineContent, drmLicenseExpiration, onClick)
                 }
 
                 is NPODownloadState.Failed -> {
@@ -151,6 +155,29 @@ class OfflineViewModel
             }
         }
 
+        private fun handleFinishedDownload(
+            offlineContent: NPOOfflineContent,
+            drmLicenseExpiration: NPOOfflineLicenseHelper.DRMLicenseExpiration?,
+            onClick: () -> Unit,
+        ) {
+            val hasExpiredDrmLicense =
+                offlineContent.getOriginalSource().drm != null &&
+                    drmLicenseExpiration?.drmExpiration?.isPositive() != true
+
+            if (!hasExpiredDrmLicense) {
+                onClick()
+                return
+            }
+
+            viewModelScope.launch {
+                try {
+                    offlineContent.renewOfflineDRMLicense()
+                } catch (e: Exception) {
+                    error(e)
+                }
+            }
+        }
+
         private fun handleDownloadState(
             state: NPODownloadState.Failed,
             id: String,
@@ -168,6 +195,7 @@ class OfflineViewModel
 
         /** Retry a previously failed download and dismiss the error dialog. */
         fun retryDownload(event: DownloadEvent.Error) {
+            Log.d("SampleAppTest", "OfflineViewModel - retryDownload($event: DownloadEvent.Error)")
             dismissDownloadEventDialog()
 
             val id = event.itemId ?: event.wrapper?.uniqueId ?: return
@@ -182,9 +210,11 @@ class OfflineViewModel
             if (content != null) {
                 content.startOrResumeDownload()
             } else {
-                createOfflineContent(
+                createOrGetOfflineContent(
                     wrapper,
-                    onCreated = { it.startOrResumeDownload() },
+                    onCreated = { created, existed ->
+                        if (existed) created.startOrResumeDownload()
+                    },
                     errorCallback = {
                         _downloadEvent.value =
                             DownloadEvent.Error(
@@ -227,11 +257,12 @@ class OfflineViewModel
             super.onCleared()
         }
 
-        fun createOfflineContent(
+        fun createOrGetOfflineContent(
             sourceWrapper: SourceWrapper,
-            onCreated: (NPOOfflineContent) -> Unit = {},
+            onCreated: (NPOOfflineContent, exited: Boolean) -> Unit = { _, _ -> },
             errorCallback: (Throwable) -> Unit,
         ) {
+            Log.d("SampleAppTest", "OfflineViewModel - createOfflineContent")
             val id = sourceWrapper.uniqueId
 
             // Already creating for this id: ignore the extra tap.
@@ -243,7 +274,7 @@ class OfflineViewModel
                 mutableOfflineLinkList.value.firstOrNull { it.uniqueId == id }?.npoOfflineContent
             if (existing != null) {
                 pendingCreations.remove(id)
-                onCreated(existing)
+                onCreated(existing, true)
                 return
             }
 
@@ -274,26 +305,25 @@ class OfflineViewModel
                         }
 
                 pendingCreations.remove(id)
-                onCreated(offlineContent)
+                onCreated(offlineContent, false)
             }
         }
 
         fun deleteOfflineContent(sourceWrapper: SourceWrapper) {
             val offlineContent = sourceWrapper.npoOfflineContent ?: return
-
-            viewModelScope.launch {
+            mutableOfflineLinkList.value =
+                mutableOfflineLinkList.value.map { item ->
+                    if (item.uniqueId == sourceWrapper.uniqueId) {
+                        item.copy(npoOfflineContent = null)
+                    } else {
+                        item
+                    }
+                }
+            viewModelScope.launch(Dispatchers.IO) {
                 offlineLinkRepository.deleteOfflineContent(offlineContent)
                 progressStorageRepository.clearProgress(sourceWrapper.uniqueId)
-                mutableOfflineLinkList.value =
-                    mutableOfflineLinkList.value.map { item ->
-                        if (item.uniqueId == sourceWrapper.uniqueId) {
-                            item.copy(npoOfflineContent = null)
-                        } else {
-                            item
-                        }
-                    }
-                dismissDownloadEventDialog()
             }
+            dismissDownloadEventDialog()
         }
 
         private fun getOfflineLinkListItems() =
