@@ -36,9 +36,8 @@ import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
+fun StreamListScreen(viewModel: LinksViewModel = hiltViewModel()) {
     val orange = Color(0xFFFF7A00)
     val context = LocalContext.current
     val audioItems by viewModel.audioItems.collectAsState(emptyList())
