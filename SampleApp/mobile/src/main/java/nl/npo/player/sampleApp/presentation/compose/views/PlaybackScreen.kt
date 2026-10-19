@@ -79,11 +79,11 @@ import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.CastButton
 import nl.npo.player.sampleApp.presentation.player.ActivityFullScreenHandler
 import nl.npo.player.sampleApp.shared.model.PlaybackUiState
-import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlaybackViewModel
 
 @Composable
 fun PlaybackScreen(
-    viewModel: PlayerViewModel,
+    viewModel: PlaybackViewModel,
     onClose: () -> Unit,
 ) {
     val activity = LocalActivity.current as ComponentActivity

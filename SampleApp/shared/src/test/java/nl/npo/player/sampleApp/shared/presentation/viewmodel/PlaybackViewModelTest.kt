@@ -22,6 +22,7 @@ import nl.npo.player.library.domain.player.NPOPlayer
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.data.player.SharedPlayerProvider
+import nl.npo.player.sampleApp.shared.data.player.StreamSourceResolver
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
 import nl.npo.player.sampleApp.shared.domain.model.StreamInfoResult
@@ -39,7 +40,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class PlayerViewModelTest {
+class PlaybackViewModelTest {
     private val context = mockk<Context>(relaxed = true, moreInterfaces = arrayOf(PlayerApplication::class))
     private val tokenProvider = mockk<TokenProvider>()
     private val settingsRepository = FakeSettingsRepository()
@@ -52,7 +53,7 @@ class PlayerViewModelTest {
         SourceWrapper(title = "URL", uniqueId = "url", getStreamLink = false, streamUrl = "https://example.com/stream.mpd")
     private val streamLinkSource = SourceWrapper(title = "StreamLink", uniqueId = "prid", getStreamLink = true)
 
-    private lateinit var viewModel: PlayerViewModel
+    private lateinit var viewModel: PlaybackViewModel
 
     @Before
     fun setUp() {
@@ -66,11 +67,11 @@ class PlayerViewModelTest {
         coEvery { tokenProvider.createToken(any(), any()) } returns StreamInfoResult.Success(TokenResponse("token"))
 
         viewModel =
-            PlayerViewModel(
+            PlaybackViewModel(
                 context = context,
-                tokenProvider = tokenProvider,
                 settingsRepository = settingsRepository,
                 sharedPlayerProvider = sharedPlayerProvider,
+                streamSourceResolver = StreamSourceResolver(tokenProvider, settingsRepository),
                 streamLinkRepository = streamLinkRepository,
                 urlLinkRepository = urlLinkRepository,
             )
@@ -199,8 +200,8 @@ class PlayerViewModelTest {
         verify(exactly = 0) { player.unload() }
     }
 
-    private fun PlayerViewModel.clear() {
-        PlayerViewModel::class.java
+    private fun PlaybackViewModel.clear() {
+        PlaybackViewModel::class.java
             .getDeclaredMethod("onCleared")
             .apply { isAccessible = true }
             .invoke(this)

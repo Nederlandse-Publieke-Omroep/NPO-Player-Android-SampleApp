@@ -33,6 +33,7 @@ import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.npotag.PlayerTagProvider
 import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
+import nl.npo.player.sampleApp.shared.data.player.mergeSourceWrapperWithSource
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider

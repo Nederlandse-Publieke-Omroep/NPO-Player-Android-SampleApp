@@ -16,21 +16,21 @@ import nl.npo.player.sampleApp.presentation.BaseActivity
 import nl.npo.player.sampleApp.presentation.MainActivity
 import nl.npo.player.sampleApp.presentation.compose.views.PlaybackScreen
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
-import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
+import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlaybackViewModel
 
 const val PLAYER_SOURCE = "PLAYER_SOURCE"
 const val PLAYER_OFFLINE_SOURCE = "PLAYER_OFFLINE_SOURCE"
 
 @AndroidEntryPoint
 class PlayerActivity : BaseActivity() {
-    private val playerViewModel by viewModels<PlayerViewModel>()
+    private val playbackViewModel by viewModels<PlaybackViewModel>()
     private var backstackLost = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                PlaybackScreen(viewModel = playerViewModel, onClose = ::finish)
+                PlaybackScreen(viewModel = playbackViewModel, onClose = ::finish)
             }
         }
         intent.getSourceWrapper()?.let { logPageAnalytics(it.title.orEmpty()) }
@@ -44,7 +44,7 @@ class PlayerActivity : BaseActivity() {
 
     private fun loadSourceWrapperFromIntent(intent: Intent?) {
         val sourceWrapper = intent?.getSourceWrapper() ?: return finish()
-        playerViewModel.play(sourceWrapper)
+        playbackViewModel.play(sourceWrapper)
     }
 
     override fun onPictureInPictureModeChanged(

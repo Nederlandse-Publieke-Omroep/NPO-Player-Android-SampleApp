@@ -1,18 +1,14 @@
 package nl.npo.player.sampleApp.shared.data.player
 
 import androidx.lifecycle.ProcessLifecycleOwner
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.offline.ProgressStorageProvider
 import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.model.NPOBufferConfig
-import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.ext.attachToLifecycle
 import nl.npo.player.library.ext.detachFromLifecycle
-import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import javax.inject.Inject
@@ -56,34 +52,3 @@ class SharedPlayerProvider
             }
         }
     }
-
-internal data class PlayerConfigSettings(
-    val pauseOnSwitchToCellularNetwork: Boolean,
-    val pauseWhenBecomingNoisy: Boolean,
-    val chapterSkippingEnabled: Boolean,
-) {
-    fun toNPOPlayerConfig() =
-        NPOPlayerConfig(
-            shouldPauseOnSwitchToCellularNetwork = pauseOnSwitchToCellularNetwork,
-            shouldPauseWhenBecomingNoisy = pauseWhenBecomingNoisy,
-            bufferConfig = NPOBufferConfig(),
-            allowedToSkipFollowingChapterTypes =
-                if (chapterSkippingEnabled) {
-                    listOf(
-                        StreamChapterType.IDENT,
-                        StreamChapterType.INTRO,
-                        StreamChapterType.RECAP,
-                        StreamChapterType.CREDITS,
-                    )
-                } else {
-                    emptyList()
-                },
-        )
-}
-
-internal suspend fun SettingsRepository.getPlayerConfigSettings() =
-    PlayerConfigSettings(
-        pauseOnSwitchToCellularNetwork = pauseOnSwitchToCellularNetwork.first(),
-        pauseWhenBecomingNoisy = pauseWhenBecomingNoisy.first(),
-        chapterSkippingEnabled = chapterSkippingEnabled.first(),
-    )
