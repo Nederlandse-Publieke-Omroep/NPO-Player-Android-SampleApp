@@ -53,6 +53,7 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
@@ -106,8 +107,8 @@ dependencies {
     debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
     releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
 
-    testImplementation "junit:junit:4.13.2"
-    testImplementation "io.mockk:mockk:1.13.11"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "io.mockk:mockk:$mockkVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
-    testImplementation "app.cash.turbine:turbine:1.2.1"
+    testImplementation "app.cash.turbine:turbine:$turbineVersion"
 }
