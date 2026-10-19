@@ -24,15 +24,14 @@ import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.common.model.JWTString
 import nl.npo.player.library.domain.exception.NPOPlayerException
 import nl.npo.player.library.domain.player.NPOPlayer
-import nl.npo.player.library.domain.player.model.NPOBufferConfig
 import nl.npo.player.library.domain.player.model.NPORepeatMode
 import nl.npo.player.library.domain.player.model.NPOSourceConfig
 import nl.npo.player.library.domain.player.preload.NPOPreloadManager
 import nl.npo.player.library.domain.player.preload.play
-import nl.npo.player.library.domain.streamLink.model.StreamChapterType
 import nl.npo.player.library.npotag.PlayerTagProvider
-import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
+import nl.npo.player.sampleApp.shared.data.player.getPlayerConfigSettings
+import nl.npo.player.sampleApp.shared.data.player.mergeSourceWrapperWithSource
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
@@ -120,23 +119,7 @@ class ShortsViewModel
                     PlayerTagProvider.getPageTracker(
                         PageConfiguration("Shorts"),
                     )
-                val playerConfig =
-                    NPOPlayerConfig(
-                        shouldPauseOnSwitchToCellularNetwork = settingsRepository.pauseOnSwitchToCellularNetwork.first(),
-                        shouldPauseWhenBecomingNoisy = settingsRepository.pauseWhenBecomingNoisy.first(),
-                        bufferConfig = NPOBufferConfig(),
-                        allowedToSkipFollowingChapterTypes =
-                            if (settingsRepository.chapterSkippingEnabled.first()) {
-                                listOf(
-                                    StreamChapterType.IDENT,
-                                    StreamChapterType.INTRO,
-                                    StreamChapterType.RECAP,
-                                    StreamChapterType.CREDITS,
-                                )
-                            } else {
-                                emptyList()
-                            },
-                    )
+                val playerConfig = settingsRepository.getPlayerConfigSettings().toNPOPlayerConfig()
 
                 _player.emit(
                     NPOPlayerLibrary

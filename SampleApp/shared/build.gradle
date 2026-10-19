@@ -50,6 +50,10 @@ android {
         viewBinding = true
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
@@ -81,6 +85,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycle"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycle"
+    implementation "androidx.lifecycle:lifecycle-process:$androidxLifecycle"
 
     implementation "com.google.dagger:hilt-android:$androidHilt"
     kapt "com.google.dagger:hilt-compiler:$androidHilt"
@@ -101,4 +106,9 @@ dependencies {
     // Debug network
     debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
     releaseImplementation "com.github.chuckerteam.chucker:library-no-op:$chuckerVersion"
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "io.mockk:mockk:$mockkVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+    testImplementation "androidx.lifecycle:lifecycle-viewmodel-testing:$androidxLifecycle"
 }

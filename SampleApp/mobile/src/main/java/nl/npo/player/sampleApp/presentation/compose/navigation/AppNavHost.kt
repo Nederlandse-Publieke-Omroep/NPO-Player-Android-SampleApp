@@ -8,8 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import nl.npo.player.sampleApp.presentation.compose.navigation.model.Destinations
 import nl.npo.player.sampleApp.presentation.compose.views.OfflineScreen
-import nl.npo.player.sampleApp.presentation.compose.views.PlayerScreen
 import nl.npo.player.sampleApp.presentation.compose.views.PreloadScreen
+import nl.npo.player.sampleApp.presentation.compose.views.StreamListScreen
 
 @Composable
 fun AppNavHost(
@@ -22,7 +22,7 @@ fun AppNavHost(
         modifier = modifier,
     ) {
         composable<Destinations.Player> {
-            PlayerScreen()
+            StreamListScreen()
         }
 
         composable<Destinations.OfflineList> {
