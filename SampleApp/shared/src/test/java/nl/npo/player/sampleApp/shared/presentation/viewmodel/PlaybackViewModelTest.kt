@@ -1,6 +1,8 @@
 package nl.npo.player.sampleApp.shared.presentation.viewmodel
 
 import android.content.Context
+import androidx.lifecycle.viewmodel.testing.ViewModelScenario
+import androidx.lifecycle.viewmodel.testing.viewModelScenario
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -53,7 +55,8 @@ class PlaybackViewModelTest {
         SourceWrapper(title = "URL", uniqueId = "url", getStreamLink = false, streamUrl = "https://example.com/stream.mpd")
     private val streamLinkSource = SourceWrapper(title = "StreamLink", uniqueId = "prid", getStreamLink = true)
 
-    private lateinit var viewModel: PlaybackViewModel
+    private lateinit var scenario: ViewModelScenario<PlaybackViewModel>
+    private val viewModel get() = scenario.viewModel
 
     @Before
     fun setUp() {
@@ -66,15 +69,17 @@ class PlaybackViewModelTest {
         coEvery { sharedPlayerProvider.getPlayer(any()) } returns player
         coEvery { tokenProvider.createToken(any(), any()) } returns StreamInfoResult.Success(TokenResponse("token"))
 
-        viewModel =
-            PlaybackViewModel(
-                context = context,
-                settingsRepository = settingsRepository,
-                sharedPlayerProvider = sharedPlayerProvider,
-                streamSourceResolver = StreamSourceResolver(tokenProvider, settingsRepository),
-                streamLinkRepository = streamLinkRepository,
-                urlLinkRepository = urlLinkRepository,
-            )
+        scenario =
+            viewModelScenario {
+                PlaybackViewModel(
+                    context = context,
+                    settingsRepository = settingsRepository,
+                    sharedPlayerProvider = sharedPlayerProvider,
+                    streamSourceResolver = StreamSourceResolver(tokenProvider, settingsRepository),
+                    streamLinkRepository = streamLinkRepository,
+                    urlLinkRepository = urlLinkRepository,
+                )
+            }
     }
 
     @After
@@ -182,7 +187,7 @@ class PlaybackViewModelTest {
     fun `clearing unloads the player when not casting`() {
         viewModel.play(urlSource)
 
-        viewModel.clear()
+        scenario.close()
 
         verify {
             player.eventEmitter.removeListener(any())
@@ -195,15 +200,37 @@ class PlaybackViewModelTest {
         every { NPOCasting.isCastingConnected() } returns true
         viewModel.play(urlSource)
 
-        viewModel.clear()
+        scenario.close()
 
         verify(exactly = 0) { player.unload() }
     }
 
-    private fun PlaybackViewModel.clear() {
-        PlaybackViewModel::class.java
-            .getDeclaredMethod("onCleared")
-            .apply { isAccessible = true }
-            .invoke(this)
+    @Test
+    fun `token failure is shown as an error`() {
+        coEvery { tokenProvider.createToken(any(), any()) } returns StreamInfoResult.Error(Exception("no token"))
+
+        viewModel.play(streamLinkSource)
+
+        with(viewModel.playbackState.value) {
+            assertNotNull(error)
+            assertFalse(isLoading)
+        }
+        verify(exactly = 0) { player.load(any(), any(), any()) }
+    }
+
+    @Test
+    fun `shown error is cleared but retry stays available`() {
+        mockkObject(NPOPlayerLibrary.StreamLink)
+        coEvery { NPOPlayerLibrary.StreamLink.getNPOSourceConfig(any()) } throws
+            NPOPlayerException.StreamLinkException.GeneralException("failed")
+        viewModel.play(streamLinkSource)
+        val canRetry = viewModel.playbackState.value.canRetry
+
+        viewModel.onErrorShown()
+
+        with(viewModel.playbackState.value) {
+            assertEquals(null, error)
+            assertEquals(canRetry, this.canRetry)
+        }
     }
 }

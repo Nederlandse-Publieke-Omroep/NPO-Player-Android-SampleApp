@@ -54,7 +54,10 @@ fun PlaybackScreen(
         if (state.shouldClose) onClose()
     }
     LaunchedEffect(state.error) {
-        state.error?.let { Toast.makeText(context, it.getMessage(context), Toast.LENGTH_LONG).show() }
+        state.error?.let {
+            Toast.makeText(context, it.getMessage(context), Toast.LENGTH_LONG).show()
+            viewModel.onErrorShown()
+        }
     }
 
     val player = state.player
@@ -91,7 +94,7 @@ fun PlaybackScreen(
 
         if (showControls) {
             PlaybackControls(
-                showRetry = state.error?.allowRetry == true,
+                showRetry = state.canRetry,
                 playbackState = playerState?.playbackState,
                 onRetry = viewModel::retry,
                 onSwitchStreams = viewModel::playRandom,

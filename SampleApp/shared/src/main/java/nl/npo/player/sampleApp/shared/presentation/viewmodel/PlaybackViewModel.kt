@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -56,6 +57,7 @@ class PlaybackViewModel
         private val _playbackState = MutableStateFlow(PlaybackUiState())
         val playbackState: StateFlow<PlaybackUiState> = _playbackState
         private var currentSource: SourceWrapper? = null
+        private var loadJob: Job? = null
 
         private val playerListener =
             object : PlayerListener {
@@ -89,7 +91,7 @@ class PlaybackViewModel
 
         fun play(sourceWrapper: SourceWrapper) {
             currentSource = sourceWrapper
-            viewModelScope.launch {
+            launchLoad {
                 // Note: Updating the page tracker per stream is only to simulate switching pages. A normal app would only do this when switching to a new page with the same player.
                 val player = sharedPlayerProvider.getPlayer(createPageTracker(sourceWrapper.title.orEmpty()))
                 if (player != _playbackState.value.player) bindPlayer(player)
@@ -114,12 +116,16 @@ class PlaybackViewModel
         fun retry() {
             val player = _playbackState.value.player ?: return
             val sourceWrapper = currentSource ?: return
-            viewModelScope.launch { retrieveAndLoad(player, sourceWrapper) }
+            launchLoad { retrieveAndLoad(player, sourceWrapper) }
+        }
+
+        fun onErrorShown() {
+            _playbackState.update { it.copy(error = null) }
         }
 
         fun playRandom() {
             _playbackState.value.player?.unload()
-            viewModelScope.launch {
+            launchLoad {
                 val sources =
                     if (settingsRepository.onlyStreamLinkRandomEnabled.first()) {
                         streamLinkRepository.getSourceList()
@@ -130,13 +136,18 @@ class PlaybackViewModel
             }
         }
 
+        private fun launchLoad(block: suspend () -> Unit) {
+            loadJob?.cancel()
+            loadJob = viewModelScope.launch { block() }
+        }
+
         private fun bindPlayer(player: NPOPlayer) {
             _playbackState.value.player?.let(::unbindPlayer)
             player.apply {
                 eventEmitter.addListener(playerListener)
                 setTokenRefreshCallback { startOffset ->
                     val sourceWrapper = currentSource ?: return@setTokenRefreshCallback
-                    viewModelScope.launch {
+                    launchLoad {
                         retrieveAndLoad(
                             player,
                             sourceWrapper.copy(startOffset = startOffset.toDouble(DurationUnit.SECONDS)),
@@ -164,14 +175,16 @@ class PlaybackViewModel
             player: NPOPlayer,
             sourceWrapper: SourceWrapper,
         ) {
-            _playbackState.update { it.copy(isLoading = true, error = null) }
+            _playbackState.update { it.copy(isLoading = true, error = null, canRetry = false) }
             when (val result = streamSourceResolver.resolve(sourceWrapper)) {
                 is StreamRetrievalState.Success -> load(player, result.npoSourceConfig)
                 is StreamRetrievalState.Error -> {
                     player.setError(result.error)
-                    _playbackState.update { it.copy(isLoading = false, error = result.error) }
+                    _playbackState.update {
+                        it.copy(isLoading = false, error = result.error, canRetry = result.error.allowRetry)
+                    }
                 }
-                else -> _playbackState.update { it.copy(isLoading = false) }
+                else -> Unit
             }
         }
 
@@ -179,7 +192,7 @@ class PlaybackViewModel
             player: NPOPlayer,
             npoSourceConfig: NPOSourceConfig,
         ) {
-            _playbackState.update { it.copy(isLoading = false, error = null) }
+            _playbackState.update { it.copy(isLoading = false, error = null, canRetry = false) }
             player.load(
                 npoSourceConfig.copy(overrideAutoPlay = settingsRepository.autoPlayEnabled.first()),
                 settingsRepository.shouldShowPlayNext.first(),

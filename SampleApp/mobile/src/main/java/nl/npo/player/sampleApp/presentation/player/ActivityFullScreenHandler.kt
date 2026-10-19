@@ -17,16 +17,16 @@ class ActivityFullScreenHandler(
         private set
 
     override fun onFullscreenRequested() {
-        isFullscreen = true
         activity.runOnUiThread {
+            isFullscreen = true
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             updateSystemBars()
         }
     }
 
     override fun onFullscreenExitRequested() {
-        isFullscreen = false
         activity.runOnUiThread {
+            isFullscreen = false
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             updateSystemBars()
         }

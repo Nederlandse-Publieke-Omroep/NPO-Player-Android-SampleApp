@@ -33,8 +33,10 @@ class PlayerActivity : BaseActivity() {
                 PlaybackScreen(viewModel = playbackViewModel, onClose = ::finish)
             }
         }
-        intent.getSourceWrapper()?.let { logPageAnalytics(it.title.orEmpty()) }
-        loadSourceWrapperFromIntent(intent)
+        if (savedInstanceState == null) {
+            intent.getSourceWrapper()?.let { logPageAnalytics(it.title.orEmpty()) }
+            loadSourceWrapperFromIntent(intent)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

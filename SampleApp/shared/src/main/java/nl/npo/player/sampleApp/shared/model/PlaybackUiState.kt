@@ -12,5 +12,6 @@ data class PlaybackUiState(
     val showCustomSettings: Boolean = false,
     val isLoading: Boolean = false,
     val error: NPOPlayerError? = null,
+    val canRetry: Boolean = false,
     val shouldClose: Boolean = false,
 )

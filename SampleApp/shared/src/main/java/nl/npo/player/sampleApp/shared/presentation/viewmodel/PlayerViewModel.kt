@@ -43,7 +43,7 @@ class PlayerViewModel
         ) {
             viewModelScope.launch {
                 callback(StreamRetrievalState.Loading)
-                streamSourceResolver.resolve(item)?.let(callback)
+                callback(streamSourceResolver.resolve(item))
             }
         }
 

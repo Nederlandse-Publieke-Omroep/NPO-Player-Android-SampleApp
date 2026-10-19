@@ -1,5 +1,6 @@
 package nl.npo.player.sampleApp.shared.data.player
 
+import android.util.Log
 import kotlinx.coroutines.flow.first
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.data.extensions.copy
@@ -21,21 +22,17 @@ class StreamSourceResolver
         private val tokenProvider: TokenProvider,
         private val settingsRepository: SettingsRepository,
     ) {
-        suspend fun resolve(sourceWrapper: SourceWrapper): StreamRetrievalState? {
+        suspend fun resolve(sourceWrapper: SourceWrapper): StreamRetrievalState {
             val isPlusUser =
                 sourceWrapper.overrideIsPlusUser
                     ?: (settingsRepository.userType.first() == UserType.Plus)
-            val token = createToken(sourceWrapper.uniqueId, isPlusUser) ?: return null
 
             return try {
+                val token = createToken(sourceWrapper.uniqueId, isPlusUser)
                 val source = NPOPlayerLibrary.StreamLink.getNPOSourceConfig(JWTString(token))
-                val mergedSource =
-                    sourceWrapper
-                        .mergeSourceWrapperWithSource(source)
-                        .copy(overrideAutoPlay = settingsRepository.autoPlayEnabled.first())
-                StreamRetrievalState.Success(mergedSource, sourceWrapper)
+                StreamRetrievalState.Success(sourceWrapper.mergeSourceWrapperWithSource(source), sourceWrapper)
             } catch (e: NPOPlayerException) {
-                e.cause?.printStackTrace()
+                Log.w(TAG, "Retrieving stream failed for ${sourceWrapper.uniqueId}", e)
                 StreamRetrievalState.Error(e.toNPOPlayerError(), sourceWrapper)
             }
         }
@@ -43,31 +40,24 @@ class StreamSourceResolver
         private suspend fun createToken(
             itemId: String,
             isPlusUser: Boolean,
-        ): String? =
+        ): String =
             when (val tokenResult = tokenProvider.createToken(itemId, isPlusUser)) {
-                is StreamInfoResult.Success -> {
-                    tokenResult.data.token
-                }
-
-                else -> {
-                    null
-                }
+                is StreamInfoResult.Success -> tokenResult.data.token
+                is StreamInfoResult.Error ->
+                    throw NPOPlayerException.StreamLinkException.GeneralException(
+                        "Token creation failed: ${tokenResult.exception.message}",
+                    )
             }
+
+        private companion object {
+            const val TAG = "StreamSourceResolver"
+        }
     }
 
 internal fun SourceWrapper.mergeSourceWrapperWithSource(source: NPOSourceConfig): NPOSourceConfig =
     source.copy(
         overrideStartOffset = startOffset,
         overrideImageUrl = getImageUrl(source),
-//                overrideMetadata =
-//                    source.metadata
-//                        ?.toMutableMap()
-//                        ?.apply {
-//                            set(
-//                                "appletest",
-//                                "true",
-//                            )
-//                        },
         // We add this so the Cast Receiver shows the debug log when casting.
         overrideTitle =
             if (overrideStreamLinkTitleAndDescription) {
