@@ -37,7 +37,7 @@ import nl.npo.player.library.presentation.model.NPOPlayerConfig
 import nl.npo.player.library.presentation.model.NPOPlayerUIConfig
 import nl.npo.player.sampleApp.shared.app.PlayerApplication
 import nl.npo.player.sampleApp.shared.data.player.SharedPlayerProvider
-import nl.npo.player.sampleApp.shared.data.player.getPlayerSettings
+import nl.npo.player.sampleApp.shared.data.player.getPlayerConfigSettings
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.TokenProvider
@@ -159,7 +159,7 @@ class PlayerViewModel
 
         fun getConfiguration(callback: (NPOPlayerConfig, NativePlayerColors?, NPOPlayerUIConfig) -> Unit) {
             viewModelScope.launch {
-                val playerConfig = settingsRepository.getPlayerSettings().toNPOPlayerConfig()
+                val playerConfig = settingsRepository.getPlayerConfigSettings().toNPOPlayerConfig()
 
                 val npoPlayerColors = getPlayerColors()
                 val playerUIConfig = getPlayerUIConfig()

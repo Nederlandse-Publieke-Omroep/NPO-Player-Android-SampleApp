@@ -77,7 +77,6 @@ import nl.npo.player.library.presentation.pip.DefaultNPOPictureInPictureHandler
 import nl.npo.player.library.sterads.presentation.ui.MobileSterOverlayRenderer
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.CastButton
-import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
 import nl.npo.player.sampleApp.presentation.player.ActivityFullScreenHandler
 import nl.npo.player.sampleApp.shared.model.PlaybackUiState
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.PlayerViewModel
@@ -93,7 +92,6 @@ fun PlaybackScreen(
     val isSterUIEnabled by viewModel.isSterUIEnabled.collectAsStateWithLifecycle()
     val fullScreenHandler = remember(activity) { ActivityFullScreenHandler(activity) }
     val isInPictureInPicture by rememberIsInPictureInPicture(activity)
-    val isCastButtonAvailable = remember(activity) { NPOCasting.isCastingEnabled && activity.isGooglePlayServicesAvailable() }
     var showSettings by remember { mutableStateOf(false) }
 
     KeepScreenOn()
@@ -137,16 +135,6 @@ fun PlaybackScreen(
             }
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            if (isCastButtonAvailable && !isInPictureInPicture && !isAdPlaying) {
-                Box(
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(end = 16.dp),
-                ) {
-                    CastButton()
-                }
             }
         }
 
@@ -197,6 +185,7 @@ private fun Player(
         }
     }
 
+    val customSettingsLabel = stringResource(R.string.open_custom_settings)
     LaunchedEffect(uiState, state.playerUIConfig, state.showCustomSettings) {
         uiState.setUIConfig(state.playerUIConfig)
         uiState.setFullScreenHandler(fullScreenHandler)
@@ -206,11 +195,13 @@ private fun Player(
                 listOf(
                     object : SettingType.Custom {
                         override val id: String = "custom_settings"
-                        override val label: String = "Open custom settings"
+                        override val label: String = customSettingsLabel
                     },
                 ),
             )
             uiState.settings.setCustomSettingsClickListener { onCustomSettingsClick() }
+        } else {
+            uiState.settings.setSettingsOverride(null)
         }
     }
 

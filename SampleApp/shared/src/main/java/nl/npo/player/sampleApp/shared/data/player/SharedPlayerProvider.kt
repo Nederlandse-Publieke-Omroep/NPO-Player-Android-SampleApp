@@ -2,6 +2,8 @@ package nl.npo.player.sampleApp.shared.data.player
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.domain.analytics.model.PlayerPageTracker
 import nl.npo.player.library.domain.offline.ProgressStorageProvider
@@ -25,34 +27,37 @@ class SharedPlayerProvider
     ) {
         private val processLifecycle get() = ProcessLifecycleOwner.get().lifecycle
         private var player: NPOPlayer? = null
-        private var playerSettings: PlayerSettings? = null
+        private var playerSettings: PlayerConfigSettings? = null
+        private val mutex = Mutex()
 
         suspend fun getPlayer(pageTracker: PlayerPageTracker): NPOPlayer {
-            val settings = settingsRepository.getPlayerSettings()
-            player?.let { current ->
-                if (settings == playerSettings) {
-                    current.updatePageTracker(pageTracker)
-                    return current
+            mutex.withLock {
+                val settings = settingsRepository.getPlayerConfigSettings()
+                player?.let { current ->
+                    if (settings == playerSettings) {
+                        current.updatePageTracker(pageTracker)
+                        return current
+                    }
+                    current.detachFromLifecycle(processLifecycle)
+                    current.destroy()
                 }
-                current.detachFromLifecycle(processLifecycle)
-                current.destroy()
-            }
 
-            return NPOPlayerLibrary
-                .getPlayer(
-                    npoPlayerConfig = settings.toNPOPlayerConfig(),
-                    pageTracker = pageTracker,
-                    adManager = AdManagerProvider.getAdManager(),
-                    progressStorageProvider = progressStorageProvider,
-                ).also {
-                    it.attachToLifecycle(processLifecycle)
-                    player = it
-                    playerSettings = settings
-                }
+                return NPOPlayerLibrary
+                    .getPlayer(
+                        npoPlayerConfig = settings.toNPOPlayerConfig(),
+                        pageTracker = pageTracker,
+                        adManager = AdManagerProvider.getAdManager(),
+                        progressStorageProvider = progressStorageProvider,
+                    ).also {
+                        it.attachToLifecycle(processLifecycle)
+                        player = it
+                        playerSettings = settings
+                    }
+            }
         }
     }
 
-internal data class PlayerSettings(
+internal data class PlayerConfigSettings(
     val pauseOnSwitchToCellularNetwork: Boolean,
     val pauseWhenBecomingNoisy: Boolean,
     val chapterSkippingEnabled: Boolean,
@@ -76,8 +81,8 @@ internal data class PlayerSettings(
         )
 }
 
-internal suspend fun SettingsRepository.getPlayerSettings() =
-    PlayerSettings(
+internal suspend fun SettingsRepository.getPlayerConfigSettings() =
+    PlayerConfigSettings(
         pauseOnSwitchToCellularNetwork = pauseOnSwitchToCellularNetwork.first(),
         pauseWhenBecomingNoisy = pauseWhenBecomingNoisy.first(),
         chapterSkippingEnabled = chapterSkippingEnabled.first(),
