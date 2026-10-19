@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -17,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import nl.npo.player.library.domain.player.NPOPlayer
@@ -108,16 +111,25 @@ private fun OptionsDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
         text = {
-            LazyColumn {
+            LazyColumn(modifier = if (selectedIndex != null) Modifier.selectableGroup() else Modifier) {
                 itemsIndexed(options) { index, option ->
                     Row(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    onSelect(index)
-                                    if (selectedIndex != null) onDismiss()
-                                }.padding(vertical = 12.dp),
+                                .then(
+                                    if (selectedIndex != null) {
+                                        Modifier.selectable(
+                                            selected = index == selectedIndex,
+                                            role = Role.RadioButton,
+                                        ) {
+                                            onSelect(index)
+                                            onDismiss()
+                                        }
+                                    } else {
+                                        Modifier.clickable { onSelect(index) }
+                                    },
+                                ).padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (selectedIndex != null) {

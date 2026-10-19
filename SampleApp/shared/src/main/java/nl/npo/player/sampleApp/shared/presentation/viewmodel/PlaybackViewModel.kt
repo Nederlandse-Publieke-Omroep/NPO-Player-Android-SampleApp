@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -138,7 +139,9 @@ class PlaybackViewModel
 
         private fun launchLoad(block: suspend () -> Unit) {
             loadJob?.cancel()
-            loadJob = viewModelScope.launch { block() }
+            val job = viewModelScope.launch(start = CoroutineStart.LAZY) { block() }
+            loadJob = job
+            job.start()
         }
 
         private fun bindPlayer(player: NPOPlayer) {
