@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -118,6 +119,19 @@ class ComposePlaybackVideoFragment : Fragment() {
         val playerUIConfig by viewModel.playerUIConfig.collectAsState()
         val isSterUIEnabled by playerViewModel.isSterUIEnabled.collectAsState()
         val playerState = rememberNPOPlayerUIState(player)
+        val sceneOverlays =
+            remember(player, isSterUIEnabled) {
+                TVSceneRenderer(
+                    adsOverlayRenderer =
+                        if (isSterUIEnabled) {
+                            TvSterOverlayRenderer(
+                                onBackAction = { activity?.onBackPressedDispatcher?.onBackPressed() },
+                            )
+                        } else {
+                            NoAdOverlayRenderer
+                        },
+                )
+            }
 
         LaunchedEffect(playerState) {
             playerState.actions.nextEpisodeAction = { playRandom() }
@@ -139,17 +153,7 @@ class ComposePlaybackVideoFragment : Fragment() {
                     modifier = Modifier,
                     state = playerState,
                     components = DefaultTvPlayerComponents(),
-                    sceneOverlays =
-                        TVSceneRenderer(
-                            adsOverlayRenderer =
-                                if (isSterUIEnabled) {
-                                    TvSterOverlayRenderer(
-                                        onBackAction = { activity?.onBackPressedDispatcher?.onBackPressed() },
-                                    )
-                                } else {
-                                    NoAdOverlayRenderer
-                                },
-                        ),
+                    sceneOverlays = sceneOverlays,
                     typography = PlayerTypography.tv(),
                     npoPlayerColors = colors,
                 )
