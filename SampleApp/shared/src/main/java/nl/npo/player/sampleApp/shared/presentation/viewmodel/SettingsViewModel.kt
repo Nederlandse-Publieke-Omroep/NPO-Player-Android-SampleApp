@@ -10,11 +10,11 @@ import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.shared.R
 import nl.npo.player.sampleApp.shared.data.model.AgeProfilePref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref
+import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref.Companion.keyToPrefs
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.PlayNextPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
-import nl.npo.player.sampleApp.shared.data.model.toDQPref
 import nl.npo.player.sampleApp.shared.data.model.toPref
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.presentation.settings.model.SettingsItem
@@ -124,7 +124,7 @@ class SettingsViewModel
                 is UserTypePref -> settingsRepository.setUserType(value.toDomain())
                 is EnvironmentPref -> settingsRepository.setEnvironment(value.toDomain())
                 is AgeProfilePref -> settingsRepository.setAgeProfile(value.toDomain())
-                is DownloadQualityPref -> settingsRepository.setDownloadQuality(value.toDomain().ordinal)
+                is DownloadQualityPref -> settingsRepository.setDownloadQuality(value.key)
             }
         }
 
@@ -246,7 +246,7 @@ class SettingsViewModel
                         SettingsItem.Picker(
                             SettingsKey.DownloadQuality,
                             R.string.setting_download_quality,
-                            settingsRepository.downloadQuality.first().toDQPref(),
+                            settingsRepository.downloadQuality.first().keyToPrefs(),
                             DownloadQualityPref.entries,
                         ),
                     )

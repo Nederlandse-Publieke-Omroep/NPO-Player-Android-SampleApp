@@ -3,7 +3,6 @@ package nl.npo.player.sampleApp.shared.domain
 import kotlinx.coroutines.flow.Flow
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
-import nl.npo.player.sampleApp.shared.data.model.DownloadQualityInt
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.domain.model.Styling
 import nl.npo.player.sampleApp.shared.domain.model.UserType
@@ -61,9 +60,9 @@ interface SettingsRepository {
 
     suspend fun setAgeProfile(ageProfile: AgeProfileInt)
 
-    val downloadQuality: Flow<DownloadQualityInt>
+    val downloadQuality: Flow<String>
 
-    suspend fun setDownloadQuality(dqInt: DownloadQualityInt)
+    suspend fun setDownloadQuality(dqKey: String)
 
     val chapterSkippingEnabled: Flow<Boolean>
 

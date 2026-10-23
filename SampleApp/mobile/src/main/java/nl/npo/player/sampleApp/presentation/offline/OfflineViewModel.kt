@@ -44,7 +44,7 @@ class OfflineViewModel
                 emit(mergedList.map { DownloadableItem(it, viewModelScope, offlineLinkRepository) })
             }.stateIn(
                 viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
+                SharingStarted.Lazily,
                 emptyList(),
             )
 
@@ -82,11 +82,11 @@ class OfflineViewModel
         }
 
         /** Retry a previously failed download and dismiss the error dialog. */
-        fun retryDownload(event: DownloadEvent.Error) {
+        fun retryDownload(event: DownloadEvent.ItemEvent.Error) {
             Log.d("SampleAppTest", "OfflineViewModel - retryDownload($event: DownloadEvent.Error)")
             dismissDownloadEventDialog()
 
-            val id = event.itemId ?: event.wrapper?.uniqueId ?: return
+            val id = event.itemId ?: event.sourceWrapper?.uniqueId ?: return
             // Resolve the *live* wrapper from our own list rather than trusting the
             // (possibly stale) wrapper captured in the event.
             val downloadableItem =
@@ -94,25 +94,28 @@ class OfflineViewModel
                     .firstOrNull { it.sourceWrapper.uniqueId == id } ?: return
             downloadableItem.retryDownload(errorCallback = {
                 _downloadEvent.value =
-                    DownloadEvent.Error(
+                    DownloadEvent.ItemEvent.Error(
                         itemId = id,
                         message = it.message ?: "Download failed",
-                        wrapper = downloadableItem.sourceWrapper,
+                        sourceWrapper = downloadableItem.sourceWrapper,
                     )
             })
         }
 
-        fun cancelDownload(event: DownloadEvent.Error) {
-            val id = event.itemId ?: event.wrapper?.uniqueId
-            downloadableItemList.value.firstOrNull { it.sourceWrapper.uniqueId == id }?.deleteOfflineContent()
+        fun cancelAndDeleteDownload(event: DownloadEvent.ItemEvent) {
+            val id = event.itemId ?: event.sourceWrapper?.uniqueId ?: return
+            downloadableItemList.value
+                .firstOrNull { it.sourceWrapper.uniqueId == id }
+                ?.deleteOfflineContent()
             dismissDownloadEventDialog()
+            viewModelScope.launch {
+                progressStorageRepository.clearProgress(id)
+            }
         }
 
-        fun deleteDownloadedItem(sourceWrapper: SourceWrapper) {
-            _downloadEvent.value = DownloadEvent.Delete(sourceWrapper.uniqueId, sourceWrapper = sourceWrapper)
-            viewModelScope.launch {
-                progressStorageRepository.clearProgress(sourceWrapper.uniqueId)
-            }
+        fun showDeleteDialog(sourceWrapper: SourceWrapper) {
+            _downloadEvent.value =
+                DownloadEvent.ItemEvent.Delete(sourceWrapper.uniqueId, sourceWrapper = sourceWrapper)
         }
 
         fun dismissDownloadEventDialog() {
@@ -120,7 +123,7 @@ class OfflineViewModel
         }
 
         override fun onCleared() {
-            downloadableItemList.value.forEach { it.sourceWrapper.npoOfflineContent?.release() }
+            downloadableItemList.value.forEach { it.offlineContent.value?.release() }
             super.onCleared()
         }
     }

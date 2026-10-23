@@ -19,7 +19,7 @@ import nl.npo.player.library.presentation.model.NPOOfflineContentConfig
 import nl.npo.player.sampleApp.shared.BuildConfig
 import nl.npo.player.sampleApp.shared.data.ads.AdManagerProvider
 import nl.npo.player.sampleApp.shared.data.extensions.toPlayerEnvironment
-import nl.npo.player.sampleApp.shared.data.model.toDQPref
+import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref.Companion.keyToPrefs
 import nl.npo.player.sampleApp.shared.data.offline.service.TestDownloadService
 import nl.npo.player.sampleApp.shared.domain.AnalyticsEnvironmentProvider
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
@@ -54,7 +54,7 @@ open class SampleApplication :
         val offlineContentQuality =
             settingsRepository.downloadQuality
                 .first()
-                .toDQPref()
+                .keyToPrefs()
                 .toDomain()
         val configureOptions: OptionsScope.() -> Unit = {
             this.environment = environment
