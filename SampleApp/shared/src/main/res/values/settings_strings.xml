@@ -14,6 +14,7 @@
     <string name="setting_enable_casting">Enable casting</string>
     <string name="setting_environment">Environment</string>
     <string name="setting_age_profile">Age Profile</string>
+    <string name="setting_download_quality">Download quality</string>
     <string name="setting_chapter_skipping_enabled">Skipping chapters enabled</string>
     <string name="setting_chapter_skipping_always_featured">Chapter skipping always visible</string>
     <string name="setting_use_preload_manager_shorts">Use Preload manager for Shorts</string>

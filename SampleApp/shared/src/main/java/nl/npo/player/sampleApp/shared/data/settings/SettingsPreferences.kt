@@ -44,6 +44,7 @@ class SettingsPreferences
             val enableCasting = booleanPreferencesKey("enableCasting")
             val environment = stringPreferencesKey("environment")
             val ageProfile = intPreferencesKey("ageProfile")
+            val downloadQuality = stringPreferencesKey("downloadQuality")
             val chapterSkippingEnabled = booleanPreferencesKey("chapterSkippingEnabled")
             val chapterSkippingAlwaysFeatured = booleanPreferencesKey("chapterSkippingAlwaysFeatured")
             val preloadManagerShorts = booleanPreferencesKey("preLoadManagerShorts")
@@ -215,6 +216,18 @@ class SettingsPreferences
         suspend fun setAgeProfile(ageProfile: AgeProfileInt) {
             dataStore.edit { prefs ->
                 prefs[Keys.ageProfile] = ageProfile
+            }
+        }
+
+        val downloadQuality: Flow<String>
+            get() =
+                dataStore.data.map { prefs ->
+                    prefs[Keys.downloadQuality] ?: defaultSettings.downloadQuality
+                }
+
+        suspend fun setDownloadQuality(dqKey: String) {
+            dataStore.edit { prefs ->
+                prefs[Keys.downloadQuality] = dqKey
             }
         }
 
