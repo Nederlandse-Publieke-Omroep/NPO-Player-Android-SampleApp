@@ -487,8 +487,7 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
-    private fun isCastButtonAvailable() =
-        NPOCasting.isCastingEnabled && isGooglePlayServicesAvailable()
+    private fun isCastButtonAvailable() = NPOCasting.isCastingEnabled && isGooglePlayServicesAvailable()
 
     private fun ActivityPlayerBinding.setupCastButton() {
         if (!isCastButtonAvailable()) {
