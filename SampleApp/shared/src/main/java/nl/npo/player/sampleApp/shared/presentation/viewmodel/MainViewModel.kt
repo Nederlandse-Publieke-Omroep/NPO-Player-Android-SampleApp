@@ -3,6 +3,7 @@ package nl.npo.player.sampleApp.shared.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import nl.npo.player.sampleApp.shared.domain.LinkRepository
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
 import nl.npo.player.sampleApp.shared.domain.annotation.StreamLinkRepository
@@ -18,6 +19,6 @@ class MainViewModel
         @URLLinkRepository private val urlLinkRepository: LinkRepository,
     ) : ViewModel() {
         val enableCasting = settingsRepository.enableCasting.asLiveData()
-        val castReceiver = settingsRepository.castReceiver.asLiveData()
+        val castReceiver = settingsRepository.castReceiver.distinctUntilChanged().asLiveData()
         val environment = settingsRepository.environment.asLiveData()
     }
