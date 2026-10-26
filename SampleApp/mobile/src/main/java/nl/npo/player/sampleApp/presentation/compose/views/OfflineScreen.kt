@@ -129,7 +129,6 @@ fun OfflineScreen(
                 ) { _, downloadableItem ->
                     val item = downloadableItem.sourceWrapper
                     val state by downloadableItem.downloadState.collectAsState()
-
                     val licenseState by downloadableItem.drmLicenseState.collectAsState()
                     val drmLicenseExpiration by downloadableItem.drmLicenseExpiration.collectAsState()
                     var failureNotified by rememberSaveable(item.uniqueId) { mutableStateOf(false) }

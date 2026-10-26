@@ -39,6 +39,8 @@ class OfflineContentDataRepository
                 )
             }
 
+        override suspend fun getOfflineContent(uniqueId: String): NPOOfflineContent? = npoOfflineContentManager.get(uniqueId)
+
         @Throws(NPOOfflineContentException::class)
         override suspend fun createOfflineContent(sourceWrapper: SourceWrapper): NPOOfflineContent {
             val npoSource =

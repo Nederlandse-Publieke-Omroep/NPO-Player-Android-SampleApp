@@ -3,11 +3,14 @@ package nl.npo.player.sampleApp.presentation.model
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import nl.npo.player.library.domain.exception.NPOOfflineContentException
 import nl.npo.player.library.domain.offline.models.NPODownloadState
@@ -26,12 +29,21 @@ class DownloadableItem(
     private val _offlineContent = MutableStateFlow(value = sourceWrapper.npoOfflineContent)
     val offlineContent: StateFlow<NPOOfflineContent?> = _offlineContent
 
-    private val _downloadState: MutableStateFlow<NPODownloadState?> = MutableStateFlow(value = null)
-    val downloadState: StateFlow<NPODownloadState?> = _downloadState
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val downloadState: StateFlow<NPODownloadState?> =
+        offlineContent.flatMapLatest { it?.downloadState ?: flowOf(null) }.stateIn(
+            viewmodelScope,
+            SharingStarted.Lazily,
+            null,
+        )
 
-    private val _drmLicenseState: MutableStateFlow<NPOOfflineLicenseState?> =
-        MutableStateFlow(value = null)
-    val drmLicenseState: StateFlow<NPOOfflineLicenseState?> = _drmLicenseState
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val drmLicenseState: StateFlow<NPOOfflineLicenseState?> =
+        offlineContent.flatMapLatest { it?.offlineLicenseState ?: flowOf(null) }.stateIn(
+            viewmodelScope,
+            SharingStarted.Lazily,
+            null,
+        )
 
     private val _drmLicenseExpiration =
         MutableStateFlow<NPOOfflineLicenseHelper.DRMLicenseExpiration?>(null)
@@ -44,12 +56,15 @@ class DownloadableItem(
 
     init {
         viewmodelScope.launch {
+            replaceOfflineContent(retrieveCurrentOfflineContent())
+        }
+        viewmodelScope.launch {
             drmLicenseState.collect { licenseState ->
                 if (licenseState == null) return@collect
 
                 when (licenseState) {
                     is NPOOfflineLicenseState.Finished -> {
-                        val newExpiration = _offlineContent.value?.getOfflineDRMLicenseExpiration()
+                        val newExpiration = offlineContent.value?.getOfflineDRMLicenseExpiration()
                         _drmLicenseExpiration.emit(newExpiration)
                     }
 
@@ -80,8 +95,15 @@ class DownloadableItem(
                 }
             }
         }
-        startDownloadStateJob()
-        startOfflineLicenceJob()
+        viewmodelScope.launch {
+            downloadState.collect { newDownloadState ->
+                if (deleting && newDownloadState is NPODownloadState.Deleted) {
+                    // Removing of offline content is complete. Reset offline content
+                    replaceOfflineContent(null)
+                    deleting = false
+                }
+            }
+        }
     }
 
     fun onItemClicked(
@@ -89,8 +111,7 @@ class DownloadableItem(
         error: (Throwable) -> Unit,
     ) {
         viewmodelScope.launch {
-            val offlineContent = retrieveCurrentOfflineContent()
-            _offlineContent.tryEmit(offlineContent)
+            val offlineContent = offlineContent.value
             if (offlineContent == null) {
                 createOrGetOfflineContent(
                     onCreated = { created, existed ->
@@ -151,7 +172,7 @@ class DownloadableItem(
             if (existing != null) {
                 deleting = existing.downloadState.value is NPODownloadState.Deleting
                 pendingCreation = null
-                _offlineContent.tryEmit(existing)
+                replaceOfflineContent(existing)
                 onCreated(existing, true)
                 return@launch
             }
@@ -166,7 +187,7 @@ class DownloadableItem(
                 }
             deleting = false
             pendingCreation = null
-            _offlineContent.tryEmit(offlineContent)
+            replaceOfflineContent(offlineContent)
             onCreated(offlineContent, false)
         }
     }
@@ -197,63 +218,8 @@ class DownloadableItem(
         }
     }
 
-    private fun startDownloadStateJob() {
-        var downloadStateJob: Job? = null
-        viewmodelScope.launch {
-            offlineContent.collect { content ->
-                if (content == null) {
-                    downloadStateJob?.cancel()
-                    downloadStateJob = null
-                    _downloadState.tryEmit(null)
-                    return@collect
-                }
-                if (downloadStateJob == null) {
-                    downloadStateJob =
-                        viewmodelScope.launch {
-                            content.downloadState.collect { newDownloadState ->
-                                _downloadState.tryEmit(newDownloadState)
-                                if (deleting && newDownloadState is NPODownloadState.Deleted) {
-                                    // Removing of offline content is complete. Reset offline content
-                                    _offlineContent.tryEmit(null)
-                                    deleting = false
-                                }
-                            }
-                        }
-                }
-            }
-        }
-    }
-
-    private fun startOfflineLicenceJob() {
-        var offlineLicenseStateJob: Job? = null
-
-        viewmodelScope.launch {
-            offlineContent
-                .distinctUntilChanged { first, second -> first === second }
-                .collect { content ->
-                    if (content == null) {
-                        offlineLicenseStateJob?.cancel()
-                        offlineLicenseStateJob = null
-                        _drmLicenseState.tryEmit(null)
-                        return@collect
-                    }
-
-                    offlineLicenseStateJob?.cancel()
-                    offlineLicenseStateJob =
-                        viewmodelScope.launch {
-                            content.offlineLicenseState.collect {
-                                _drmLicenseState.tryEmit(it)
-                            }
-                        }
-                }
-        }
-    }
-
     private suspend fun retrieveCurrentOfflineContent(): NPOOfflineContent? =
-        offlineLinkRepository
-            .getSourceList()
-            .firstOrNull { it.uniqueId == sourceWrapper.uniqueId }
-            ?.npoOfflineContent
+        offlineLinkRepository.getOfflineContent(sourceWrapper.uniqueId)
 
     private fun handleFinishedDownload(
         offlineContent: NPOOfflineContent,
@@ -276,5 +242,11 @@ class DownloadableItem(
                 error(e)
             }
         }
+    }
+
+    private suspend fun replaceOfflineContent(newOfflineContent: NPOOfflineContent?) {
+        val oldOfflineContent = _offlineContent.value
+        _offlineContent.emit(newOfflineContent)
+        oldOfflineContent?.release()
     }
 }
