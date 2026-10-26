@@ -37,5 +37,6 @@ fun NPODownloadState?.getFormattedDownloadSize(context: Context): String {
 
         NPODownloadState.Initializing -> resources.getString(R.string.download_initializing)
         NPODownloadState.Deleting -> resources.getString(R.string.download_deleting)
+        NPODownloadState.Deleted -> resources.getString(R.string.download_deleted)
     }
 }

@@ -1,7 +1,6 @@
 package nl.npo.player.sampleApp.presentation.compose.views
 
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -28,12 +26,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import nl.npo.player.library.domain.offline.models.NPODownloadState
-import nl.npo.player.library.domain.offline.models.NPOOfflineContent
+import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
+import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseState
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
 import nl.npo.player.sampleApp.presentation.compose.components.CustomAlertDialog
@@ -42,34 +39,42 @@ import nl.npo.player.sampleApp.presentation.compose.components.ProgressActionIco
 import nl.npo.player.sampleApp.presentation.ext.getFormattedDownloadSize
 import nl.npo.player.sampleApp.presentation.model.DownloadEvent
 import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
+import kotlin.time.Duration
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
+fun OfflineScreen(
+    viewModel: OfflineViewModel =
+        hiltViewModel(
+            checkNotNull(LocalViewModelStoreOwner.current) {
+                "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+            },
+            "OfflineScreen",
+        ),
+) {
     val orange = Color(0xFFFF7A00)
-    val mergedList by viewModel.mergedSourceList.collectAsState()
+    val mergedList by viewModel.downloadableItemList.collectAsState()
     val context = LocalContext.current
     val downloadEvent by viewModel.downloadEvent.collectAsState()
 
     when (downloadEvent) {
-        is DownloadEvent.Error -> {
-            val error = downloadEvent as DownloadEvent.Error
+        is DownloadEvent.ItemEvent.Error -> {
+            val error = downloadEvent as DownloadEvent.ItemEvent.Error
             CustomAlertDialog(
                 dialogTitle = stringResource(R.string.download_error_title),
                 dialogDescription =
                     stringResource(
                         R.string.download_error_body,
-                        error.wrapper?.title.orEmpty(),
+                        error.sourceWrapper?.title.orEmpty(),
                         error.message.orEmpty(),
                     ),
                 confirmButtonText = stringResource(R.string.download_error_retry),
                 onConfirm = { viewModel.retryDownload(error) },
-                onDismiss = { viewModel.cancelDownload(error) },
+                onDismiss = { viewModel.cancelAndDeleteDownload(error) },
             )
         }
 
-        is DownloadEvent.Delete -> {
-            val downloadEvent = downloadEvent as DownloadEvent.Delete
+        is DownloadEvent.ItemEvent.Delete -> {
+            val downloadEvent = downloadEvent as DownloadEvent.ItemEvent.Delete
             val msg =
                 context.getString(
                     R.string.delete_offline_confirmation,
@@ -79,7 +84,7 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                 dialogTitle = stringResource(R.string.delete_offline_title),
                 dialogDescription = msg,
                 onConfirm = {
-                    viewModel.deleteOfflineContent(downloadEvent.sourceWrapper)
+                    viewModel.cancelAndDeleteDownload(downloadEvent)
                 },
                 onDismiss = viewModel::dismissDownloadEventDialog,
             )
@@ -120,11 +125,15 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                 }
                 itemsIndexed(
                     items = mergedList,
-                    key = { index, item -> "offline_${item.uniqueId}_$index" },
-                ) { _, item ->
-                    val state = rememberDownloadState(item.npoOfflineContent)
+                    key = { index, downloadableItem -> "offline_${downloadableItem.sourceWrapper.uniqueId}_$index" },
+                ) { _, downloadableItem ->
+                    val item = downloadableItem.sourceWrapper
+                    val state by downloadableItem.downloadState.collectAsState()
+                    val licenseState by downloadableItem.drmLicenseState.collectAsState()
+                    val drmLicenseExpiration by downloadableItem.drmLicenseExpiration.collectAsState()
                     var failureNotified by rememberSaveable(item.uniqueId) { mutableStateOf(false) }
                     val isFailed = state is NPODownloadState.Failed
+
                     LaunchedEffect(isFailed) {
                         if (isFailed && !failureNotified) {
                             failureNotified = true
@@ -145,19 +154,40 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
                     ContentCard(
                         image = item.imageUrl,
                         contentTitle = item.title.orEmpty(),
-                        contentDescription = state.getFormattedDownloadSize(context),
+                        contentDescription = "${state.getFormattedDownloadSize(context)}${
+                            licenseState.getContentDescription(
+                                drmLicenseExpiration,
+                                { id, formatArgs ->
+                                    formatArgs?.let {
+                                        context.getString(
+                                            id,
+                                            formatArgs,
+                                        )
+                                    } ?: context.getString(id)
+                                },
+                            )
+                        }",
                         accent = orange,
                         onClick = {
-                            viewModel.onItemClicked(
-                                sourceWrapper = item,
-                                id = item.uniqueId,
-                                onClick = { viewModel.playOfflineContent(item, context) },
+                            downloadableItem.onItemClicked(
+                                onClick = { sourceWrapper ->
+                                    viewModel.playOfflineContent(
+                                        sourceWrapper,
+                                        context,
+                                    )
+                                },
                                 error = {
-                                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            it.message
+                                                ?: context.getString(R.string.download_error_unknown),
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
                                 },
                             )
                         },
-                        onLongClick = { viewModel.deleteDownloadedItem(item.uniqueId, item) },
+                        onLongClick = { viewModel.showDeleteDialog(item) },
                         trailingContent = { onAction ->
 
                             ProgressActionIcon(
@@ -172,10 +202,40 @@ fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel()) {
     }
 }
 
-@Composable
-private fun rememberDownloadState(content: NPOOfflineContent?): NPODownloadState? {
-    val flow: StateFlow<NPODownloadState?> =
-        remember(content) { content?.downloadState ?: MutableStateFlow(null) }
-    val state by flow.collectAsStateWithLifecycle()
-    return state
-}
+private fun NPOOfflineLicenseState?.getContentDescription(
+    drmLicenseExpiration: NPOOfflineLicenseHelper.DRMLicenseExpiration?,
+    stringRetriever: (id: Int, formatArgs: Any?) -> String,
+): String =
+    when (this) {
+        is NPOOfflineLicenseState.Finished,
+        is NPOOfflineLicenseState.FinishedButExpired,
+        -> {
+            drmLicenseExpiration.toStyledText(stringRetriever)
+        }
+
+        is NPOOfflineLicenseState.InProgress -> {
+            stringRetriever(R.string.download_drm_content_description_in_progress, null)
+        }
+
+        is NPOOfflineLicenseState.Failed -> {
+            stringRetriever(R.string.download_drm_content_description_failed, null)
+        }
+
+        else -> {
+            ""
+        }
+    }
+
+private fun NPOOfflineLicenseHelper.DRMLicenseExpiration?.toStyledText(stringRetriever: (id: Int, formatArgs: Any?) -> String): String =
+    when (this?.drmExpiration) {
+        Duration.ZERO, null -> {
+            stringRetriever(
+                R.string.download_drm_content_description_finished_expired,
+                null,
+            )
+        }
+
+        else -> {
+            stringRetriever(R.string.download_drm_content_description_finished, drmExpiration)
+        }
+    }

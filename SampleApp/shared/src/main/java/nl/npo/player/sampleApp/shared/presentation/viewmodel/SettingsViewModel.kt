@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.shared.R
 import nl.npo.player.sampleApp.shared.data.model.AgeProfilePref
+import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref
+import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref.Companion.keyToPrefs
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.PlayNextPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
@@ -108,6 +110,7 @@ class SettingsViewModel
                 SettingsKey.UserType,
                 SettingsKey.ShouldPlayNext,
                 SettingsKey.AgeProfile,
+                SettingsKey.DownloadQuality,
                 -> {
                     Unit
                 }
@@ -121,6 +124,7 @@ class SettingsViewModel
                 is UserTypePref -> settingsRepository.setUserType(value.toDomain())
                 is EnvironmentPref -> settingsRepository.setEnvironment(value.toDomain())
                 is AgeProfilePref -> settingsRepository.setAgeProfile(value.toDomain())
+                is DownloadQualityPref -> settingsRepository.setDownloadQuality(value.key)
             }
         }
 
@@ -235,6 +239,15 @@ class SettingsViewModel
                             R.string.setting_age_profile,
                             settingsRepository.ageProfile.first().toPref(),
                             AgeProfilePref.entries,
+                        ),
+                    )
+
+                    add(
+                        SettingsItem.Picker(
+                            SettingsKey.DownloadQuality,
+                            R.string.setting_download_quality,
+                            settingsRepository.downloadQuality.first().keyToPrefs(),
+                            DownloadQualityPref.entries,
                         ),
                     )
 

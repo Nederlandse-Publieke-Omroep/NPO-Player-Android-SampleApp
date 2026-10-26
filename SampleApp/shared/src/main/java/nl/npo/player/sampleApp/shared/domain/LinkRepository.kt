@@ -12,5 +12,7 @@ interface LinkRepository {
         suspend fun createOfflineContent(sourceWrapper: SourceWrapper): NPOOfflineContent
 
         suspend fun deleteOfflineContent(npoOfflineContent: NPOOfflineContent)
+
+        suspend fun getOfflineContent(uniqueId: String): NPOOfflineContent?
     }
 }

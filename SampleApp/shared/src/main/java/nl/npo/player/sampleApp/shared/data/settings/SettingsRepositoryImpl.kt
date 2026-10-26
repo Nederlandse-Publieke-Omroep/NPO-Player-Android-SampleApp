@@ -121,4 +121,11 @@ class SettingsRepositoryImpl
         override suspend fun setUsePreloadManagerShorts(usePreloadManager: Boolean) {
             prefs.setUsePreLoadManagerShorts(usePreloadManager)
         }
+
+        override val downloadQuality: Flow<String>
+            get() = prefs.downloadQuality
+
+        override suspend fun setDownloadQuality(dqKey: String) {
+            prefs.setDownloadQuality(dqKey)
+        }
     }
