@@ -4,11 +4,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
 import nl.npo.player.sampleApp.shared.data.model.toPref
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
+import nl.npo.player.sampleApp.shared.domain.model.CastReceiver
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.domain.model.Styling
 import nl.npo.player.sampleApp.shared.domain.model.UserType
@@ -88,6 +90,13 @@ class SettingsRepositoryImpl
 
         override suspend fun setEnableCasting(enabled: Boolean) {
             prefs.setEnableCasting(enabled)
+        }
+
+        override val castReceiver: Flow<CastReceiver> =
+            prefs.castReceiver.map(CastReceiverPref::toDomain)
+
+        override suspend fun setCastReceiver(receiver: CastReceiver) {
+            prefs.setCastReceiver(receiver.toPref())
         }
 
         override val environment: Flow<Environment> =

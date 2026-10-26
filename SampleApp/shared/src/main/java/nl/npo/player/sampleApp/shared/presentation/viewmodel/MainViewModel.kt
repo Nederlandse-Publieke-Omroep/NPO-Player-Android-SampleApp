@@ -18,5 +18,6 @@ class MainViewModel
         @URLLinkRepository private val urlLinkRepository: LinkRepository,
     ) : ViewModel() {
         val enableCasting = settingsRepository.enableCasting.asLiveData()
+        val castReceiver = settingsRepository.castReceiver.asLiveData()
         val environment = settingsRepository.environment.asLiveData()
     }
