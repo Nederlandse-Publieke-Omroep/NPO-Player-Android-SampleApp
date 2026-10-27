@@ -24,12 +24,18 @@
     <string name="download_paused">Paused at %1$d%% · %2$s</string>
     <string name="download_initializing">Preparing download…</string>
     <string name="download_deleting">Removing download…</string>
+    <string name="download_deleted">Download removed. Click to restart download.</string>
     <string name="download_finished">Download finished: %1$s</string>
     <string name="download_failed">Download failed: %1$s</string>
     <string name="download_error_title">Download error</string>
     <string name="download_error_body">Something went wrong while downloading "%1$s".\n\n%2$s\n\nDo you want to retry?</string>
     <string name="download_error_retry">Retry</string>
     <string name="download_error_toast">Download failed for "%1$s"</string>
+    <string name="download_error_unknown">Unknown error</string>
+    <string name="download_drm_content_description_in_progress">"\nDownloading new license!"</string>
+    <string name="download_drm_content_description_failed">"\nOffline DRM license download failed. Click to refresh (needs connection)."</string>
+    <string name="download_drm_content_description_finished">"\nDRM Expires in: %1$s"</string>
+    <string name="download_drm_content_description_finished_expired">"\nOffline DRM license has expired. Click to refresh (needs connection)."</string>
 
     <!--    For testing S&A Audio Receiver-->
 <!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->

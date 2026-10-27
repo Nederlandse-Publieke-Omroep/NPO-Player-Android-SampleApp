@@ -65,6 +65,10 @@ interface SettingsRepository {
 
     suspend fun setAgeProfile(ageProfile: AgeProfileInt)
 
+    val downloadQuality: Flow<String>
+
+    suspend fun setDownloadQuality(dqKey: String)
+
     val chapterSkippingEnabled: Flow<Boolean>
 
     suspend fun setChapterSkippingEnabled(enabled: Boolean)

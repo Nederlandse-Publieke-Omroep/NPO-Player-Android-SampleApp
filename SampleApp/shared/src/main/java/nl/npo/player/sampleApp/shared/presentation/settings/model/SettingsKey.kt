@@ -15,6 +15,7 @@ enum class SettingsKey {
     CastReceiver,
     Environment,
     AgeProfile,
+    DownloadQuality,
     ChapterSkippingEnabled,
     ChapterSkippingAlwaysFeatured,
     PreloadManagerShorts,
