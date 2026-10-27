@@ -12,6 +12,8 @@ enum class CastReceiverPref(
     ;
 
     companion object {
+        val Default = V2Production
+
         fun getByKey(key: String): CastReceiverPref? = entries.firstOrNull { it.key == key }
     }
 }

@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.shared.R
 import nl.npo.player.sampleApp.shared.data.model.AgeProfilePref
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref.Companion.keyToPrefs
-import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.PlayNextPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
