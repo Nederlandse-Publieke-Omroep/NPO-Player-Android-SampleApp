@@ -123,7 +123,7 @@ class SettingsViewModel
                 is UserTypePref -> settingsRepository.setUserType(value.toDomain())
                 is EnvironmentPref -> settingsRepository.setEnvironment(value.toDomain())
                 is AgeProfilePref -> settingsRepository.setAgeProfile(value.toDomain())
-                is CastReceiverPref -> settingsRepository.setCastReceiver(value.toDomain())
+                is CastReceiverPref -> settingsRepository.setCastReceiver(value)
             }
         }
 
@@ -226,7 +226,7 @@ class SettingsViewModel
                             SettingsItem.Picker(
                                 SettingsKey.CastReceiver,
                                 R.string.setting_cast_receiver,
-                                settingsRepository.castReceiver.first().toPref(),
+                                settingsRepository.castReceiver.first(),
                                 CastReceiverPref.entries,
                             ),
                         )

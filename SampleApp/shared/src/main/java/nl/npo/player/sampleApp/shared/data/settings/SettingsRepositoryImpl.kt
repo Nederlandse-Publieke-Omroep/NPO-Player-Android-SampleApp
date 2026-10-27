@@ -10,7 +10,6 @@ import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
 import nl.npo.player.sampleApp.shared.data.model.toPref
 import nl.npo.player.sampleApp.shared.domain.SettingsRepository
-import nl.npo.player.sampleApp.shared.domain.model.CastReceiver
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.domain.model.Styling
 import nl.npo.player.sampleApp.shared.domain.model.UserType
@@ -92,11 +91,11 @@ class SettingsRepositoryImpl
             prefs.setEnableCasting(enabled)
         }
 
-        override val castReceiver: Flow<CastReceiver> =
-            prefs.castReceiver.map(CastReceiverPref::toDomain)
+        override val castReceiver: Flow<CastReceiverPref> =
+            prefs.castReceiver
 
-        override suspend fun setCastReceiver(receiver: CastReceiver) {
-            prefs.setCastReceiver(receiver.toPref())
+        override suspend fun setCastReceiver(receiver: CastReceiverPref) {
+            prefs.setCastReceiver(receiver)
         }
 
         override val environment: Flow<Environment> =

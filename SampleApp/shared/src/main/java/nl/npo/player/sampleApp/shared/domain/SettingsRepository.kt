@@ -3,7 +3,7 @@ package nl.npo.player.sampleApp.shared.domain
 import kotlinx.coroutines.flow.Flow
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
-import nl.npo.player.sampleApp.shared.domain.model.CastReceiver
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.domain.model.Styling
 import nl.npo.player.sampleApp.shared.domain.model.UserType
@@ -53,9 +53,9 @@ interface SettingsRepository {
 
     suspend fun setEnableCasting(enabled: Boolean)
 
-    val castReceiver: Flow<CastReceiver>
+    val castReceiver: Flow<CastReceiverPref>
 
-    suspend fun setCastReceiver(receiver: CastReceiver)
+    suspend fun setCastReceiver(receiver: CastReceiverPref)
 
     val environment: Flow<Environment>
 
