@@ -2,6 +2,7 @@ package nl.npo.player.sampleApp.shared.domain.model
 
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
@@ -26,6 +27,7 @@ data class DefaultSettings(
             true,
         ),
     val enableCasting: Boolean,
+    val castReceiver: CastReceiverPref = CastReceiverPref.Default,
     val environment: EnvironmentPref = EnvironmentPref.Production,
     val ageProfile: AgeProfileInt = 18,
     val downloadQuality: String = DownloadQualityPref.HIGHEST.key,

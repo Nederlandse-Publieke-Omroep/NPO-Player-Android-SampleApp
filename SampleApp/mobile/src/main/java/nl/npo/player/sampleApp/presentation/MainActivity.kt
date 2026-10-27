@@ -61,6 +61,11 @@ class MainActivity : BaseActivity() {
                     finishAffinity()
                 }
             }
+
+            viewModel.castReceiver.observe(this) {
+                NPOCasting.initializeCasting(it.applicationId)
+                NPOCasting.updateCastingContext(this)
+            }
         }
 
         viewModel.environment.observe(this) {
