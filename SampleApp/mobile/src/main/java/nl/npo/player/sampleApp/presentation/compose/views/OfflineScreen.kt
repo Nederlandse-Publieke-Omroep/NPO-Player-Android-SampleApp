@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import nl.npo.player.library.domain.offline.models.NPODownloadState
 import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseHelper
 import nl.npo.player.library.domain.offline.models.NPOOfflineLicenseState
@@ -42,15 +41,7 @@ import nl.npo.player.sampleApp.presentation.offline.OfflineViewModel
 import kotlin.time.Duration
 
 @Composable
-fun OfflineScreen(
-    viewModel: OfflineViewModel =
-        hiltViewModel(
-            checkNotNull(LocalViewModelStoreOwner.current) {
-                "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-            },
-            "OfflineScreen",
-        ),
-) {
+fun OfflineScreen(viewModel: OfflineViewModel = hiltViewModel(key = "OfflineScreen")) {
     val orange = Color(0xFFFF7A00)
     val mergedList by viewModel.downloadableItemList.collectAsState()
     val context = LocalContext.current
