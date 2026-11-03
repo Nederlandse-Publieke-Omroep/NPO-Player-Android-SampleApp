@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import nl.npo.player.library.domain.common.enums.AVType
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.presentation.compose.components.ContentCard
@@ -36,9 +36,8 @@ import nl.npo.player.sampleApp.presentation.player.PlayerActivity
 import nl.npo.player.sampleApp.shared.model.SourceWrapper
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LinksViewModel
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel()) {
+fun PlayerScreen(viewModel: LinksViewModel = hiltViewModel(key = "PlayerScreen")) {
     val orange = Color(0xFFFF7A00)
     val context = LocalContext.current
     val audioItems by viewModel.audioItems.collectAsState(emptyList())

@@ -68,8 +68,8 @@ android {
 
 dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
-    implementation "nl.npo.player.library:npo-player-android:$libVersionName"
-    implementation "nl.npo.player.library:ster-ads:$libVersionName"
+    api "nl.npo.player.library:npo-player-android:$libVersionName"
+    api "nl.npo.player.library:ster-ads:$libVersionName"
     implementation "nl.npo.player.library:presentation:$libVersionName"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
@@ -96,7 +96,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-orgjson:$jsonWebTokenVersion")
 
     // Preferences
-    implementation "androidx.datastore:datastore-preferences:1.2.1"
+    implementation "androidx.datastore:datastore-preferences:1.3.0"
 
     // Debug network
     debugImplementation "com.github.chuckerteam.chucker:library:$chuckerVersion"
