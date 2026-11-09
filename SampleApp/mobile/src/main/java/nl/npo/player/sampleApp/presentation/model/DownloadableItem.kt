@@ -8,7 +8,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,9 +31,16 @@ class DownloadableItem(
     private val _offlineContent = MutableStateFlow(value = sourceWrapper.npoOfflineContent)
     val offlineContent: StateFlow<NPOOfflineContent?> = _offlineContent
 
+    private val pendingCreation = MutableStateFlow(false)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val downloadState: StateFlow<NPODownloadState?> =
-        offlineContent.flatMapLatest { it?.downloadState ?: flowOf(null) }.stateIn(
+        combine(
+            offlineContent.flatMapLatest { it?.downloadState ?: flowOf(null) },
+            pendingCreation,
+        ) { state, pending ->
+            state ?: NPODownloadState.Initializing.takeIf { pending }
+        }.stateIn(
             viewmodelScope,
             SharingStarted.Lazily,
             null,
@@ -45,53 +54,39 @@ class DownloadableItem(
             null,
         )
 
-    private val _drmLicenseExpiration =
-        MutableStateFlow<NPOOfflineLicenseHelper.DRMLicenseExpiration?>(null)
-    val drmLicenseExpiration: StateFlow<NPOOfflineLicenseHelper.DRMLicenseExpiration?> =
-        _drmLicenseExpiration
-
-    private var pendingCreation: String? = null
-
     private var deleting: Boolean = false
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val drmLicenseExpiration: StateFlow<NPOOfflineLicenseHelper.DRMLicenseExpiration?> =
+        drmLicenseState
+            .flatMapLatest<NPOOfflineLicenseState?, NPOOfflineLicenseHelper.DRMLicenseExpiration?> { licenseState ->
+                if (licenseState !is NPOOfflineLicenseState.Finished &&
+                    licenseState !is NPOOfflineLicenseState.Failed
+                ) {
+                    return@flatMapLatest flowOf(null)
+                }
+                flow {
+                    while (!deleting) {
+                        emit(offlineContent.value?.getOfflineDRMLicenseExpiration())
+                        delay(5.seconds)
+                    }
+                    emit(null)
+                }
+            }.stateIn(
+                viewmodelScope,
+                SharingStarted.WhileSubscribed(5_000),
+                null,
+            )
 
     init {
         viewmodelScope.launch {
-            replaceOfflineContent(retrieveCurrentOfflineContent())
-        }
-        viewmodelScope.launch {
             drmLicenseState.collect { licenseState ->
-                if (licenseState == null) return@collect
-
-                when (licenseState) {
-                    is NPOOfflineLicenseState.Finished -> {
-                        val newExpiration = offlineContent.value?.getOfflineDRMLicenseExpiration()
-                        _drmLicenseExpiration.emit(newExpiration)
-                    }
-
-                    is NPOOfflineLicenseState.Failed -> {
-                        Log.d(
-                            "SampleAppTest",
-                            "Download of DRM license failed for ${sourceWrapper.uniqueId}",
-                            licenseState.throwable,
-                        )
-                    }
-
-                    else -> {
-                        _drmLicenseExpiration.tryEmit(null)
-                    }
-                }
-            }
-        }
-        viewmodelScope.launch {
-            drmLicenseExpiration.collect { licenseExpiration ->
-                if (licenseExpiration != null) {
-                    delay(5.seconds)
-                    if (!deleting) {
-                        val newExpiration = offlineContent.value?.getOfflineDRMLicenseExpiration()
-                        _drmLicenseExpiration.tryEmit(newExpiration)
-                    } else {
-                        _drmLicenseExpiration.tryEmit(null)
-                    }
+                if (licenseState is NPOOfflineLicenseState.Failed) {
+                    Log.d(
+                        "SampleAppTest",
+                        "Download of DRM license failed for ${sourceWrapper.uniqueId}",
+                        licenseState.throwable,
+                    )
                 }
             }
         }
@@ -110,47 +105,45 @@ class DownloadableItem(
         onClick: (SourceWrapper) -> Unit,
         error: (Throwable) -> Unit,
     ) {
-        viewmodelScope.launch {
-            val offlineContent = offlineContent.value
-            if (offlineContent == null) {
-                createOrGetOfflineContent(
-                    onCreated = { created, existed ->
-                        if (existed) created.startOrResumeDownload()
-                    },
-                ) { throwable ->
-                    error(throwable)
-                }
-                return@launch
+        val offlineContent = offlineContent.value
+        if (offlineContent == null) {
+            createOrGetOfflineContent(
+                onCreated = { created, existed ->
+                    if (existed) created.startOrResumeDownload()
+                },
+            ) { throwable ->
+                error(throwable)
+            }
+            return
+        }
+
+        when (offlineContent.downloadState.value) {
+            is NPODownloadState.Finished -> {
+                handleFinishedDownload(offlineContent, onClick, error)
             }
 
-            when (offlineContent.downloadState.value) {
-                is NPODownloadState.Finished -> {
-                    handleFinishedDownload(offlineContent, onClick, error)
-                }
+            is NPODownloadState.Failed -> {
+                // NOOP
+            }
 
-                is NPODownloadState.Failed -> {
-                    // NOOP
-                }
+            is NPODownloadState.Paused -> {
+                offlineContent.startOrResumeDownload()
+            }
 
-                is NPODownloadState.Paused -> {
-                    offlineContent.startOrResumeDownload()
-                }
+            is NPODownloadState.InProgress -> {
+                offlineContent.pause()
+            }
 
-                is NPODownloadState.InProgress -> {
-                    offlineContent.pause()
-                }
+            is NPODownloadState.Deleting -> {
+                // Deletion is already in progress; ignore taps until it settles.
+            }
 
-                is NPODownloadState.Deleting -> {
-                    // Deletion is already in progress; ignore taps until it settles.
-                }
+            is NPODownloadState.Deleted -> {
+                // NOOP
+            }
 
-                is NPODownloadState.Deleted -> {
-                    // NOOP
-                }
-
-                NPODownloadState.Initializing -> {
-                    offlineContent.startOrResumeDownload()
-                }
+            NPODownloadState.Initializing -> {
+                offlineContent.startOrResumeDownload()
             }
         }
     }
@@ -159,36 +152,35 @@ class DownloadableItem(
         onCreated: (NPOOfflineContent, existed: Boolean) -> Unit = { _, _ -> },
         errorCallback: (Throwable) -> Unit,
     ) {
-        val id = sourceWrapper.uniqueId
-
-        // Already creating for this id: ignore the extra tap.
-        if (pendingCreation == id) return
-        pendingCreation = id
+        // Already creating: ignore the extra tap.
+        if (pendingCreation.value) return
+        pendingCreation.value = true
 
         viewmodelScope.launch {
-            // Content already exists (e.g. list hasn't recomposed yet): resume it
-            // instead of creating a duplicate download.
-            val existing = retrieveCurrentOfflineContent()
-            if (existing != null) {
-                deleting = existing.downloadState.value is NPODownloadState.Deleting
-                pendingCreation = null
-                replaceOfflineContent(existing)
-                onCreated(existing, true)
-                return@launch
-            }
-
-            val offlineContent =
-                try {
-                    offlineLinkRepository.createOfflineContent(sourceWrapper)
-                } catch (e: NPOOfflineContentException) {
-                    pendingCreation = null
-                    errorCallback(e)
+            try {
+                // Content already exists (e.g. list hasn't recomposed yet): resume it
+                // instead of creating a duplicate download.
+                val existing = retrieveCurrentOfflineContent()
+                if (existing != null) {
+                    deleting = existing.downloadState.value is NPODownloadState.Deleting
+                    replaceOfflineContent(existing)
+                    onCreated(existing, true)
                     return@launch
                 }
-            deleting = false
-            pendingCreation = null
-            replaceOfflineContent(offlineContent)
-            onCreated(offlineContent, false)
+
+                val offlineContent =
+                    try {
+                        offlineLinkRepository.createOfflineContent(sourceWrapper)
+                    } catch (e: NPOOfflineContentException) {
+                        errorCallback(e)
+                        return@launch
+                    }
+                deleting = false
+                replaceOfflineContent(offlineContent)
+                onCreated(offlineContent, false)
+            } finally {
+                pendingCreation.value = false
+            }
         }
     }
 
@@ -228,19 +220,17 @@ class DownloadableItem(
     ) {
         val hasExpiredDrmLicense =
             offlineContent.getOriginalSource().drm != null &&
-                _drmLicenseExpiration.value?.drmExpiration?.isPositive() != true
+                offlineContent.getOfflineDRMLicenseExpiration()?.drmExpiration?.isPositive() != true
 
         if (!hasExpiredDrmLicense) {
             onClick(sourceWrapper.copy(npoOfflineContent = offlineContent))
             return
         }
 
-        viewmodelScope.launch {
-            try {
-                offlineContent.renewOfflineDRMLicense()
-            } catch (e: Exception) {
-                error(e)
-            }
+        try {
+            offlineContent.renewOfflineDRMLicense()
+        } catch (e: Exception) {
+            error(e)
         }
     }
 
