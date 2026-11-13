@@ -4,8 +4,8 @@
 
 To get the sample app to run and play videos make sure to add your NPOTag cloud package key and NPO
 Player Token signing configuration (Store file for signing release builds is optional to fill in) to
-your [local.properties](/local.properties) file. Add the following properties with the correct
-values:
+your [../LocalProperties/sampleApp.local.properties](/../LocalProperties/sampleApp.local.properties)
+file. Add the following properties with the correct values:
 
 ```text
 # The following settings need to be set and filled in to run the Sample App correctly
