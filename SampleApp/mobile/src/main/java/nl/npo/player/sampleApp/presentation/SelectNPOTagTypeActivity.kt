@@ -9,7 +9,6 @@ import nl.npo.player.sampleApp.BuildConfig
 import nl.npo.player.sampleApp.R
 import nl.npo.player.sampleApp.databinding.ActivitySelectNpotagTypeBinding
 import nl.npo.player.sampleApp.shared.app.PlayerApplication
-import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
 
 @AndroidEntryPoint
@@ -49,8 +48,8 @@ class SelectNPOTagTypeActivity : BaseActivity() {
     }
 
     private fun setupLibrary(witNPOTag: Boolean) {
-        libraryViewModel.setupLibrary(withNPOTag = witNPOTag) {
-            NPOCasting.initializeCasting(CastReceiverPref.Default.applicationId)
+        libraryViewModel.setupLibrary(withNPOTag = witNPOTag) { castReceiver ->
+            NPOCasting.initializeCasting(castReceiver.applicationId)
             navigateToMainActivity()
         }
     }

@@ -12,7 +12,7 @@ enum class CastReceiverPref(
     ;
 
     companion object {
-        val Default = V2Production
+        val Default = V1Production
 
         fun getByKey(key: String): CastReceiverPref? = entries.firstOrNull { it.key == key }
     }
