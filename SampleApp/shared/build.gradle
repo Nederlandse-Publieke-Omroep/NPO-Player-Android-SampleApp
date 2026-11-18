@@ -12,9 +12,11 @@ android {
     compileSdk = 36
 
     Properties localProperties = new Properties()
-    File propertiesFile = project.rootProject.file('local.properties')
-    if (propertiesFile.exists()) {
-        localProperties.load(propertiesFile.newDataInputStream())
+    File aiSafeLP = new File(rootDir, "../LocalProperties/sampleApp.local.properties")
+    if (aiSafeLP.exists()){
+        localProperties.load(aiSafeLP.newDataInputStream())
+    } else {
+        localProperties.load(project.rootProject.file('local.properties').newDataInputStream())
     }
 
     defaultConfig {

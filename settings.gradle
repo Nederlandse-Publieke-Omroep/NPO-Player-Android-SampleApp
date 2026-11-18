@@ -7,7 +7,12 @@ pluginManagement {
 }
 
 def localProperties = new Properties()
-localProperties.load(new File(rootDir.absolutePath + "/local.properties").newDataInputStream())
+File aiSafeLP = new File(rootDir, "../LocalProperties/sampleApp.local.properties")
+if (aiSafeLP.exists()){
+    localProperties.load(aiSafeLP.newDataInputStream())
+} else {
+    localProperties.load(new File(rootDir.absolutePath + "/local.properties").newDataInputStream())
+}
 
 static def getTagPackageCloudKey(Properties properties) {
     def externalModuleDir = properties.getProperty('npotag_package_cloud_key', null)
