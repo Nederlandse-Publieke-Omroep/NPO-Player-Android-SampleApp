@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import nl.npo.player.library.domain.player.ui.model.PlayNext
 import nl.npo.player.sampleApp.shared.data.model.AgeProfileInt
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
 import nl.npo.player.sampleApp.shared.data.model.StylingPref
 import nl.npo.player.sampleApp.shared.data.model.UserTypePref
@@ -42,6 +43,7 @@ class SettingsPreferences
             val playNextDuration = intPreferencesKey("playNextDuration")
             val playNextOffset = intPreferencesKey("playNextOffset")
             val enableCasting = booleanPreferencesKey("enableCasting")
+            val castReceiver = stringPreferencesKey("castReceiver")
             val environment = stringPreferencesKey("environment")
             val ageProfile = intPreferencesKey("ageProfile")
             val downloadQuality = stringPreferencesKey("downloadQuality")
@@ -191,6 +193,19 @@ class SettingsPreferences
         suspend fun setEnableCasting(enabled: Boolean) {
             dataStore.edit { prefs ->
                 prefs[Keys.enableCasting] = enabled
+            }
+        }
+
+        val castReceiver: Flow<CastReceiverPref>
+            get() =
+                dataStore.data.map { prefs ->
+                    CastReceiverPref.getByKey(prefs[Keys.castReceiver].orEmpty())
+                        ?: defaultSettings.castReceiver
+                }
+
+        suspend fun setCastReceiver(value: CastReceiverPref) {
+            dataStore.edit { prefs ->
+                prefs[Keys.castReceiver] = value.key
             }
         }
 

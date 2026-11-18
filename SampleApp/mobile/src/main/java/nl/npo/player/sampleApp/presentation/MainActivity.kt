@@ -16,6 +16,7 @@ import nl.npo.player.library.NPOPlayerLibrary
 import nl.npo.player.library.presentation.model.NPOOfflineContentConfig
 import nl.npo.player.sampleApp.presentation.compose.views.MainScreen
 import nl.npo.player.sampleApp.presentation.ext.isGooglePlayServicesAvailable
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref.Companion.keyToPrefs
 import nl.npo.player.sampleApp.shared.domain.model.Environment
 import nl.npo.player.sampleApp.shared.presentation.viewmodel.LibrarySetupViewModel
@@ -27,6 +28,7 @@ class MainActivity : BaseActivity() {
     private val viewModel by viewModels<MainViewModel>()
     private val libraryViewModel by viewModels<LibrarySetupViewModel>()
     private var lastKnownEnvironment: Environment? = null
+    private var lastKnownCastReceiver: CastReceiverPref? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +62,17 @@ class MainActivity : BaseActivity() {
                     startActivity(Intent(this, MainActivity::class.java))
                     finishAffinity()
                 }
+            }
+
+            viewModel.castReceiver.observe(this) {
+                NPOCasting.initializeCasting(it.applicationId)
+                if (lastKnownCastReceiver != null && lastKnownCastReceiver != it) {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finishAffinity()
+                } else {
+                    NPOCasting.updateCastingContext(this)
+                }
+                lastKnownCastReceiver = it
             }
         }
 

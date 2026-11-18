@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.npo.player.sampleApp.shared.R
 import nl.npo.player.sampleApp.shared.data.model.AgeProfilePref
+import nl.npo.player.sampleApp.shared.data.model.CastReceiverPref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref
 import nl.npo.player.sampleApp.shared.data.model.DownloadQualityPref.Companion.keyToPrefs
 import nl.npo.player.sampleApp.shared.data.model.EnvironmentPref
@@ -106,6 +107,7 @@ class SettingsViewModel
                 }
 
                 SettingsKey.Styling,
+                SettingsKey.CastReceiver,
                 SettingsKey.Environment,
                 SettingsKey.UserType,
                 SettingsKey.ShouldPlayNext,
@@ -124,6 +126,7 @@ class SettingsViewModel
                 is UserTypePref -> settingsRepository.setUserType(value.toDomain())
                 is EnvironmentPref -> settingsRepository.setEnvironment(value.toDomain())
                 is AgeProfilePref -> settingsRepository.setAgeProfile(value.toDomain())
+                is CastReceiverPref -> settingsRepository.setCastReceiver(value)
                 is DownloadQualityPref -> settingsRepository.setDownloadQuality(value.key)
             }
         }
@@ -220,6 +223,15 @@ class SettingsViewModel
                                 SettingsKey.EnableCasting,
                                 R.string.setting_enable_casting,
                                 SettingsSwitchOption(settingsRepository.enableCasting.first()),
+                            ),
+                        )
+
+                        add(
+                            SettingsItem.Picker(
+                                SettingsKey.CastReceiver,
+                                R.string.setting_cast_receiver,
+                                settingsRepository.castReceiver.first(),
+                                CastReceiverPref.entries,
                             ),
                         )
                     }

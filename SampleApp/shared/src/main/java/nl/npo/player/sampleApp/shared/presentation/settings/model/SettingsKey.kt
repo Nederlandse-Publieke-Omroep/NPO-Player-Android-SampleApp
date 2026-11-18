@@ -12,6 +12,7 @@ enum class SettingsKey {
     PauseOnSwitchToCellularNetwork,
     ShouldPlayNext,
     EnableCasting,
+    CastReceiver,
     Environment,
     AgeProfile,
     DownloadQuality,

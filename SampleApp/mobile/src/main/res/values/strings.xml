@@ -37,14 +37,6 @@
     <string name="download_drm_content_description_finished">"\nDRM Expires in: %1$s"</string>
     <string name="download_drm_content_description_finished_expired">"\nOffline DRM license has expired. Click to refresh (needs connection)."</string>
 
-    <!--    For testing S&A Audio Receiver-->
-<!--        <string name="cast_receiver_id" translatable="false">40F0C1EC</string>-->
-    <!--    NPO Player Receiver-->
-<!--    <string name="cast_receiver_id" translatable="false">CC38EB17</string>-->
-    <!--    For acceptance testing NPO Player Receiver-->
-<!--        <string name="cast_receiver_id" translatable="false">B2FD41AA</string>-->
-    <!--    For test testing NPO Player Receiver-->
-    <string name="cast_receiver_id_test" translatable="false">72990B99</string>
     <string name="debug_casting">onScreenDebug=true</string>
     <string name="media_route_menu_title">Cast</string>
 </resources>
